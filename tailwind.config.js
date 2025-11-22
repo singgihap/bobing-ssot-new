@@ -1,21 +1,14 @@
-// tailwind.config.js
-export default {
-  // 1. Tentukan file mana yang akan di-scan oleh Tailwind
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
-    "./index.html",
-    // Ini penting agar Tailwind memproses semua kode JS di folder src
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  
-  // 2. Tentukan konfigurasi custom Anda di dalam theme.extend
   theme: {
     extend: {
-        // Mengambil konfigurasi font 'Inter'
         fontFamily: { 
             sans: ['Inter', 'sans-serif'] 
         },
-        
-        // Mengambil konfigurasi warna custom Anda
         colors: {
             slate: { 
                 850: '#1e293b', 
@@ -30,9 +23,7 @@ export default {
                 900: '#312e81' 
             }
         }
-    }
+    },
   },
-  
-  // Plugin jika ada (kosongkan jika tidak ada)
   plugins: [],
 }

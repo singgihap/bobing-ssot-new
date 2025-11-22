@@ -1,0 +1,136 @@
+/* [project]/app/globals.css [app-client] (css) */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: Inter, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: none;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  background-clip: content-box;
+  border: 2px solid #0000;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: .3s ease-out forwards fadeIn;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .7;
+  }
+}
+
+.animate-pulse-soft {
+  animation: 2s cubic-bezier(.4, 0, .6, 1) infinite pulse-soft;
+}
+
+@apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border;
+
+@apply bg-emerald-50 text-emerald-700 border-emerald-100;
+
+@apply bg-amber-50 text-amber-700 border-amber-100;
+
+@apply bg-rose-50 text-rose-700 border-rose-100;
+
+@apply bg-slate-100 text-slate-600 border-slate-200;
+
+#toast-container {
+  z-index: 100;
+  flex-direction: column;
+  gap: 10px;
+  display: flex;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+}
+
+.toast {
+  background: #fff;
+  border-left: 4px solid;
+  border-radius: 8px;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 250px;
+  padding: 12px 16px;
+  font-size: .875rem;
+  font-weight: 500;
+  animation: .3s ease-out forwards slideIn;
+  display: flex;
+  box-shadow: 0 4px 12px #0000001a;
+}
+
+.toast-success {
+  color: #065f46;
+  border-color: #10b981;
+}
+
+.toast-error {
+  color: #991b1b;
+  border-color: #ef4444;
+}
+
+.toast-info {
+  color: #1e40af;
+  border-color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/*# sourceMappingURL=app_globals_css_bad6b30c._.single.css.map*/

@@ -1,0 +1,114 @@
+/* public/css/styles.css */
+
+/* Reset & Font */
+body {
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar (Modern Slim Style) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1; /* slate-300 */
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8; /* slate-400 */
+}
+
+/* Utility: Hide Scrollbar but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Animation: Smooth Fade In */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Animation: Pulse Soft for Loading */
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
+}
+.animate-pulse-soft {
+    animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ... kode sebelumnya ... */
+
+/* BADGES (Status Colors) */
+.badge {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border;
+}
+.badge-success {
+    @apply bg-emerald-50 text-emerald-700 border-emerald-100;
+}
+.badge-warning {
+    @apply bg-amber-50 text-amber-700 border-amber-100;
+}
+.badge-danger {
+    @apply bg-rose-50 text-rose-700 border-rose-100;
+}
+.badge-neutral {
+    @apply bg-slate-100 text-slate-600 border-slate-200;
+}
+
+/* TOAST NOTIFICATION */
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    min-width: 250px;
+    padding: 12px 16px;
+    background: white;
+    border-left: 4px solid;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.3s ease-out forwards;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.toast-success { border-color: #10b981; color: #065f46; }
+.toast-error { border-color: #ef4444; color: #991b1b; }
+.toast-info { border-color: #3b82f6; color: #1e40af; }
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOut {
+    to { transform: translateX(100%); opacity: 0; }
+}
