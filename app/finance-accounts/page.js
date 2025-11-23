@@ -75,24 +75,26 @@ export default function CoaPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
+            {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Chart of Accounts</h2>
-                    <p className="text-sm text-gray-500 mt-1">Master financial accounts (Assets, Liabilities, Equity).</p>
+                    <h2 className="text-2xl font-display font-bold text-lumina-text tracking-tight">Chart of Accounts</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">Master financial accounts (Assets, Liabilities, Equity).</p>
                 </div>
-                <label className="btn-secondary cursor-pointer">
-                    <svg className="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    <span>Import CSV / Excel</span>
+                <label className="btn-ghost-dark cursor-pointer border-lumina-gold/50 text-lumina-gold hover:bg-lumina-gold/10 hover:border-lumina-gold">
+                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                    <span>Import CSV</span>
                     <input type="file" className="hidden" accept=".csv, .xlsx" onChange={handleImport} />
                 </label>
             </div>
 
-            <div className="card p-0 overflow-hidden">
-                <div className="table-wrapper border-0 shadow-none rounded-none">
-                    <table className="table-modern">
+            {/* Table Card */}
+            <div className="card-luxury overflow-hidden">
+                <div className="table-wrapper-dark border-none shadow-none rounded-none">
+                    <table className="table-dark">
                         <thead>
                             <tr>
-                                <th className="pl-6">Code</th>
+                                <th className="pl-6 w-24">Code</th>
                                 <th>Account Name</th>
                                 <th>Category</th>
                                 <th className="text-center">Status</th>
@@ -100,29 +102,30 @@ export default function CoaPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-gray-400">Loading...</td></tr> : accounts.map(acc => {
+                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-lumina-muted">Loading...</td></tr> : accounts.map(acc => {
                                 let catColor = 'badge-neutral';
-                                if (acc.category.includes('Aset')) catColor = 'bg-blue-50 text-blue-700 border-blue-100';
-                                if (acc.category.includes('Pendapatan')) catColor = 'bg-emerald-50 text-emerald-700 border-emerald-100';
-                                if (acc.category.includes('Beban')) catColor = 'bg-rose-50 text-rose-700 border-rose-100';
-                                if (acc.category.includes('Kewajiban') || acc.category.includes('Modal')) catColor = 'bg-amber-50 text-amber-700 border-amber-100';
+                                // Warna badge disesuaikan untuk dark mode (lebih terang/neon)
+                                if (acc.category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                                if (acc.category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                                if (acc.category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+                                if (acc.category.includes('Kewajiban') || acc.category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
 
                                 return (
-                                    <tr key={acc.id}>
-                                        <td className="pl-6 font-mono font-bold text-brand-600">{acc.code}</td>
-                                        <td className="font-medium text-gray-800">{acc.name}</td>
-                                        <td><span className={`badge ${catColor}`}>{acc.category}</span></td>
+                                    <tr key={acc.id} className="group hover:bg-lumina-highlight/20 transition-colors">
+                                        <td className="pl-6 font-mono font-bold text-lumina-gold text-sm">{acc.code}</td>
+                                        <td className="font-medium text-lumina-text group-hover:text-white transition-colors">{acc.name}</td>
+                                        <td><span className={`badge-luxury ${catColor}`}>{acc.category}</span></td>
                                         
                                         <td className="text-center">
                                             <button onClick={() => toggleStatus(acc.id, acc.status)} 
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 ${acc.status === 'Aktif' ? 'bg-emerald-500' : 'bg-gray-200'}`}
+                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-lumina-gold focus:ring-offset-1 focus:ring-offset-lumina-base ${acc.status === 'Aktif' ? 'bg-emerald-500' : 'bg-lumina-border'}`}
                                             >
                                                 <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${acc.status === 'Aktif' ? 'translate-x-5' : 'translate-x-1'}`} />
                                             </button>
                                         </td>
 
                                         <td className="text-right pr-6">
-                                            <button onClick={() => deleteAccount(acc.id)} className="text-xs font-bold text-red-400 hover:text-red-600">Del</button>
+                                            <button onClick={() => deleteAccount(acc.id)} className="text-xs font-bold text-lumina-muted hover:text-rose-500 transition-colors px-2 py-1 rounded hover:bg-rose-500/10">Del</button>
                                         </td>
                                     </tr>
                                 );

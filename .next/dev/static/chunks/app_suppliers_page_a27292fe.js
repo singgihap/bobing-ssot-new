@@ -92,7 +92,7 @@ function SuppliersPage() {
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                className: "text-2xl font-semibold text-gray-900 tracking-tight",
+                                className: "text-2xl font-display font-bold text-lumina-text tracking-tight",
                                 children: "Suppliers"
                             }, void 0, false, {
                                 fileName: "[project]/app/suppliers/page.js",
@@ -100,7 +100,7 @@ function SuppliersPage() {
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-sm text-gray-500 mt-1",
+                                className: "text-sm text-lumina-muted mt-1 font-light",
                                 children: "Database of product suppliers."
                             }, void 0, false, {
                                 fileName: "[project]/app/suppliers/page.js",
@@ -115,7 +115,7 @@ function SuppliersPage() {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         onClick: ()=>openModal(),
-                        className: "btn-primary",
+                        className: "btn-gold",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                 className: "w-5 h-5",
@@ -151,11 +151,11 @@ function SuppliersPage() {
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "card p-0 overflow-hidden",
+                className: "card-luxury overflow-hidden",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "table-wrapper border-0 shadow-none rounded-none",
+                    className: "table-wrapper-dark border-none shadow-none rounded-none",
                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
-                        className: "table-modern",
+                        className: "table-dark",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -205,7 +205,7 @@ function SuppliersPage() {
                                 children: loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                         colSpan: "4",
-                                        className: "text-center py-12 text-gray-400",
+                                        className: "text-center py-12 text-lumina-muted",
                                         children: "Loading..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/suppliers/page.js",
@@ -219,7 +219,7 @@ function SuppliersPage() {
                                 }, this) : suppliers.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                className: "pl-6 font-medium text-gray-900",
+                                                className: "pl-6 font-medium text-lumina-text",
                                                 children: s.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/suppliers/page.js",
@@ -227,7 +227,7 @@ function SuppliersPage() {
                                                 columnNumber: 37
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                className: "font-mono text-gray-600 text-xs",
+                                                className: "font-mono text-lumina-muted text-xs",
                                                 children: s.phone || '-'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/suppliers/page.js",
@@ -235,7 +235,7 @@ function SuppliersPage() {
                                                 columnNumber: 37
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                className: "text-gray-500 truncate max-w-xs text-xs",
+                                                className: "text-lumina-muted truncate max-w-xs text-xs",
                                                 children: s.address || '-'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/suppliers/page.js",
@@ -245,11 +245,11 @@ function SuppliersPage() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                 className: "text-right pr-6",
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex justify-end gap-2",
+                                                    className: "flex justify-end gap-3",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                             onClick: ()=>openModal(s),
-                                                            className: "text-xs font-bold text-brand-600 hover:text-brand-800 px-2 py-1 rounded hover:bg-brand-50",
+                                                            className: "text-xs font-bold text-lumina-muted hover:text-white transition-colors",
                                                             children: "Edit"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/suppliers/page.js",
@@ -258,7 +258,7 @@ function SuppliersPage() {
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                             onClick: ()=>deleteItem(s.id),
-                                                            className: "text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50",
+                                                            className: "text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors",
                                                             children: "Del"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/suppliers/page.js",
@@ -304,14 +304,32 @@ function SuppliersPage() {
                 columnNumber: 13
             }, this),
             modalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4",
+                className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 fade-in-up",
+                    className: "bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20",
                     children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                            className: "text-lg font-semibold text-gray-900 mb-6",
-                            children: formData.id ? 'Edit Supplier' : 'New Supplier'
-                        }, void 0, false, {
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex justify-between items-center mb-6 pb-4 border-b border-lumina-border",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                    className: "text-lg font-bold text-white",
+                                    children: formData.id ? 'Edit Supplier' : 'New Supplier'
+                                }, void 0, false, {
+                                    fileName: "[project]/app/suppliers/page.js",
+                                    lineNumber: 97,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>setModalOpen(false),
+                                    className: "text-lumina-muted hover:text-white text-xl",
+                                    children: "✕"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/suppliers/page.js",
+                                    lineNumber: 98,
+                                    columnNumber: 29
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/app/suppliers/page.js",
                             lineNumber: 96,
                             columnNumber: 25
@@ -326,16 +344,16 @@ function SuppliersPage() {
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "block text-xs font-medium text-gray-700 mb-1",
+                                                    className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                                     children: "Name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/suppliers/page.js",
-                                                    lineNumber: 100,
+                                                    lineNumber: 103,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                                     required: true,
-                                                    className: "input-field",
+                                                    className: "input-luxury",
                                                     value: formData.name,
                                                     onChange: (e)=>setFormData({
                                                             ...formData,
@@ -344,27 +362,27 @@ function SuppliersPage() {
                                                     placeholder: "PT. Supplier"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/suppliers/page.js",
-                                                    lineNumber: 101,
+                                                    lineNumber: 104,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 99,
+                                            lineNumber: 102,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "block text-xs font-medium text-gray-700 mb-1",
+                                                    className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                                     children: "Phone / WA"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/suppliers/page.js",
-                                                    lineNumber: 104,
+                                                    lineNumber: 107,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                    className: "input-field",
+                                                    className: "input-luxury",
                                                     value: formData.phone,
                                                     onChange: (e)=>setFormData({
                                                             ...formData,
@@ -373,34 +391,34 @@ function SuppliersPage() {
                                                     placeholder: "08..."
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/suppliers/page.js",
-                                                    lineNumber: 105,
+                                                    lineNumber: 108,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 103,
+                                            lineNumber: 106,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/suppliers/page.js",
-                                    lineNumber: 98,
+                                    lineNumber: 101,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-medium text-gray-700 mb-1",
+                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                             children: "Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 109,
+                                            lineNumber: 112,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
                                             rows: "2",
-                                            className: "input-field",
+                                            className: "input-luxury",
                                             value: formData.address,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -409,27 +427,27 @@ function SuppliersPage() {
                                             placeholder: "Complete address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 110,
+                                            lineNumber: 113,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/suppliers/page.js",
-                                    lineNumber: 108,
+                                    lineNumber: 111,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-medium text-gray-700 mb-1",
+                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                             children: "Notes"
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 113,
+                                            lineNumber: 116,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            className: "input-field",
+                                            className: "input-luxury",
                                             value: formData.notes,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -438,47 +456,47 @@ function SuppliersPage() {
                                             placeholder: "Additional info..."
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 114,
+                                            lineNumber: 117,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/suppliers/page.js",
-                                    lineNumber: 112,
+                                    lineNumber: 115,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex justify-end gap-3 pt-4 border-t border-gray-100",
+                                    className: "flex justify-end gap-3 pt-4 border-t border-lumina-border",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             type: "button",
                                             onClick: ()=>setModalOpen(false),
-                                            className: "btn-ghost",
+                                            className: "btn-ghost-dark",
                                             children: "Cancel"
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 117,
+                                            lineNumber: 120,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             type: "submit",
-                                            className: "btn-primary",
-                                            children: "Save"
+                                            className: "btn-gold",
+                                            children: "Save Supplier"
                                         }, void 0, false, {
                                             fileName: "[project]/app/suppliers/page.js",
-                                            lineNumber: 118,
+                                            lineNumber: 121,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/suppliers/page.js",
-                                    lineNumber: 116,
+                                    lineNumber: 119,
                                     columnNumber: 29
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/suppliers/page.js",
-                            lineNumber: 97,
+                            lineNumber: 100,
                             columnNumber: 25
                         }, this)
                     ]

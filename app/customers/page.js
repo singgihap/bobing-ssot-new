@@ -85,25 +85,27 @@ export default function CustomersPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
+            {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Customers</h2>
-                    <p className="text-sm text-gray-500 mt-1">CRM database for resellers and loyal customers.</p>
+                    <h2 className="text-2xl font-bold text-lumina-text font-display">Customers</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">CRM database for resellers and loyal customers.</p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={scanFromSales} disabled={scanning} className="btn-secondary text-xs">
-                        {scanning ? 'Scanning...' : 'Scan from Sales'}
+                    <button onClick={scanFromSales} disabled={scanning} className="btn-ghost-dark text-xs">
+                        {scanning ? 'Scanning...' : 'Scan Sales'}
                     </button>
-                    <button onClick={() => openModal()} className="btn-primary">
+                    <button onClick={() => openModal()} className="btn-gold">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
                         New Customer
                     </button>
                 </div>
             </div>
 
-            <div className="card p-0 overflow-hidden">
-                <div className="table-wrapper border-0 shadow-none rounded-none">
-                    <table className="table-modern">
+            {/* Table */}
+            <div className="card-luxury overflow-hidden">
+                <div className="table-wrapper-dark border-none shadow-none rounded-none">
+                    <table className="table-dark">
                         <thead>
                             <tr>
                                 <th className="pl-6">Name</th>
@@ -114,21 +116,21 @@ export default function CustomersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-gray-400">Loading...</td></tr> : customers.map(c => {
+                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-lumina-muted">Loading...</td></tr> : customers.map(c => {
                                 let badgeClass = 'badge-neutral';
-                                if(c.type === 'reseller') badgeClass = 'bg-purple-50 text-purple-700 border-purple-200';
-                                if(c.type === 'vip') badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                                if(c.type === 'reseller') badgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+                                if(c.type === 'vip') badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
                                 
                                 return (
                                     <tr key={c.id}>
-                                        <td className="pl-6 font-medium text-gray-900">{c.name}</td>
-                                        <td><span className={`badge ${badgeClass}`}>{c.type?.replace('_', ' ')}</span></td>
-                                        <td className="font-mono text-gray-500 text-xs">{c.phone || '-'}</td>
-                                        <td className="text-gray-500 truncate max-w-xs text-xs">{c.address || '-'}</td>
+                                        <td className="pl-6 font-medium text-lumina-text">{c.name}</td>
+                                        <td><span className={`badge-luxury ${badgeClass}`}>{c.type?.replace('_', ' ')}</span></td>
+                                        <td className="font-mono text-lumina-muted text-xs">{c.phone || '-'}</td>
+                                        <td className="text-lumina-muted truncate max-w-xs text-xs">{c.address || '-'}</td>
                                         <td className="text-right pr-6">
-                                            <div className="flex justify-end gap-2">
-                                                <button onClick={() => openModal(c)} className="text-xs font-bold text-brand-600 hover:text-brand-800 px-2 py-1 rounded hover:bg-brand-50">Edit</button>
-                                                <button onClick={() => deleteItem(c.id)} className="text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50">Del</button>
+                                            <div className="flex justify-end gap-3">
+                                                <button onClick={() => openModal(c)} className="text-xs font-bold text-lumina-muted hover:text-white transition-colors">Edit</button>
+                                                <button onClick={() => deleteItem(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
                                             </div>
                                         </td>
                                     </tr>
@@ -139,19 +141,23 @@ export default function CustomersPage() {
                 </div>
             </div>
 
+            {/* Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 fade-in-up">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
+                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
+                            <h3 className="text-lg font-bold text-white">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
+                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                        </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
-                                    <input required className="input-field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
+                                    <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Name</label>
+                                    <input required className="input-luxury" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                                    <select className="select-field" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                                    <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Type</label>
+                                    <select className="input-luxury" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                                         <option value="end_customer">Customer Umum</option>
                                         <option value="reseller">Reseller / Agen</option>
                                         <option value="vip">VIP</option>
@@ -159,16 +165,16 @@ export default function CustomersPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Phone / WA</label>
-                                <input className="input-field" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
+                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Phone / WA</label>
+                                <input className="input-luxury" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
-                                <textarea rows="3" className="input-field" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Complete address..."></textarea>
+                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Address</label>
+                                <textarea rows="3" className="input-luxury" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Complete address..."></textarea>
                             </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost">Cancel</button>
-                                <button type="submit" className="btn-primary">Save</button>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">
+                                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost-dark">Cancel</button>
+                                <button type="submit" className="btn-gold">Save Customer</button>
                             </div>
                         </form>
                     </div>

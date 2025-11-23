@@ -20,8 +20,6 @@ export const AuthContextProvider = ({ children }) => {
         setUser(user);
       } else {
         setUser(null);
-        // Jika tidak ada user, redirect ke login (opsional, bisa diatur per halaman)
-        // router.push('/login'); 
       }
       setLoading(false);
     });
@@ -29,9 +27,32 @@ export const AuthContextProvider = ({ children }) => {
     return () => unsubscribe();
   }, [router]);
 
+  // TAMPILAN LOADING MEWAH (Lumina Theme)
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0B0C10]">
+        <div className="text-center relative">
+           {/* Spinner Emas */}
+           <div className="w-16 h-16 relative mx-auto mb-4">
+             <div className="absolute inset-0 rounded-full border-4 border-[#12141C]"></div>
+             <div className="absolute inset-0 rounded-full border-t-4 border-[#D4AF37] animate-spin shadow-[0_0_15px_rgba(212,175,55,0.5)]"></div>
+           </div>
+           
+           {/* Teks */}
+           <h2 className="text-lg font-bold text-white tracking-widest font-display animate-pulse">
+             LUMINA
+           </h2>
+           <p className="text-[10px] text-[#94A3B8] mt-2 font-mono uppercase tracking-wider">
+             Initializing System...
+           </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider value={{ user, loading }}>
-      {loading ? <div className="p-10 text-center">Loading Application...</div> : children}
+      {children}
     </AuthContext.Provider>
   );
 };

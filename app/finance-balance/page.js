@@ -41,80 +41,84 @@ export default function BalanceSheetPage() {
         <div className="max-w-6xl mx-auto space-y-8 fade-in pb-20">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Balance Sheet</h2>
-                    <p className="text-sm text-gray-500">Real-time financial position.</p>
+                    <h2 className="text-2xl font-display font-bold text-lumina-text tracking-tight">Balance Sheet</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">Real-time financial position snapshot.</p>
                 </div>
-                <button onClick={calculate} className="btn-secondary text-xs">Refresh</button>
+                <button onClick={calculate} className="btn-ghost-dark text-xs">Refresh Data</button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* ASSETS */}
-                <div className="card p-0 overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-100 bg-emerald-50/50">
-                        <h3 className="font-bold text-emerald-800 uppercase tracking-wider text-xs">Assets (Harta)</h3>
+                <div className="card-luxury overflow-hidden">
+                    <div className="px-6 py-4 border-b border-emerald-900/30 bg-emerald-900/10">
+                        <h3 className="font-bold text-emerald-400 uppercase tracking-wider text-xs">Assets (Harta)</h3>
                     </div>
                     <div className="p-6 space-y-6">
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Cash & Bank</p>
-                            <div className="space-y-2 pl-3 border-l-2 border-gray-100">
+                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Cash & Bank</p>
+                            <div className="space-y-2 pl-3 border-l-2 border-lumina-border">
                                 {assets.listCash.map((c, i) => (
                                     <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-gray-600">{c.name}</span>
-                                        <span className="font-mono font-medium">{formatRupiah(c.val)}</span>
+                                        <span className="text-lumina-text opacity-80">{c.name}</span>
+                                        <span className="font-mono font-medium text-lumina-text">{formatRupiah(c.val)}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-gray-200 font-bold text-gray-700">
-                                <span>Total Cash</span><span>{formatRupiah(assets.cash)}</span>
+                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-lumina-border font-bold text-lumina-text">
+                                <span>Total Cash</span><span className="text-emerald-400">{formatRupiah(assets.cash)}</span>
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Inventory</p>
-                            <div className="flex justify-between items-center pl-3 border-l-2 border-blue-100">
-                                <span className="text-sm text-gray-600">Stock Value (At Cost)</span>
-                                <span className="font-bold text-gray-800">{formatRupiah(assets.inventory)}</span>
+                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Inventory</p>
+                            <div className="flex justify-between items-center pl-3 border-l-2 border-blue-500/30">
+                                <span className="text-sm text-lumina-text opacity-80">Stock Value (At Cost)</span>
+                                <span className="font-bold text-blue-400 font-mono">{formatRupiah(assets.inventory)}</span>
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase mb-2">Receivables</p>
-                            <div className="flex justify-between items-center pl-3 border-l-2 border-amber-100">
-                                <span className="text-sm text-gray-600">Unpaid Sales</span>
-                                <span className="font-bold text-gray-800">{formatRupiah(assets.receivable)}</span>
+                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Receivables</p>
+                            <div className="flex justify-between items-center pl-3 border-l-2 border-amber-500/30">
+                                <span className="text-sm text-lumina-text opacity-80">Unpaid Sales</span>
+                                <span className="font-bold text-amber-400 font-mono">{formatRupiah(assets.receivable)}</span>
                             </div>
                         </div>
                     </div>
-                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-                        <span className="font-bold text-gray-800">TOTAL ASSETS</span>
-                        <span className="font-extrabold text-emerald-600 text-xl">{formatRupiah(totalAssets)}</span>
+                    <div className="px-6 py-4 bg-lumina-surface border-t border-lumina-border flex justify-between items-center">
+                        <span className="font-bold text-lumina-text">TOTAL ASSETS</span>
+                        <span className="font-extrabold text-emerald-500 text-xl font-mono">{formatRupiah(totalAssets)}</span>
                     </div>
                 </div>
 
                 <div className="space-y-6">
                     {/* LIABILITIES */}
-                    <div className="card p-0 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-100 bg-red-50/50">
-                            <h3 className="font-bold text-red-800 uppercase tracking-wider text-xs">Liabilities (Hutang)</h3>
+                    <div className="card-luxury overflow-hidden">
+                        <div className="px-6 py-4 border-b border-rose-900/30 bg-rose-900/10">
+                            <h3 className="font-bold text-rose-400 uppercase tracking-wider text-xs">Liabilities (Hutang)</h3>
                         </div>
                         <div className="p-6">
-                            <div className="flex justify-between items-center pl-3 border-l-2 border-red-100">
-                                <span className="text-sm text-gray-600">Accounts Payable (PO)</span>
-                                <span className="font-bold text-red-600">{formatRupiah(liabilities.payable)}</span>
+                            <div className="flex justify-between items-center pl-3 border-l-2 border-rose-500/30">
+                                <span className="text-sm text-lumina-text opacity-80">Accounts Payable (PO)</span>
+                                <span className="font-bold text-rose-400 font-mono">{formatRupiah(liabilities.payable)}</span>
                             </div>
                         </div>
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
-                            <span className="font-bold text-gray-800">TOTAL LIABILITIES</span>
-                            <span className="font-bold text-red-600 text-lg">{formatRupiah(liabilities.payable)}</span>
+                        <div className="px-6 py-4 bg-lumina-surface border-t border-lumina-border flex justify-between items-center">
+                            <span className="font-bold text-lumina-text">TOTAL LIABILITIES</span>
+                            <span className="font-bold text-rose-500 text-lg font-mono">{formatRupiah(liabilities.payable)}</span>
                         </div>
                     </div>
 
                     {/* EQUITY */}
-                    <div className="card p-6 bg-gray-900 text-white text-center relative overflow-hidden border-none">
-                        <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Owners Equity</p>
-                        <h3 className={`text-3xl font-extrabold tracking-tight ${equity >= 0 ? 'text-white' : 'text-red-400'}`}>
-                            {formatRupiah(equity)}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-2">Assets - Liabilities</p>
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/10 rounded-full blur-2xl"></div>
+                    <div className="card-luxury p-6 bg-gradient-to-br from-lumina-surface to-lumina-highlight text-center relative overflow-hidden border-none shadow-2xl">
+                        <div className="relative z-10">
+                            <p className="text-xs text-lumina-muted uppercase tracking-widest mb-2 font-bold">Owners Equity</p>
+                            <h3 className={`text-3xl font-display font-extrabold tracking-tight ${equity >= 0 ? 'text-white' : 'text-rose-400'}`}>
+                                {formatRupiah(equity)}
+                            </h3>
+                            <p className="text-[10px] text-lumina-muted mt-2 opacity-70">Assets - Liabilities</p>
+                        </div>
+                        {/* Decoration */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-lumina-gold/10 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
                     </div>
                 </div>
             </div>

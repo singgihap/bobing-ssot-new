@@ -97,7 +97,7 @@ function WarehousesPage() {
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                                className: "text-2xl font-semibold text-gray-900 tracking-tight",
+                                className: "text-2xl font-bold text-lumina-text font-display",
                                 children: "Warehouses"
                             }, void 0, false, {
                                 fileName: "[project]/app/warehouses/page.js",
@@ -105,7 +105,7 @@ function WarehousesPage() {
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                className: "text-sm text-gray-500 mt-1",
+                                className: "text-sm text-lumina-muted mt-1 font-light",
                                 children: "Manage physical locations and virtual supplier stocks."
                             }, void 0, false, {
                                 fileName: "[project]/app/warehouses/page.js",
@@ -120,7 +120,7 @@ function WarehousesPage() {
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                         onClick: ()=>openModal(),
-                        className: "btn-primary",
+                        className: "btn-gold",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                 className: "w-5 h-5",
@@ -158,7 +158,7 @@ function WarehousesPage() {
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
                 children: loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "col-span-full text-center py-12 text-gray-400",
+                    className: "col-span-full text-center py-12 text-lumina-muted",
                     children: "Loading..."
                 }, void 0, false, {
                     fileName: "[project]/app/warehouses/page.js",
@@ -168,7 +168,7 @@ function WarehousesPage() {
                     const isVirtual = w.type === 'virtual_supplier';
                     const supName = isVirtual ? suppliers.find((s)=>s.id === w.supplier_id)?.name || 'Unknown' : '-';
                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "card p-6 flex flex-col justify-between h-full group hover:border-brand-200",
+                        className: "card-luxury p-6 flex flex-col justify-between h-full group hover:border-lumina-gold/50 transition-all",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 children: [
@@ -176,7 +176,7 @@ function WarehousesPage() {
                                         className: "flex justify-between items-start mb-4",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: `p-3 rounded-xl ${isVirtual ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`,
+                                                className: `p-3 rounded-xl ${isVirtual ? 'bg-indigo-500/10 text-indigo-400' : 'bg-emerald-500/10 text-emerald-400'}`,
                                                 children: isVirtual ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                     className: "w-6 h-6",
                                                     fill: "none",
@@ -222,7 +222,7 @@ function WarehousesPage() {
                                                 columnNumber: 37
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: `badge ${isVirtual ? 'badge-brand' : 'badge-success'}`,
+                                                className: `badge-luxury ${isVirtual ? 'badge-neutral' : 'badge-success'}`,
                                                 children: isVirtual ? 'Virtual' : 'Physical'
                                             }, void 0, false, {
                                                 fileName: "[project]/app/warehouses/page.js",
@@ -236,7 +236,7 @@ function WarehousesPage() {
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                        className: "text-lg font-bold text-gray-900 mb-1",
+                                        className: "text-lg font-bold text-lumina-text mb-1 group-hover:text-lumina-gold transition-colors",
                                         children: w.name
                                     }, void 0, false, {
                                         fileName: "[project]/app/warehouses/page.js",
@@ -244,7 +244,7 @@ function WarehousesPage() {
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-xs text-gray-400 font-mono mb-4",
+                                        className: "text-xs text-lumina-muted font-mono mb-4",
                                         children: [
                                             w.id.substring(0, 8),
                                             "..."
@@ -255,7 +255,7 @@ function WarehousesPage() {
                                         columnNumber: 33
                                     }, this),
                                     isVirtual && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "mb-4 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-2 rounded-lg border border-brand-100 flex items-center gap-2",
+                                        className: "mb-4 text-xs font-medium text-indigo-300 bg-indigo-900/20 px-3 py-2 rounded-lg border border-indigo-500/20 flex items-center gap-2",
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                 className: "w-3 h-3",
@@ -286,7 +286,7 @@ function WarehousesPage() {
                                         columnNumber: 37
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-sm text-gray-500 mb-4 line-clamp-2",
+                                        className: "text-sm text-lumina-muted mb-4 line-clamp-2",
                                         children: w.address || 'No address provided.'
                                     }, void 0, false, {
                                         fileName: "[project]/app/warehouses/page.js",
@@ -300,12 +300,12 @@ function WarehousesPage() {
                                 columnNumber: 29
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "pt-4 border-t border-gray-100 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity",
+                                className: "pt-4 border-t border-lumina-border flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         onClick: ()=>openModal(w),
-                                        className: "text-sm font-medium text-gray-500 hover:text-brand-600 transition-colors",
-                                        children: "Edit"
+                                        className: "text-xs font-bold text-lumina-muted hover:text-white transition-colors",
+                                        children: "EDIT"
                                     }, void 0, false, {
                                         fileName: "[project]/app/warehouses/page.js",
                                         lineNumber: 103,
@@ -313,8 +313,8 @@ function WarehousesPage() {
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         onClick: ()=>deleteWh(w.id),
-                                        className: "text-sm font-medium text-gray-500 hover:text-red-600 transition-colors",
-                                        children: "Delete"
+                                        className: "text-xs font-bold text-lumina-muted hover:text-rose-500 transition-colors",
+                                        children: "DELETE"
                                     }, void 0, false, {
                                         fileName: "[project]/app/warehouses/page.js",
                                         lineNumber: 104,
@@ -339,14 +339,32 @@ function WarehousesPage() {
                 columnNumber: 13
             }, this),
             modalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4",
+                className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in",
                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 fade-in-up",
+                    className: "bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20",
                     children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                            className: "text-lg font-semibold text-gray-900 mb-6",
-                            children: formData.id ? 'Edit Warehouse' : 'New Warehouse'
-                        }, void 0, false, {
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex justify-between items-center mb-6 pb-4 border-b border-lumina-border",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                    className: "text-lg font-bold text-lumina-text",
+                                    children: formData.id ? 'Edit Warehouse' : 'New Warehouse'
+                                }, void 0, false, {
+                                    fileName: "[project]/app/warehouses/page.js",
+                                    lineNumber: 116,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>setModalOpen(false),
+                                    className: "text-lumina-muted hover:text-white text-xl",
+                                    children: "✕"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/warehouses/page.js",
+                                    lineNumber: 117,
+                                    columnNumber: 29
+                                }, this)
+                            ]
+                        }, void 0, true, {
                             fileName: "[project]/app/warehouses/page.js",
                             lineNumber: 115,
                             columnNumber: 25
@@ -358,16 +376,16 @@ function WarehousesPage() {
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-medium text-gray-700 mb-1",
+                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                             children: "Warehouse Name"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 118,
+                                            lineNumber: 121,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                             required: true,
-                                            className: "input-field",
+                                            className: "input-luxury",
                                             value: formData.name,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -376,27 +394,27 @@ function WarehousesPage() {
                                             placeholder: "e.g. Gudang Utama"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 119,
+                                            lineNumber: 122,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/warehouses/page.js",
-                                    lineNumber: 117,
+                                    lineNumber: 120,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-medium text-gray-700 mb-1",
+                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                             children: "Type"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 122,
+                                            lineNumber: 125,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                            className: "select-field",
+                                            className: "input-luxury",
                                             value: formData.type,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -408,7 +426,7 @@ function WarehousesPage() {
                                                     children: "🏠 Physical (Inventory)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/warehouses/page.js",
-                                                    lineNumber: 124,
+                                                    lineNumber: 127,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -416,34 +434,34 @@ function WarehousesPage() {
                                                     children: "☁️ Virtual (Supplier Stock)"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/warehouses/page.js",
-                                                    lineNumber: 125,
+                                                    lineNumber: 128,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 123,
+                                            lineNumber: 126,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/warehouses/page.js",
-                                    lineNumber: 121,
+                                    lineNumber: 124,
                                     columnNumber: 29
                                 }, this),
                                 formData.type === 'virtual_supplier' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "bg-brand-50 p-4 rounded-xl border border-brand-100",
+                                    className: "bg-lumina-base p-4 rounded-xl border border-lumina-border",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-bold text-brand-800 mb-1",
+                                            className: "block text-xs font-bold text-lumina-gold mb-1 uppercase",
                                             children: "Link to Supplier"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 130,
+                                            lineNumber: 133,
                                             columnNumber: 37
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                            className: "select-field bg-white",
+                                            className: "input-luxury bg-lumina-highlight",
                                             value: formData.supplier_id,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -455,7 +473,7 @@ function WarehousesPage() {
                                                     children: "-- Select Supplier --"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/warehouses/page.js",
-                                                    lineNumber: 132,
+                                                    lineNumber: 135,
                                                     columnNumber: 41
                                                 }, this),
                                                 suppliers.map((s)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -463,34 +481,34 @@ function WarehousesPage() {
                                                         children: s.name
                                                     }, s.id, false, {
                                                         fileName: "[project]/app/warehouses/page.js",
-                                                        lineNumber: 133,
+                                                        lineNumber: 136,
                                                         columnNumber: 61
                                                     }, this))
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 131,
+                                            lineNumber: 134,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/warehouses/page.js",
-                                    lineNumber: 129,
+                                    lineNumber: 132,
                                     columnNumber: 33
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "block text-xs font-medium text-gray-700 mb-1",
+                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-1",
                                             children: "Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 138,
+                                            lineNumber: 141,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
                                             rows: "3",
-                                            className: "input-field",
+                                            className: "input-luxury",
                                             value: formData.address,
                                             onChange: (e)=>setFormData({
                                                     ...formData,
@@ -499,47 +517,47 @@ function WarehousesPage() {
                                             placeholder: "Location address..."
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 139,
+                                            lineNumber: 142,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/warehouses/page.js",
-                                    lineNumber: 137,
+                                    lineNumber: 140,
                                     columnNumber: 29
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex justify-end gap-3 pt-4 border-t border-gray-100",
+                                    className: "flex justify-end gap-3 pt-4 border-t border-lumina-border",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             type: "button",
                                             onClick: ()=>setModalOpen(false),
-                                            className: "btn-ghost",
+                                            className: "btn-ghost-dark",
                                             children: "Cancel"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 142,
+                                            lineNumber: 145,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                             type: "submit",
-                                            className: "btn-primary",
+                                            className: "btn-gold",
                                             children: "Save Warehouse"
                                         }, void 0, false, {
                                             fileName: "[project]/app/warehouses/page.js",
-                                            lineNumber: 143,
+                                            lineNumber: 146,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/warehouses/page.js",
-                                    lineNumber: 141,
+                                    lineNumber: 144,
                                     columnNumber: 29
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/warehouses/page.js",
-                            lineNumber: 116,
+                            lineNumber: 119,
                             columnNumber: 25
                         }, this)
                     ]

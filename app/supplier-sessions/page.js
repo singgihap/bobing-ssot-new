@@ -97,12 +97,12 @@ export default function VirtualStockPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
-            <div className="card flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Virtual Stock Map</h2>
-                    <p className="text-sm text-gray-500 mt-1">Drag & Drop cards to organize supplier products.</p>
+                    <h2 className="text-2xl font-display font-bold text-lumina-text tracking-tight">Virtual Stock Map</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">Drag & Drop cards to organize supplier products.</p>
                 </div>
-                <select className="select-field w-full sm:w-64 font-medium" value={selectedSupplierId} onChange={handleSupplierChange}>
+                <select className="input-luxury w-full sm:w-64 font-medium" value={selectedSupplierId} onChange={handleSupplierChange}>
                     <option value="">-- Select Supplier --</option>
                     {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
@@ -111,43 +111,56 @@ export default function VirtualStockPage() {
             {selectedSupplierId && (
                 <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {visibleProducts.map(p => (
-                        <div key={p.id} className="card p-5 cursor-grab active:cursor-grabbing hover:border-brand-300 transition-all relative group" onClick={() => openModal(p)}>
-                            <span className="text-[10px] font-bold bg-brand-50 text-brand-600 px-2 py-1 rounded uppercase tracking-wide border border-brand-100">{p.base_sku}</span>
-                            <h3 className="text-sm font-semibold text-gray-800 mt-3 mb-4 line-clamp-2 leading-relaxed">{p.name}</h3>
-                            <div className="flex justify-between items-end border-t border-gray-100 pt-3">
-                                <span className="text-xs text-gray-400">{p.variants.length} Items</span>
-                                <span className={`text-lg font-extrabold ${p.totalStock > 0 ? 'text-emerald-600' : 'text-gray-300'}`}>{p.totalStock}</span>
+                        <div key={p.id} className="card-luxury p-5 cursor-grab active:cursor-grabbing hover:border-lumina-gold/50 transition-all relative group" onClick={() => openModal(p)}>
+                            <span className="text-[10px] font-bold bg-lumina-base text-lumina-gold px-2 py-1 rounded uppercase tracking-wide border border-lumina-border">{p.base_sku}</span>
+                            <h3 className="text-sm font-bold text-lumina-text mt-3 mb-4 line-clamp-2 leading-relaxed group-hover:text-lumina-gold transition-colors">{p.name}</h3>
+                            <div className="flex justify-between items-end border-t border-lumina-border pt-3">
+                                <span className="text-xs text-lumina-muted">{p.variants.length} Items</span>
+                                <span className={`text-lg font-bold ${p.totalStock > 0 ? 'text-emerald-400' : 'text-lumina-border'}`}>{p.totalStock}</span>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
 
-            {/* Update Stock Modal */}
+            {/* Update Stock Modal (Centered Dark) */}
             {modalOpen && currentModalProd && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-3xl w-full max-h-[80vh] flex flex-col fade-in-up">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col ring-1 ring-lumina-gold/20">
+                        <div className="p-6 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">{currentModalProd.name}</h3>
-                                <p className="text-xs text-gray-500 font-mono mt-1">{currentModalProd.base_sku}</p>
+                                <h3 className="text-xl font-bold text-white">{currentModalProd.name}</h3>
+                                <p className="text-xs text-lumina-muted font-mono mt-1">{currentModalProd.base_sku}</p>
                             </div>
-                            <button onClick={() => setModalOpen(false)} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+                            <button onClick={() => setModalOpen(false)} className="text-2xl text-lumina-muted hover:text-white transition-colors">&times;</button>
                         </div>
-                        <div className="overflow-auto p-0">
-                            <table className="table-modern">
-                                <thead><tr><th className="pl-6">Varian</th><th className="text-center">System</th><th className="text-center w-32 bg-brand-50/30">Real</th></tr></thead>
+                        
+                        <div className="flex-1 overflow-y-auto p-0 bg-lumina-base custom-scrollbar">
+                            <table className="table-dark">
+                                <thead className="sticky top-0 z-10 bg-lumina-surface shadow-md border-b border-lumina-border">
+                                    <tr>
+                                        <th className="pl-6">Varian</th>
+                                        <th className="text-center">System</th>
+                                        <th className="text-center w-32 bg-lumina-highlight/30">Real</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     {currentModalProd.variants.sort(sortBySize).map(v => {
                                         const whId = warehouses.find(w => w.supplier_id === selectedSupplierId)?.id;
                                         const qty = snapshots[`${v.id}_${whId}`]?.qty || 0;
                                         return (
-                                            <tr key={v.id}>
-                                                <td className="pl-6 font-medium text-gray-700">{v.color} / {v.size} <span className="text-xs font-mono text-gray-400 ml-2">{v.sku}</span></td>
-                                                <td className="text-center font-mono text-gray-500">{qty}</td>
-                                                <td className="bg-brand-50/20 p-2 text-center">
-                                                    <input type="number" className="w-20 text-center border-brand-200 rounded-lg py-1.5 font-bold text-brand-700 focus:ring-brand-500 outline-none border" placeholder={qty}
-                                                        onChange={(e) => setModalUpdates({...modalUpdates, [v.id]: e.target.value})} />
+                                            <tr key={v.id} className="hover:bg-lumina-highlight/20 transition-colors">
+                                                <td className="pl-6 font-medium text-lumina-text">
+                                                    {v.color} / {v.size} <span className="text-xs font-mono text-lumina-muted ml-2">{v.sku}</span>
+                                                </td>
+                                                <td className="text-center font-mono text-lumina-muted">{qty}</td>
+                                                <td className="bg-lumina-highlight/20 p-2 text-center">
+                                                    <input 
+                                                        type="number" 
+                                                        className="w-24 text-center bg-lumina-base border border-lumina-border rounded-lg py-1.5 font-bold text-lumina-gold focus:ring-1 focus:ring-lumina-gold outline-none" 
+                                                        placeholder={qty}
+                                                        onChange={(e) => setModalUpdates({...modalUpdates, [v.id]: e.target.value})} 
+                                                    />
                                                 </td>
                                             </tr>
                                         )
@@ -155,8 +168,9 @@ export default function VirtualStockPage() {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="p-4 border-t border-gray-100 flex justify-end bg-gray-50 rounded-b-2xl">
-                            <button onClick={saveModal} className="btn-primary">Save Updates</button>
+                        
+                        <div className="p-6 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end">
+                            <button onClick={saveModal} className="btn-gold">Save Updates</button>
                         </div>
                     </div>
                 </div>

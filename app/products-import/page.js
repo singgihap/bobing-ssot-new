@@ -2,7 +2,7 @@
 "use client";
 import { useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, addDoc, writeBatch, serverTimestamp, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, serverTimestamp, query, where } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 
 export default function ImportProductsPage() {
@@ -18,7 +18,6 @@ export default function ImportProductsPage() {
         setLogs([]);
 
         try {
-            // 1. Load Cache
             addLog("Memuat data master...", "info");
             const brandsSnap = await getDocs(collection(db, "brands"));
             const brandsMap = {}; brandsSnap.forEach(d => brandsMap[d.data().name.toLowerCase()] = d.id);
@@ -40,7 +39,6 @@ export default function ImportProductsPage() {
                         const prodName = row['product_name'];
                         if(!baseSku || !prodName) continue;
 
-                        // Brand
                         let brandId = null;
                         if(row['brand']) {
                             const bName = row['brand'].trim();
@@ -53,7 +51,6 @@ export default function ImportProductsPage() {
                             }
                         }
 
-                        // Product
                         let prodId = prodMap[baseSku];
                         if(!prodId) {
                             const pRef = await addDoc(collection(db, "products"), {
@@ -64,12 +61,10 @@ export default function ImportProductsPage() {
                             addLog(`Produk Baru: ${prodName}`, "success");
                         }
 
-                        // Variant
                         const color = String(row['color']||'STD').toUpperCase().replace(/\s+/g, '-');
                         const size = String(row['size']||'ALL').toUpperCase().replace(/\s+/g, '-');
                         const sku = `${baseSku}-${color}-${size}`;
                         
-                        // Check duplicate variant
                         const qVar = query(collection(db, "product_variants"), where("sku", "==", sku));
                         const sVar = await getDocs(qVar);
                         
@@ -93,23 +88,41 @@ export default function ImportProductsPage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-bold text-slate-800 mb-4">Import Produk & Varian (CSV/Excel)</h2>
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50 hover:bg-white transition cursor-pointer relative">
-                    <input type="file" accept=".csv, .xlsx" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                    <div className="pointer-events-none">
-                        <p className="text-sm font-bold text-slate-600">Klik untuk upload file</p>
-                        <p className="text-xs text-slate-400 mt-1">Kolom: base_sku, product_name, brand, category, color, size, cost, price</p>
+        <div className="max-w-2xl mx-auto space-y-6 fade-in">
+            <div className="card-luxury p-6 bg-lumina-surface border-lumina-border">
+                <h2 className="text-xl font-bold text-lumina-text mb-4 font-display">Import Products & Variants</h2>
+                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-base/50 hover:bg-lumina-base transition-colors cursor-pointer relative group">
+                    <input type="file" accept=".csv, .xlsx" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div className="pointer-events-none relative z-0">
+                        <div className="w-12 h-12 bg-lumina-highlight rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-lumina-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                        </div>
+                        <p className="text-sm font-bold text-lumina-text">Click to upload file</p>
+                        <p className="text-xs text-lumina-muted mt-1">Supported: .xlsx, .csv</p>
+                        <p className="text-[10px] text-lumina-muted/60 mt-2 font-mono">Format: base_sku, product_name, brand, category, color, size, cost, price</p>
                     </div>
                 </div>
             </div>
-            <div className="bg-slate-900 p-4 rounded-xl h-64 overflow-y-auto font-mono text-xs">
-                {logs.map((l, i) => (
-                    <div key={i} className={`mb-1 ${l.type==='error'?'text-red-400':(l.type==='success'?'text-emerald-400':'text-slate-400')}`}>
-                        {l.msg}
-                    </div>
-                ))}
+            
+            {/* Console Log Terminal */}
+            <div className="bg-[#0B0C10] p-4 rounded-xl border border-lumina-border h-64 overflow-y-auto font-mono text-xs shadow-inner">
+                <div className="flex items-center gap-2 mb-3 border-b border-lumina-border pb-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-lumina-muted ml-2">Import Terminal</span>
+                </div>
+                <div className="space-y-1">
+                    {logs.length === 0 ? (
+                        <span className="text-lumina-muted/50 animate-pulse">Waiting for file...</span>
+                    ) : logs.map((l, i) => (
+                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-lumina-muted')}`}>
+                            <span className="opacity-50 select-none">{'>'}</span>
+                            <span>{l.msg}</span>
+                        </div>
+                    ))}
+                    {processing && <div className="text-lumina-gold animate-pulse mt-2">_ Processing data...</div>}
+                </div>
             </div>
         </div>
     );

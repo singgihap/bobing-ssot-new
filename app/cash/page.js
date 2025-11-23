@@ -86,50 +86,50 @@ export default function CashFlowPage() {
         <div className="max-w-7xl mx-auto space-y-8 fade-in pb-20">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Cash Flow</h2>
-                    <p className="text-sm text-gray-500">Manage wallets & transactions.</p>
+                    <h2 className="text-2xl font-display font-bold text-lumina-text">Cash Flow</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">Manage wallets & transactions.</p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => setModalTfOpen(true)} className="btn-secondary">Transfer</button>
-                    <button onClick={() => { setFormData({type:'out', date: new Date().toISOString().split('T')[0], account_id:'', category:'', amount:'', description:''}); setModalExpOpen(true); }} className="btn-primary">Record Transaction</button>
+                    <button onClick={() => setModalTfOpen(true)} className="btn-ghost-dark text-xs">Transfer</button>
+                    <button onClick={() => { setFormData({type:'out', date: new Date().toISOString().split('T')[0], account_id:'', category:'', amount:'', description:''}); setModalExpOpen(true); }} className="btn-gold">Record Transaction</button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {accounts.map(acc => (
-                    <div key={acc.id} className="card p-6 flex flex-col justify-between relative overflow-hidden group hover:border-brand-200">
-                        <div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{acc.name}</p>
-                            <h3 className="text-2xl font-extrabold text-gray-900">{formatRupiah(acc.balance)}</h3>
+                    <div key={acc.id} className="card-luxury p-6 flex flex-col justify-between relative overflow-hidden group hover:border-lumina-gold/50 transition-all">
+                        <div className="relative z-10">
+                            <p className="text-[10px] font-bold text-lumina-muted uppercase tracking-wider mb-1">{acc.name}</p>
+                            <h3 className="text-2xl font-display font-bold text-white tracking-tight">{formatRupiah(acc.balance)}</h3>
                         </div>
-                        <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
-                            <span className="bg-gray-100 px-2 py-0.5 rounded font-mono">{acc.code}</span>
+                        <div className="mt-4 flex items-center gap-2 text-xs text-lumina-muted relative z-10">
+                            <span className="bg-lumina-highlight px-2 py-0.5 rounded font-mono text-lumina-gold">{acc.code}</span>
                         </div>
                         <div className="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <svg className="w-16 h-16 text-brand-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/></svg>
+                            <svg className="w-16 h-16 text-lumina-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/></svg>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="card p-0 overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                    <h3 className="font-bold text-gray-700 text-sm uppercase tracking-wider">Recent Transactions</h3>
-                    <div className="text-xs font-medium text-gray-500">Last 50 entries</div>
+            <div className="card-luxury overflow-hidden">
+                <div className="px-6 py-4 border-b border-lumina-border bg-lumina-surface/50 flex justify-between items-center">
+                    <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">Recent Transactions</h3>
+                    <div className="text-[10px] font-medium text-lumina-muted bg-lumina-highlight px-2 py-1 rounded">Last 50 entries</div>
                 </div>
-                <div className="table-wrapper border-0 shadow-none rounded-none">
-                    <table className="table-modern">
+                <div className="table-wrapper-dark border-none shadow-none rounded-none">
+                    <table className="table-dark">
                         <thead><tr><th className="pl-6">Date</th><th>Wallet</th><th>Category</th><th>Description</th><th className="text-right pr-6">Amount</th></tr></thead>
                         <tbody>
                             {transactions.map(t => {
                                 const isInc = t.type === 'in' || t.ref_type === 'transfer_in';
                                 return (
-                                    <tr key={t.id}>
-                                        <td className="pl-6 font-mono text-xs text-gray-500">{new Date(t.date.toDate()).toLocaleDateString()}</td>
-                                        <td className="font-bold text-gray-700 text-xs">{accounts.find(a=>a.id===t.account_id)?.name || 'Unknown'}</td>
-                                        <td><span className="badge badge-neutral">{t.category || 'General'}</span></td>
-                                        <td className="text-gray-600 truncate max-w-xs">{t.description}</td>
-                                        <td className={`text-right pr-6 font-mono font-bold ${isInc ? 'text-emerald-600' : 'text-gray-900'}`}>
+                                    <tr key={t.id} className="hover:bg-lumina-highlight/20 transition-colors">
+                                        <td className="pl-6 font-mono text-xs text-lumina-muted">{new Date(t.date.toDate()).toLocaleDateString()}</td>
+                                        <td className="font-medium text-lumina-text text-xs">{accounts.find(a=>a.id===t.account_id)?.name || 'Unknown'}</td>
+                                        <td><span className="badge-luxury badge-neutral">{t.category || 'General'}</span></td>
+                                        <td className="text-lumina-muted truncate max-w-xs text-sm">{t.description}</td>
+                                        <td className={`text-right pr-6 font-mono font-bold ${isInc ? 'text-emerald-400' : 'text-lumina-text'}`}>
                                             {isInc ? '+' : '-'}{formatRupiah(t.amount)}
                                         </td>
                                     </tr>
@@ -142,32 +142,35 @@ export default function CashFlowPage() {
 
             {/* Modal Expense */}
             {modalExpOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 fade-in-up">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6">Record Transaction</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-md w-full p-6 ring-1 ring-lumina-gold/20">
+                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
+                            <h3 className="text-lg font-bold text-white">Record Transaction</h3>
+                            <button onClick={() => setModalExpOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                        </div>
                         <form onSubmit={submitTransaction} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="date" required className="input-field" value={formData.date} onChange={e=>setFormData({...formData, date:e.target.value})} />
-                                <select className="select-field font-bold" value={formData.type} onChange={e=>setFormData({...formData, type:e.target.value})}>
+                                <input type="date" required className="input-luxury" value={formData.date} onChange={e=>setFormData({...formData, date:e.target.value})} />
+                                <select className="input-luxury font-bold" value={formData.type} onChange={e=>setFormData({...formData, type:e.target.value})}>
                                     <option value="out">Expense (Keluar)</option>
                                     <option value="in">Income (Masuk)</option>
                                 </select>
                             </div>
-                            <select required className="select-field" value={formData.account_id} onChange={e=>setFormData({...formData, account_id:e.target.value})}>
+                            <select required className="input-luxury" value={formData.account_id} onChange={e=>setFormData({...formData, account_id:e.target.value})}>
                                 <option value="">-- Select Wallet --</option>
                                 {accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
                             </select>
-                            <select required className="select-field" value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
+                            <select required className="input-luxury" value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>
                                 <option value="">-- Select Category --</option>
                                 {categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}
                                 <option value="Lainnya">Lainnya</option>
                             </select>
-                            <input required className="input-field" placeholder="Description..." value={formData.description} onChange={e=>setFormData({...formData, description:e.target.value})} />
-                            <input type="number" required className="input-field font-bold text-lg text-brand-600" placeholder="Amount (Rp)" value={formData.amount} onChange={e=>setFormData({...formData, amount:e.target.value})} />
+                            <input required className="input-luxury" placeholder="Description..." value={formData.description} onChange={e=>setFormData({...formData, description:e.target.value})} />
+                            <input type="number" required className="input-luxury font-bold text-lg text-lumina-gold placeholder-lumina-muted" placeholder="Amount (Rp)" value={formData.amount} onChange={e=>setFormData({...formData, amount:e.target.value})} />
                             
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={()=>setModalExpOpen(false)} className="btn-ghost">Cancel</button>
-                                <button type="submit" className="btn-primary">Save Record</button>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">
+                                <button type="button" onClick={()=>setModalExpOpen(false)} className="btn-ghost-dark">Cancel</button>
+                                <button type="submit" className="btn-gold">Save Record</button>
                             </div>
                         </form>
                     </div>
@@ -176,19 +179,22 @@ export default function CashFlowPage() {
 
             {/* Modal Transfer */}
             {modalTfOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 fade-in-up">
-                        <h3 className="text-lg font-bold text-gray-900 mb-6">Transfer Funds</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-md w-full p-6 ring-1 ring-lumina-gold/20">
+                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
+                            <h3 className="text-lg font-bold text-white">Transfer Funds</h3>
+                            <button onClick={() => setModalTfOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                        </div>
                         <form onSubmit={submitTransfer} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-gray-500 uppercase mb-1">From</label><select required className="select-field bg-red-50" value={tfData.from} onChange={e=>setTfData({...tfData, from:e.target.value})}><option value="">Select</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-                                <div><label className="text-xs font-bold text-gray-500 uppercase mb-1">To</label><select required className="select-field bg-emerald-50" value={tfData.to} onChange={e=>setTfData({...tfData, to:e.target.value})}><option value="">Select</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                                <div><label className="text-xs font-bold text-lumina-muted uppercase mb-1">From</label><select required className="input-luxury bg-rose-900/10 text-rose-400 border-rose-500/30" value={tfData.from} onChange={e=>setTfData({...tfData, from:e.target.value})}><option value="">Select</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                                <div><label className="text-xs font-bold text-lumina-muted uppercase mb-1">To</label><select required className="input-luxury bg-emerald-900/10 text-emerald-400 border-emerald-500/30" value={tfData.to} onChange={e=>setTfData({...tfData, to:e.target.value})}><option value="">Select</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
                             </div>
-                            <input type="number" required className="input-field font-bold text-lg" placeholder="Amount" value={tfData.amount} onChange={e=>setTfData({...tfData, amount:e.target.value})} />
-                            <input className="input-field" placeholder="Notes..." value={tfData.note} onChange={e=>setTfData({...tfData, note:e.target.value})} />
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button type="button" onClick={()=>setModalTfOpen(false)} className="btn-ghost">Cancel</button>
-                                <button type="submit" className="btn-primary">Transfer</button>
+                            <input type="number" required className="input-luxury font-bold text-lg text-white" placeholder="Amount" value={tfData.amount} onChange={e=>setTfData({...tfData, amount:e.target.value})} />
+                            <input className="input-luxury" placeholder="Notes..." value={tfData.note} onChange={e=>setTfData({...tfData, note:e.target.value})} />
+                            <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">
+                                <button type="button" onClick={()=>setModalTfOpen(false)} className="btn-ghost-dark">Cancel</button>
+                                <button type="submit" className="btn-gold">Transfer</button>
                             </div>
                         </form>
                     </div>

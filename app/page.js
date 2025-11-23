@@ -1,4 +1,4 @@
-// app/page.js - FIXED VERSION
+// app/page.js
 "use client";
 
 import { useEffect } from "react";
@@ -20,28 +20,34 @@ export default function RootPage() {
   }, [user, loading, router]);
 
   const redirectMessage = loading
-    ? "Menginisialisasi akun..."
+    ? "Initializing System..."
     : user
-    ? "Selamat datang kembali!"
-    : "Mengalihkan ke login...";
+    ? "Access Granted. Redirecting..."
+    : "Redirecting to Login...";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-slate-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition">
-      <div className="text-center text-slate-400">
-        {/* Brand Spinner with Gradient */}
-        <div className="mx-auto mb-5 flex items-center justify-center relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-brand-500 border-opacity-80 bg-white/30 shadow-md"></div>
-          <span className="absolute inset-0 flex items-center justify-center font-bold text-brand-600">
-            B
-          </span>
+    <div className="flex min-h-screen items-center justify-center bg-lumina-base relative overflow-hidden font-sans">
+      
+      {/* Background Ambient Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-lumina-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="text-center relative z-10">
+        {/* Luxury Spinner */}
+        <div className="mx-auto mb-8 flex items-center justify-center relative w-16 h-16">
+          {/* Track Ring */}
+          <div className="absolute inset-0 rounded-full border-4 border-lumina-surface"></div>
+          {/* Gold Spinner Ring */}
+          <div className="absolute inset-0 rounded-full border-t-4 border-lumina-gold animate-spin shadow-gold-glow"></div>
+          {/* Logo */}
+          <span className="font-display font-bold text-xl text-lumina-gold">B</span>
         </div>
 
         {/* Status Messages */}
-        <p className="text-base font-semibold text-brand-500 animate-pulse">
+        <h2 className="text-lg font-medium text-white tracking-wide animate-pulse">
           {redirectMessage}
-        </p>
-        <p className="text-xs text-slate-400 mt-1">
-          Tunggu sebentar, sedang redirect otomatis...
+        </h2>
+        <p className="text-xs text-lumina-muted mt-2 font-mono opacity-70">
+          Please wait while we load your workspace...
         </p>
       </div>
     </div>

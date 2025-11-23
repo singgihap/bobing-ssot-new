@@ -10,6 +10,11 @@
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
+    "[project]/app/cash/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
     "[project]/app/categories/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
@@ -26,6 +31,16 @@
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
     "[project]/app/finance-accounts/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/app/finance-balance/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/app/finance-reports/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
@@ -50,7 +65,17 @@
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
+    "[project]/app/products-import/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
     "[project]/app/products/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/app/purchases-import/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
@@ -60,7 +85,17 @@
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
+    "[project]/app/sales-import/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
     "[project]/app/sales-manual/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/app/supplier-sessions/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"

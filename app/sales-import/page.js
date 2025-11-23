@@ -30,14 +30,16 @@ export default function ImportSalesPage() {
         init();
     }, []);
 
-    const addLog = (msg) => setLogs(prev => [...prev, msg]);
+    const addLog = (msg, type='info') => setLogs(prev => [...prev, {msg, type}]);
 
     const handleFile = async (e) => {
         const file = e.target.files[0];
         if (!file || !config.warehouse_id || !config.account_id) return alert("Lengkapi konfigurasi gudang & akun!");
 
         setProcessing(true);
-        setLogs(["Mulai...", "Memuat Master SKU..."]);
+        setLogs([]);
+        addLog("Mulai proses import...", "info");
+        addLog("Memuat Master SKU...", "info");
 
         try {
             // 1. Master SKU
@@ -73,7 +75,7 @@ export default function ImportSalesPage() {
                     // Detect Status
                     const kStatus = ks.find(k => k.match(/status/i));
                     const statusRaw = head[kStatus]?.toLowerCase() || 'completed';
-                    if(statusRaw.includes('cancel')) { addLog(`SKIP ${id}: Cancelled`); continue; }
+                    if(statusRaw.includes('cancel')) { addLog(`SKIP ${id}: Cancelled`, "warning"); continue; }
 
                     // Detect Amounts
                     const kNet = ks.find(k => k.match(/settlement|penyelesaian|net/i));
@@ -90,7 +92,7 @@ export default function ImportSalesPage() {
                         const exDoc = sEx.docs[0];
                         if(exDoc.data().status !== statusRaw) {
                             batch.update(doc(db, "sales_orders", exDoc.id), { status: statusRaw, updated_at: serverTimestamp() });
-                            addLog(`UPDATE ${id}: Status -> ${statusRaw}`);
+                            addLog(`UPDATE ${id}: Status -> ${statusRaw}`, "info");
                         }
                     } else {
                         // Create New
@@ -141,52 +143,76 @@ export default function ImportSalesPage() {
                             });
                         }
                         count++;
-                        addLog(`NEW ${id}: Created`);
+                        addLog(`NEW ${id}: Created`, "success");
                     }
                 }
 
                 await batch.commit();
-                addLog(`SELESAI! Proses ${count} order baru.`);
+                addLog(`SELESAI! Proses ${count} order baru.`, "success");
                 setProcessing(false);
             };
             reader.readAsArrayBuffer(file);
 
-        } catch(e) { console.error(e); addLog(`ERROR: ${e.message}`); setProcessing(false); }
+        } catch(e) { console.error(e); addLog(`ERROR: ${e.message}`, "error"); setProcessing(false); }
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 className="text-xl font-bold text-slate-800 mb-6">Import Penjualan Desty/Marketplace</h2>
+        <div className="max-w-4xl mx-auto space-y-6 fade-in pb-20">
+            <div className="card-luxury p-8 bg-lumina-surface border-lumina-border">
+                <h2 className="text-xl font-display font-bold text-lumina-text mb-6">Import Sales Report (Marketplace)</h2>
                 
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Gudang Stok</label>
-                        <select className="w-full border p-2 rounded text-sm" value={config.warehouse_id} onChange={e=>setConfig({...config, warehouse_id:e.target.value})}>
-                            <option value="">Pilih Gudang</option>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Source Warehouse</label>
+                        <select className="input-luxury" value={config.warehouse_id} onChange={e=>setConfig({...config, warehouse_id:e.target.value})}>
+                            <option value="">Select Warehouse</option>
                             {warehouses.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-emerald-600 uppercase mb-1">Dompet Saldo MP</label>
-                        <select className="w-full border border-emerald-300 bg-emerald-50 p-2 rounded text-sm font-bold" value={config.account_id} onChange={e=>setConfig({...config, account_id:e.target.value})}>
-                            <option value="">Pilih Akun</option>
+                        <label className="block text-xs font-bold text-lumina-gold uppercase mb-1">Settlement Wallet</label>
+                        <select className="input-luxury border-lumina-gold/50 text-lumina-gold" value={config.account_id} onChange={e=>setConfig({...config, account_id:e.target.value})}>
+                            <option value="">Select Wallet</option>
                             {accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Biaya Packing (Opsional)</label>
-                        <input type="number" className="w-full border p-2 rounded text-sm" value={config.packing_cost} onChange={e=>setConfig({...config, packing_cost:e.target.value})} />
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Packing Cost (Optional)</label>
+                        <input type="number" className="input-luxury" value={config.packing_cost} onChange={e=>setConfig({...config, packing_cost:e.target.value})} />
                     </div>
                 </div>
 
-                <div className="border-2 border-dashed border-blue-200 bg-blue-50 rounded-xl p-8 text-center">
-                    <input type="file" accept=".xlsx, .csv" onChange={handleFile} disabled={processing} className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700" />
-                    <p className="text-xs text-slate-400 mt-2">Format Desty Laporan Pesanan (Excel)</p>
+                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-base/50 hover:bg-lumina-base transition-colors cursor-pointer relative group">
+                    <input type="file" accept=".xlsx, .csv" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div className="pointer-events-none relative z-0">
+                        <div className="w-12 h-12 bg-lumina-highlight rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                            <svg className="w-6 h-6 text-lumina-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                        </div>
+                        <p className="text-sm font-bold text-lumina-text">Upload Sales Report (Excel)</p>
+                        <p className="text-xs text-lumina-muted mt-1">Supported: Desty, Shopee, Tokopedia Format</p>
+                    </div>
                 </div>
             </div>
-            <div className="bg-slate-900 text-green-400 p-4 rounded-xl font-mono text-xs h-64 overflow-y-auto">
-                {logs.length === 0 ? "Ready..." : logs.map((l,i) => <div key={i}>{l}</div>)}
+
+            {/* Console Log */}
+            <div className="bg-[#0B0C10] p-4 rounded-xl border border-lumina-border h-64 overflow-y-auto font-mono text-xs shadow-inner">
+                <div className="flex items-center gap-2 mb-3 border-b border-lumina-border pb-2">
+                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-lumina-muted ml-2">Import Terminal</span>
+                </div>
+                <div className="space-y-1">
+                    {logs.length === 0 ? (
+                        <span className="text-lumina-muted/50 animate-pulse">System ready...</span>
+                    ) : logs.map((l,i) => (
+                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='warning'?'text-amber-400':(l.type==='success'?'text-emerald-400':'text-lumina-muted'))}`}>
+                            <span className="opacity-50 select-none">{'>'}</span>
+                            <span>{l.msg}</span>
+                        </div>
+                    ))}
+                     {processing && <div className="text-lumina-gold animate-pulse mt-2">_ Processing data...</div>}
+                </div>
             </div>
         </div>
     );
