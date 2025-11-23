@@ -54,79 +54,93 @@ export default function WarehousesPage() {
     };
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Master Gudang</h2>
-                    <p className="text-sm text-slate-500">Kelola Gudang Fisik & Virtual.</p>
+                    <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Warehouses</h2>
+                    <p className="text-sm text-gray-500 mt-1">Manage physical locations and virtual supplier stocks.</p>
                 </div>
-                <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-all">
-                    + Gudang Baru
+                <button onClick={() => openModal()} className="btn-primary">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                    New Warehouse
                 </button>
             </div>
 
+            {/* Grid Card */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loading ? <div className="col-span-full text-center py-12 text-slate-400">Loading...</div> : warehouses.map(w => {
+                {loading ? <div className="col-span-full text-center py-12 text-gray-400">Loading...</div> : warehouses.map(w => {
                     const isVirtual = w.type === 'virtual_supplier';
                     const supName = isVirtual ? (suppliers.find(s => s.id === w.supplier_id)?.name || 'Unknown') : '-';
                     
                     return (
-                        <div key={w.id} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-lg transition-all group relative">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`p-3 rounded-lg ${isVirtual ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                                    {/* Ikon diganti text agar tidak error SVG class */}
-                                    <span className="font-bold text-xl">{isVirtual ? '☁️' : '🏠'}</span>
+                        <div key={w.id} className="card p-6 flex flex-col justify-between h-full group hover:border-brand-200">
+                            <div>
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className={`p-3 rounded-xl ${isVirtual ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                        {isVirtual 
+                                            ? <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+                                            : <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                        }
+                                    </div>
+                                    <span className={`badge ${isVirtual ? 'badge-brand' : 'badge-success'}`}>
+                                        {isVirtual ? 'Virtual' : 'Physical'}
+                                    </span>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase ${isVirtual ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
-                                    {isVirtual ? 'Virtual' : 'Fisik'}
-                                </span>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">{w.name}</h3>
+                                <p className="text-xs text-gray-400 font-mono mb-4">{w.id.substring(0,8)}...</p>
+                                
+                                {isVirtual && (
+                                    <div className="mb-4 text-xs font-medium text-brand-700 bg-brand-50 px-3 py-2 rounded-lg border border-brand-100 flex items-center gap-2">
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                                        Supplier: {supName}
+                                    </div>
+                                )}
+                                <p className="text-sm text-gray-500 mb-4 line-clamp-2">{w.address || 'No address provided.'}</p>
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800 mb-1">{w.name}</h3>
-                            
-                            {isVirtual && <div className="mb-4 text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg">Supplier: {supName}</div>}
-                            <p className="text-sm text-slate-600 mb-4 line-clamp-2">{w.address || 'Tidak ada alamat'}</p>
 
-                            <div className="pt-4 border-t border-slate-100 flex justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => openModal(w)} className="text-slate-400 hover:text-indigo-600 font-bold text-sm">Edit</button>
-                                <button onClick={() => deleteWh(w.id)} className="text-slate-400 hover:text-red-600 font-bold text-sm">Del</button>
+                            <div className="pt-4 border-t border-gray-100 flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => openModal(w)} className="text-sm font-medium text-gray-500 hover:text-brand-600 transition-colors">Edit</button>
+                                <button onClick={() => deleteWh(w.id)} className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">Delete</button>
                             </div>
                         </div>
                     );
                 })}
             </div>
 
+            {/* Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
-                        <h3 className="text-xl font-bold mb-6 text-slate-800">{formData.id ? 'Edit Gudang' : 'Gudang Baru'}</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 fade-in-up">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-6">{formData.id ? 'Edit Warehouse' : 'New Warehouse'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-sm font-semibold mb-1">Nama Gudang</label>
-                                <input type="text" required className="w-full border p-2.5 rounded-lg" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Warehouse Name</label>
+                                <input required className="input-field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Gudang Utama" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold mb-1">Tipe</label>
-                                <select className="w-full border p-2.5 rounded-lg" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
-                                    <option value="physical">🏠 Fisik (Gudang Utama)</option>
-                                    <option value="virtual_supplier">☁️ Virtual (Supplier)</option>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                                <select className="select-field" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                                    <option value="physical">🏠 Physical (Inventory)</option>
+                                    <option value="virtual_supplier">☁️ Virtual (Supplier Stock)</option>
                                 </select>
                             </div>
                             {formData.type === 'virtual_supplier' && (
-                                <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-                                    <label className="block text-sm font-bold text-indigo-800 mb-1">Pilih Supplier</label>
-                                    <select className="w-full border p-2.5 rounded-lg" value={formData.supplier_id} onChange={e => setFormData({...formData, supplier_id: e.target.value})}>
-                                        <option value="">-- Pilih Supplier --</option>
+                                <div className="bg-brand-50 p-4 rounded-xl border border-brand-100">
+                                    <label className="block text-xs font-bold text-brand-800 mb-1">Link to Supplier</label>
+                                    <select className="select-field bg-white" value={formData.supplier_id} onChange={e => setFormData({...formData, supplier_id: e.target.value})}>
+                                        <option value="">-- Select Supplier --</option>
                                         {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                     </select>
                                 </div>
                             )}
                             <div>
-                                <label className="block text-sm font-semibold mb-1">Alamat</label>
-                                <textarea rows="2" className="w-full border p-2.5 rounded-lg" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})}></textarea>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+                                <textarea rows="3" className="input-field" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Location address..."></textarea>
                             </div>
-                            <div className="flex justify-end gap-3 pt-6">
-                                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 font-bold">Batal</button>
-                                <button type="submit" className="px-5 py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-bold shadow-md">Simpan</button>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost">Cancel</button>
+                                <button type="submit" className="btn-primary">Save Warehouse</button>
                             </div>
                         </form>
                     </div>

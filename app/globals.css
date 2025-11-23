@@ -2,83 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Styling */
+/* --- RESET & FONT --- */
 body {
-  @apply bg-gray-50 text-gray-900 font-sans antialiased selection:bg-brand-100 selection:text-brand-900;
+  font-family: 'Inter', sans-serif;
+  @apply bg-gradient-to-br from-slate-50 via-white to-blue-50 text-slate-800 antialiased transition-colors;
 }
 
-/* Scrollbar Halus */
+/* --- SLIM MODERN SCROLLBAR --- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+  @apply bg-slate-300/80 rounded-full transition-colors;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-brand-300;
+}
+/* Hide scrollbar utility for custom area */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
+/* --- SMOOTH ANIMATION --- */
+.fade-in {
+  animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fade-in-up 0.35s cubic-bezier(.39,.575,.565,1) both;
+}
+@keyframes fade-in-up {
+  from{ opacity:0; transform:translateY(30px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* --- GLASS EFFECT UTILITIES --- */
+.glass {
+  @apply bg-white/80 backdrop-blur-xl border border-slate-200/60 shadow-lg;
+}
+
+/* --- CARD & DESIGN SYSTEM COMPONENTS --- */
 @layer components {
-  /* --- 1. CARD (Box Putih Bersih) --- */
+
   .card {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm transition-all duration-200;
+    @apply bg-white/90 rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-luminous hover:-translate-y-1;
   }
-  .card:hover {
-    @apply border-brand-300 shadow-md;
-  }
-
-  /* --- 2. BUTTONS --- */
   .btn-primary {
-    @apply bg-brand-600 text-white font-semibold px-4 py-2.5 rounded-lg border border-brand-600 shadow-xs
-           hover:bg-brand-700 hover:border-brand-700 
-           focus:ring-4 focus:ring-brand-100 transition-all flex items-center justify-center gap-2 text-sm;
+    @apply bg-gradient-to-r from-brand-600 to-brand-400 text-white font-bold px-5 py-2.5 rounded-xl shadow-lg hover:shadow-glow hover:-translate-y-0.5 active:scale-95 transition flex items-center gap-2 text-base;
   }
-
-  .btn-secondary {
-    @apply bg-white text-gray-700 font-semibold px-4 py-2.5 rounded-lg border border-gray-300 shadow-xs
-           hover:bg-gray-50 hover:text-gray-800 hover:border-gray-300
-           focus:ring-4 focus:ring-gray-100 transition-all flex items-center justify-center gap-2 text-sm;
-  }
-
   .btn-ghost {
-    @apply bg-transparent text-gray-600 font-semibold px-4 py-2.5 rounded-lg
-           hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2 text-sm;
+    @apply bg-white text-slate-600 font-semibold px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition-all active:scale-95 flex items-center gap-2 text-base;
   }
-
-  /* --- 3. INPUTS & FORMS --- */
-  .input-field, .select-field {
-    @apply w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg shadow-xs
-           placeholder:text-gray-400 py-2.5 px-3.5 outline-none transition-all
-           focus:border-brand-500 focus:ring-4 focus:ring-brand-100;
+  .input-modern,
+  .select-field {
+    @apply w-full bg-slate-50 border border-slate-200 text-slate-700 text-base rounded-xl focus:ring-2 focus:ring-brand-100 focus:border-brand-400 focus:bg-white transition py-3 px-4 outline-none placeholder:text-slate-400;
   }
-
-  /* --- 4. TABLE --- */
   .table-wrapper {
-    @apply overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white;
-  }
-  .table-modern {
-    @apply min-w-full divide-y divide-gray-200;
+    @apply overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm;
   }
   .table-modern th {
-    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50;
+    @apply px-6 py-4 text-left text-xs font-bold text-slate-400 uppercase tracking-widest bg-slate-50/70 border-b border-slate-100;
   }
   .table-modern td {
-    @apply px-6 py-4 text-sm text-gray-700 whitespace-nowrap;
+    @apply px-6 py-4 text-base text-slate-700 border-b border-slate-50 transition-colors;
   }
   .table-modern tr:hover td {
-    @apply bg-gray-50;
+    @apply bg-brand-50/40;
   }
-
-  /* --- 5. BADGES (Status Pill) --- */
-  .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border;
-  }
-  .badge-success { @apply bg-green-50 text-green-700 border-green-200; }
-  .badge-warning { @apply bg-amber-50 text-amber-700 border-amber-200; }
-  .badge-danger { @apply bg-red-50 text-red-700 border-red-200; }
-  .badge-neutral { @apply bg-gray-50 text-gray-700 border-gray-200; }
-  .badge-brand { @apply bg-brand-50 text-brand-700 border-brand-200; }
 }
 
-/* Utilities */
-.glass-nav {
-  @apply bg-white/90 backdrop-blur-xl border-b border-gray-200 sticky top-0 z-20;
+/* --- BADGE, SHADOW, AND GLASS UTILITY --- */
+@layer utilities {
+  .badge {
+    @apply px-3 py-1 rounded-full font-bold text-xs bg-slate-100 text-slate-600;
+  }
+  .badge-success {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-500;
+  }
+  .shadow-card {
+    box-shadow: 0 2px 16px 0 rgba(52,84,250,0.06), 0 1.5px 6px 0 rgba(52,84,250,0.01);
+  }
+  .shadow-luminous {
+    box-shadow: 0 2px 24px 0 rgba(52,84,250,0.12);
+  }
+  .shadow-glow {
+    box-shadow: 0 0 8px 2px rgba(52,84,250,0.12);
+  }
+  .glass-nav {
+    @apply bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-40 shadow-lg;
+  }
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 640px) {
+  .card { @apply p-3 rounded-xl; }
+  .table-modern th, .table-modern td { @apply px-2 py-2 text-xs; }
 }

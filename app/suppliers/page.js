@@ -48,69 +48,74 @@ export default function SuppliersPage() {
     };
 
     return (
-        <div className="space-y-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Master Supplier</h2>
-                    <p className="text-sm text-slate-500">Database kontak supplier.</p>
+                    <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Suppliers</h2>
+                    <p className="text-sm text-gray-500 mt-1">Database of product suppliers.</p>
                 </div>
-                <button onClick={() => openModal()} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-all">
-                    + Tambah Supplier
+                <button onClick={() => openModal()} className="btn-primary">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
+                    Add Supplier
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-slate-100">
-                    <thead className="bg-slate-50">
-                        <tr>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Nama</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Kontak</th>
-                            <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Alamat</th>
-                            <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-slate-50">
-                        {loading ? <tr><td colSpan="4" className="text-center py-12">Loading...</td></tr> : suppliers.map(s => (
-                            <tr key={s.id} className="hover:bg-slate-50">
-                                <td className="px-6 py-4 font-bold text-slate-800">{s.name}</td>
-                                <td className="px-6 py-4 text-sm text-slate-600 font-mono">{s.phone || '-'}</td>
-                                <td className="px-6 py-4 text-sm text-slate-500 truncate max-w-xs">{s.address || '-'}</td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                    <button onClick={() => openModal(s)} className="text-blue-600 font-bold text-xs">Edit</button>
-                                    <button onClick={() => deleteItem(s.id)} className="text-red-600 font-bold text-xs">Del</button>
-                                </td>
+            <div className="card p-0 overflow-hidden">
+                <div className="table-wrapper border-0 shadow-none rounded-none">
+                    <table className="table-modern">
+                        <thead>
+                            <tr>
+                                <th className="pl-6">Name</th>
+                                <th>Contact</th>
+                                <th>Address</th>
+                                <th className="text-right pr-6">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {loading ? <tr><td colSpan="4" className="text-center py-12 text-gray-400">Loading...</td></tr> : suppliers.map(s => (
+                                <tr key={s.id}>
+                                    <td className="pl-6 font-medium text-gray-900">{s.name}</td>
+                                    <td className="font-mono text-gray-600 text-xs">{s.phone || '-'}</td>
+                                    <td className="text-gray-500 truncate max-w-xs text-xs">{s.address || '-'}</td>
+                                    <td className="text-right pr-6">
+                                        <div className="flex justify-end gap-2">
+                                            <button onClick={() => openModal(s)} className="text-xs font-bold text-brand-600 hover:text-brand-800 px-2 py-1 rounded hover:bg-brand-50">Edit</button>
+                                            <button onClick={() => deleteItem(s.id)} className="text-xs font-bold text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50">Del</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8">
-                        <h3 className="text-xl font-bold mb-6 text-slate-800">{formData.id ? 'Edit Supplier' : 'Supplier Baru'}</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 fade-in-up">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-6">{formData.id ? 'Edit Supplier' : 'New Supplier'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-5">
-                            <div className="grid grid-cols-2 gap-5">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">Nama Supplier</label>
-                                    <input type="text" required className="w-full border p-2.5 rounded-lg" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
+                                    <input required className="input-field" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="PT. Supplier" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold mb-1">No. Telepon / WA</label>
-                                    <input type="text" className="w-full border p-2.5 rounded-lg" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                                    <label className="block text-xs font-medium text-gray-700 mb-1">Phone / WA</label>
+                                    <input className="input-field" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold mb-1">Alamat</label>
-                                <textarea rows="2" className="w-full border p-2.5 rounded-lg" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})}></textarea>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Address</label>
+                                <textarea rows="2" className="input-field" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Complete address"></textarea>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold mb-1">Catatan</label>
-                                <input type="text" className="w-full border p-2.5 rounded-lg" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} />
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
+                                <input className="input-field" value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Additional info..." />
                             </div>
-                            <div className="flex justify-end gap-3 pt-6">
-                                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 font-bold">Batal</button>
-                                <button type="submit" className="px-5 py-2.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 font-bold shadow-md">Simpan</button>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost">Cancel</button>
+                                <button type="submit" className="btn-primary">Save</button>
                             </div>
                         </form>
                     </div>

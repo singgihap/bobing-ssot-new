@@ -15,7 +15,7 @@ export default function Sidebar() {
   const isActive = (path) => {
     const active = pathname === path;
     return active
-      ? "bg-gray-800 text-white font-medium" 
+      ? "bg-gray-800 text-white font-medium shadow-md" 
       : "text-gray-400 hover:text-white hover:bg-gray-800/50";
   };
 
@@ -27,7 +27,7 @@ export default function Sidebar() {
   );
 
   const NavHeader = ({ title }) => (
-    <div className="px-3 mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+    <div className="px-3 mt-6 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
       {title}
     </div>
   );
@@ -35,52 +35,79 @@ export default function Sidebar() {
   const Icon = ({ d }) => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d={d} /></svg>;
 
   return (
-    // PERUBAHAN PENTING DI SINI: 'fixed md:static'
-    // Artinya: Fixed di Mobile (melayang), Static di Desktop (makan tempat)
+    // PERBAIKAN UTAMA DI SINI:
+    // 1. `fixed`: Melayang di Mobile
+    // 2. `md:static`: Diam/Statis di Desktop (Mendorong konten ke kanan)
+    // 3. `shrink-0`: Agar lebar sidebar tidak tergencet
     <aside className="hidden md:flex w-72 bg-gray-900 flex-col h-full fixed md:static top-0 left-0 z-30 border-r border-gray-800 shrink-0">
       
-      {/* --- LOGO --- */}
+      {/* --- HEADER / LOGO --- */}
       <div className="h-16 flex items-center px-5 border-b border-gray-800 shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white shadow-lg ring-1 ring-white/20">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span className="font-bold text-lg">B</span>
           </div>
-          <span className="text-lg font-bold text-white tracking-tight">Bobing</span>
+          <div>
+            <h1 className="text-base font-bold text-white tracking-tight leading-none">Bobing</h1>
+            <p className="text-[10px] text-gray-500 mt-0.5">Command Center</p>
+          </div>
         </div>
       </div>
 
-      {/* --- MENU --- */}
-      <nav className="flex-1 px-4 py-6 overflow-y-auto scrollbar-hide">
-        <NavItem href="/dashboard" label="Dashboard" icon={<Icon d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />} />
+      {/* --- MENU LIST --- */}
+      <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-hide">
+        <NavHeader title="Overview" />
+        <NavItem href="/dashboard" label="Dashboard" icon={<Icon d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />} />
 
-        <NavHeader title="Inventory" />
-        <NavItem href="/products" label="Products" icon={<Icon d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />} />
-        <NavItem href="/variants" label="Variants" icon={<Icon d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />} />
-        <NavItem href="/inventory" label="Stock Control" icon={<Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />} />
+        <NavHeader title="Master Data (Produk)" />
+        <NavItem href="/products" label="Produk (Parent)" icon={<Icon d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />} />
+        <NavItem href="/variants" label="Variants (SKU)" icon={<Icon d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />} />
+        <NavItem href="/brands" label="Brands" icon={<Icon d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />} />
+        <NavItem href="/categories" label="Kategori" icon={<Icon d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />} />
 
-        <NavHeader title="Sales" />
-        <NavItem href="/sales-manual" label="Point of Sale" icon={<Icon d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />} />
-        <NavItem href="/sales-import" label="Import Sales" icon={<Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />} />
+        <NavHeader title="Master Data (Relasi)" />
+        <NavItem href="/warehouses" label="Gudang" icon={<Icon d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />} />
+        <NavItem href="/suppliers" label="Supplier" icon={<Icon d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />} />
+        <NavItem href="/customers" label="Pelanggan (CRM)" icon={<Icon d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" />} />
+        <NavItem href="/finance-accounts" label="Akun Keuangan (COA)" icon={<Icon d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />} />
 
-        <NavHeader title="Finance" />
-        <NavItem href="/cash" label="Cash Flow" icon={<Icon d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />} />
-        <NavItem href="/finance-reports" label="Reports" icon={<Icon d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />} />
+        <NavHeader title="Operasional Stok" />
+        <NavItem href="/inventory" label="Stok & Opname" icon={<Icon d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />} />
+        <NavItem href="/supplier-sessions" label="Virtual Stock (JIT)" icon={<Icon d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />} />
+        <NavItem href="/purchases" label="Pembelian (PO)" icon={<Icon d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />} />
+
+        <NavHeader title="Penjualan" />
+        <NavItem href="/sales-manual" label="Kasir (POS)" icon={<Icon d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />} />
+        
+        <NavHeader title="Keuangan" />
+        <NavItem href="/cash" label="Cash Flow" icon={<Icon d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />} />
+        <NavItem href="/finance-reports" label="Laba Rugi (P&L)" icon={<Icon d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />} />
+        <NavItem href="/finance-balance" label="Neraca" icon={<Icon d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />} />
+
+        <NavHeader title="Tools Import" />
+        <NavItem href="/products-import" label="Import Produk" icon={<Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />} />
+        <NavItem href="/purchases-import" label="Import PO" icon={<Icon d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />} />
+        <NavItem href="/sales-import" label="Import Sales" icon={<Icon d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />} />
+
+        <div className="h-10"></div>
       </nav>
 
-      {/* --- USER PROFILE --- */}
-      <div className="p-4 border-t border-gray-800 shrink-0">
+      {/* --- FOOTER --- */}
+      <div className="p-4 border-t border-gray-800 bg-gray-900 shrink-0">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white text-sm font-semibold ring-2 ring-gray-800">
+          <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs font-bold ring-2 ring-gray-800">
             {user?.email?.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.email}</p>
-            <p className="text-xs text-gray-400 truncate">Administrator</p>
+            <p className="text-sm font-medium text-slate-200 truncate">{user?.email}</p>
+            <p className="text-[10px] text-emerald-500 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
+            </p>
           </div>
-          <button onClick={() => signOut(auth)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors">
-            <Icon d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </button>
         </div>
+        <button onClick={() => signOut(auth)} className="w-full py-2 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-all border border-rose-500/20">
+          Sign Out
+        </button>
       </div>
     </aside>
   );

@@ -6,54 +6,70 @@ export default {
   ],
   theme: {
     extend: {
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: "1rem",
+          sm: "2rem",
+          lg: "4rem",
+          xl: "6rem",
+          "2xl": "8rem",
+        },
+        screens: {
+          sm: "600px",
+          md: "728px",
+          lg: "1024px",
+          xl: "1280px",
+          "2xl": "1536px",
+          "3xl": "1800px" // tambah jika ingin super lebar
+        }
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
       colors: {
-        // Untitled UI Gray (Slate/Cool Grayish)
-        gray: {
-          25: '#FCFCFD',
-          50: '#F9FAFB',
-          100: '#F2F4F7',
-          200: '#EAECF0',
-          300: '#D0D5DD',
-          400: '#98A2B3',
-          500: '#667085',
-          600: '#475467',
-          700: '#344054',
-          800: '#1D2939',
-          900: '#101828',
-          950: '#0C111D',
+        // Dark variant (Background/App Shell)
+        dark: {
+          950: '#020617',
+          900: '#0F172A',
+          800: '#1E293B',
+          700: '#334155',
         },
-        // Untitled UI Primary (Modern Violet)
+        // Aksen Brand/Primary (Gold - UX “luxury” + biru modern, feel SaaS)
         brand: {
-          25: '#FCFAFF',
-          50: '#F9F5FF',
-          100: '#F4EBFF',
-          200: '#E9D7FE',
-          300: '#D6BBFB',
-          400: '#B692F6',
-          500: '#9E77ED',
-          600: '#7F56D9', // Primary Brand Color
-          700: '#6941C6',
-          800: '#53389E',
-          900: '#42307D',
-          950: '#2C1C5F',
+          50:  "#f5f6fc",
+          100: "#E0E7FF",
+          200: "#C7D2FE",
+          300: "#9CA3AF",
+          400: "#818CF8",
+          500: "#6366F1",
+          600: "#4F46E5",
+          700: "#4338CA",
+          800: "#3730A3",
+          900: "#312E81"
         },
+        gold: {
+          100: "#FEF3C7",
+          200: "#FDE68A",
+          300: "#FCD34D",
+          400: "#FBBF24",
+          500: "#F59E0B",
+          600: "#D97706",
+          700: "#B45309",
+          400_20: "rgba(251, 191, 36, 0.20)",
+          500_20: "rgba(245, 158, 11, 0.20)",
+        },
+        // Light text
+        light: {
+          100: '#F1F5F9',
+          300: '#CBD5E1',
+          500: '#64748B',
+        }
       },
       boxShadow: {
-        // Shadow khas Untitled UI (Subtle & Layered)
-        'xs': '0px 1px 2px rgba(16, 24, 40, 0.05)',
-        'sm': '0px 1px 3px rgba(16, 24, 40, 0.1), 0px 1px 2px rgba(16, 24, 40, 0.06)',
-        'md': '0px 4px 8px -2px rgba(16, 24, 40, 0.1), 0px 2px 4px -2px rgba(16, 24, 40, 0.06)',
-        'lg': '0px 12px 16px -4px rgba(16, 24, 40, 0.08), 0px 4px 6px -2px rgba(16, 24, 40, 0.03)',
-        'xl': '0px 20px 24px -4px rgba(16, 24, 40, 0.08), 0px 8px 8px -4px rgba(16, 24, 40, 0.03)',
+        glow: "0 0 20px -5px rgba(245, 158, 11, 0.3)",
+        luxury: "0 10px 30px -10px rgba(0, 0, 0, 0.5)",
       },
-      borderRadius: {
-        'lg': '0.5rem',
-        'xl': '0.75rem',
-        '2xl': '1rem',
-      }
     },
   },
   plugins: [],
