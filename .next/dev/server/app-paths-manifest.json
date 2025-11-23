@@ -4,6 +4,7 @@
   "/categories/page": "app/categories/page.js",
   "/customers/page": "app/customers/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/finance-accounts/page": "app/finance-accounts/page.js",
   "/finance/page": "app/finance/page.js",
   "/inventory/page": "app/inventory/page.js",
   "/login/page": "app/login/page.js",
