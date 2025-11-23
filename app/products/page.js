@@ -6,6 +6,7 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy,
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { sortBySize, formatRupiah } from '@/lib/utils';
 import imageCompression from 'browser-image-compression';
+import { Portal } from '@/lib/usePortal';
 
 export default function ProductsPage() {
     // ... (Kode ini SAMA PERSIS dengan kode ProductsPage terakhir yang saya berikan di respons sebelumnya yang sudah ada accordion dan modal centered) ...
@@ -51,6 +52,15 @@ export default function ProductsPage() {
             const s = await getDocs(q); const v=[]; s.forEach(d=>v.push({id:d.id, ...d.data()}));
             setVariantsCache(prev=>({...prev, [id]:v}));
             setLoadingVariants(false);
+        }
+    };
+
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
+            if (!file.type.startsWith('image/')) return alert('Harap upload file gambar.');
+            setImageFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
         }
     };
 
@@ -112,19 +122,193 @@ export default function ProductsPage() {
                 </table>
             </div>
 
+            <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
-                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center"><h3 className="text-lg font-bold text-white">{formData.id?'Edit':'New'} Product</h3><button onClick={()=>setModalOpen(false)} className="text-lumina-muted hover:text-white">✕</button></div>
-                        <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
-                            <div className="flex items-center gap-4 p-4 bg-lumina-base rounded-xl border border-dashed border-lumina-border"><div className="w-20 h-20 rounded-lg bg-lumina-surface flex items-center justify-center overflow-hidden border border-lumina-border relative">{previewUrl ? <img src={previewUrl} className="w-full h-full object-cover"/>:<span className="text-xs text-lumina-muted">Img</span>}<input type="file" accept="image/*" onChange={(e)=>{if(e.target.files[0]){setImageFile(e.target.files[0]); setPreviewUrl(URL.createObjectURL(e.target.files[0]))}}} className="absolute inset-0 opacity-0 cursor-pointer"/></div><div className="flex-1"><div className="text-xs text-lumina-muted mb-2">Upload Image</div><input ref={fileInputRef} type="file" accept="image/*" onChange={(e)=>{if(e.target.files[0]){setImageFile(e.target.files[0]); setPreviewUrl(URL.createObjectURL(e.target.files[0]))}}} className="text-xs text-lumina-muted file:mr-2 file:py-1 file:px-3 file:rounded-full file:bg-lumina-highlight file:text-white file:border-0"/></div></div>
-                            <div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-bold text-lumina-muted">Brand</label><select className="input-luxury mt-1" value={formData.brand_id} onChange={e=>setFormData({...formData, brand_id:e.target.value})}>{brands.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></div><div><label className="text-xs font-bold text-lumina-muted">SKU Base</label><input className="input-luxury mt-1 font-mono uppercase" value={formData.base_sku} onChange={e=>setFormData({...formData, base_sku:e.target.value})}/></div></div>
-                            <div><label className="text-xs font-bold text-lumina-muted">Name</label><input className="input-luxury mt-1" value={formData.name} onChange={e=>setFormData({...formData, name:e.target.value})}/></div>
-                            <div className="grid grid-cols-2 gap-4"><div><label className="text-xs font-bold text-lumina-muted">Category</label><select className="input-luxury mt-1" value={formData.category} onChange={e=>setFormData({...formData, category:e.target.value})}>{categories.map(c=><option key={c.id} value={c.name}>{c.name}</option>)}</select></div><div><label className="text-xs font-bold text-lumina-muted">Status</label><select className="input-luxury mt-1" value={formData.status} onChange={e=>setFormData({...formData, status:e.target.value})}><option value="active">Active</option><option value="inactive">Inactive</option></select></div></div>
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+                {/* Backdrop */}
+                <div
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]"
+                    onClick={() => setModalOpen(false)}
+                />
+
+                {/* Modal */}
+                <div className="relative z-[10000] bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col max-h-[90vh]">
+                    
+                    {/* HEADER */}
+                    <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0">
+                    <h3 className="text-xl font-bold text-white">
+                        {formData.id ? "Edit Product" : "New Product"}
+                    </h3>
+                    <button
+                        onClick={() => setModalOpen(false)}
+                        className="text-lumina-muted hover:text-white transition-colors p-1"
+                        aria-label="Close modal"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    </div>
+
+                    {/* SCROLLABLE CONTENT */}
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-base custom-scrollbar">
+                    
+                    {/* Image Upload */}
+                    <div className="flex items-center gap-4 p-4 bg-lumina-surface rounded-lg border border-dashed border-lumina-border hover:border-lumina-gold/50 transition-colors">
+                        <div className="w-24 h-24 rounded-lg bg-lumina-base flex items-center justify-center overflow-hidden border border-lumina-border flex-shrink-0 relative">
+                        {previewUrl ? (
+                            <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                            <span className="text-xs text-lumina-muted font-mono">IMG</span>
+                        )}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="absolute inset-0 opacity-0 cursor-pointer"
+                            disabled={uploading}
+                        />
+                        </div>
+                        <div className="flex-1">
+                        <div className="text-sm font-semibold text-lumina-text mb-1">Product Image</div>
+                        <div className="text-xs text-lumina-muted mb-3">Max 2MB, Auto WebP Compress.</div>
+                        <label className="inline-block">
+                            <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="hidden"
+                            disabled={uploading}
+                            />
+                            <span className="inline-block px-4 py-2 bg-lumina-highlight text-white text-xs font-semibold rounded-full cursor-pointer hover:bg-lumina-gold transition-colors">
+                            Choose File
+                            </span>
+                        </label>
                         </div>
                     </div>
+
+                    {/* Brand & SKU */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Brand</label>
+                        <select
+                            className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                            value={formData.brandId || ""}
+                            onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
+                            disabled={uploading}
+                        >
+                            <option value="">-- Select --</option>
+                            {brands.map((b) => (
+                            <option key={b.id} value={b.id}>{b.name}</option>
+                            ))}
+                        </select>
+                        </div>
+                        <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Base SKU</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white font-mono uppercase focus:border-lumina-gold outline-none"
+                            value={formData.baseSku || "PRD-001"}
+                            onChange={(e) => setFormData({ ...formData, baseSku: e.target.value })}
+                            placeholder="PRD-001"
+                            disabled={uploading}
+                        />
+                        </div>
+                    </div>
+
+                    {/* Product Name */}
+                    <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Product Name</label>
+                        <input
+                        type="text"
+                        required
+                        className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                        value={formData.name || ""}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Enter product name..."
+                        disabled={uploading}
+                        />
+                    </div>
+
+                    {/* Category & Status */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Category</label>
+                        <select
+                            required
+                            className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                            value={formData.category || ""}
+                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            disabled={uploading}
+                        >
+                            <option value="">-- Select --</option>
+                            {categories.map((c) => (
+                            <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
+                        </select>
+                        </div>
+                        <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Status</label>
+                        <select
+                            className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                            value={formData.status || "active"}
+                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                            disabled={uploading}
+                        >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Description</label>
+                        <textarea
+                        rows={5}
+                        className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none resize-none"
+                        value={formData.description || ""}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Product details..."
+                        disabled={uploading}
+                        />
+                    </div>
+
+                    </div>
+
+                    {/* FOOTER */}
+                    <div className="px-6 py-4 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
+                    <button
+                        type="button"
+                        onClick={() => setModalOpen(false)}
+                        className="px-6 py-2 bg-lumina-base text-white rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
+                        disabled={uploading}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        className="px-8 py-2 bg-lumina-gold text-black rounded-lg hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2"
+                        disabled={uploading}
+                    >
+                        {uploading ? (
+                        <>
+                            <span className="inline-block w-4 h-4 border-2 border-transparent border-t-black rounded-full animate-spin"></span>
+                            Saving...
+                        </>
+                        ) : (
+                        "SAVE"
+                        )}
+                    </button>
+                    </div>
+
+                </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

@@ -280,7 +280,10 @@ function PosPage() {
                 id: orderId,
                 total,
                 received,
-                change: received - total
+                change: received - total,
+                items: cart,
+                date: new Date(),
+                customer: custName
             });
             setModalInvoiceOpen(true);
             setCart([]);
@@ -289,12 +292,230 @@ function PosPage() {
             alert(e.message);
         }
     };
+    const handlePrint = ()=>{
+        window.print();
+    };
     const filteredProducts = products.filter((p)=>p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.base_sku?.toLowerCase().includes(searchTerm.toLowerCase())).slice(0, 24);
     const cartTotal = cart.reduce((a, b)=>a + b.price * b.qty, 0);
     const change = (parseInt(cashReceived) || 0) - cartTotal;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex flex-col lg:flex-row gap-6 h-[calc(100vh-7rem)] fade-in",
+        className: "flex flex-col lg:flex-row gap-6 h-[calc(100vh-7rem)] fade-in relative",
         children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                id: "receipt-print-area",
+                className: "hidden bg-white text-black font-mono text-xs p-2 max-w-[300px]",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-center mb-4",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                className: "text-sm font-bold uppercase",
+                                children: "BOBING STORE"
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 105,
+                                columnNumber: 51
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                children: "Jl. Contoh No. 123, Kota"
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 105,
+                                columnNumber: 112
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 105,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "border-b border-black border-dashed mb-2"
+                    }, void 0, false, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 106,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex justify-between mb-2",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: invoiceData?.id
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 107,
+                                columnNumber: 60
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: invoiceData?.date?.toLocaleDateString()
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 107,
+                                columnNumber: 90
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 107,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mb-2",
+                        children: [
+                            "Cust: ",
+                            invoiceData?.customer
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 108,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "border-b border-black border-dashed mb-2"
+                    }, void 0, false, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 109,
+                        columnNumber: 17
+                    }, this),
+                    invoiceData?.items.map((item, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mb-2",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    children: [
+                                        item.name,
+                                        " (",
+                                        item.spec,
+                                        ")"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 111,
+                                    columnNumber: 51
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            children: [
+                                                item.qty,
+                                                " x ",
+                                                parseInt(item.price).toLocaleString()
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 111,
+                                            columnNumber: 125
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            children: (item.qty * item.price).toLocaleString()
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 111,
+                                            columnNumber: 190
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 111,
+                                    columnNumber: 87
+                                }, this)
+                            ]
+                        }, i, true, {
+                            fileName: "[project]/app/sales-manual/page.js",
+                            lineNumber: 111,
+                            columnNumber: 21
+                        }, this)),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "border-b border-black border-dashed my-2"
+                    }, void 0, false, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 113,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex justify-between font-bold text-sm",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: "TOTAL"
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 114,
+                                columnNumber: 73
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: [
+                                    "Rp ",
+                                    invoiceData?.total?.toLocaleString()
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 114,
+                                columnNumber: 91
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 114,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex justify-between mt-1",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: "Tunai"
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 115,
+                                columnNumber: 60
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: [
+                                    "Rp ",
+                                    invoiceData?.received?.toLocaleString()
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 115,
+                                columnNumber: 78
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 115,
+                        columnNumber: 17
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex justify-between mt-1",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: "Kembali"
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 116,
+                                columnNumber: 60
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: [
+                                    "Rp ",
+                                    invoiceData?.change?.toLocaleString()
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 116,
+                                columnNumber: 80
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/sales-manual/page.js",
+                        lineNumber: 116,
+                        columnNumber: 17
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/app/sales-manual/page.js",
+                lineNumber: 104,
+                columnNumber: 13
+            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "w-full lg:w-2/3 flex flex-col gap-4 h-full",
                 children: [
@@ -314,12 +535,12 @@ function PosPage() {
                                     autoFocus: true
                                 }, void 0, false, {
                                     fileName: "[project]/app/sales-manual/page.js",
-                                    lineNumber: 103,
+                                    lineNumber: 122,
                                     columnNumber: 54
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 103,
+                                lineNumber: 122,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -331,18 +552,18 @@ function PosPage() {
                                         children: w.name
                                     }, w.id, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 104,
+                                        lineNumber: 123,
                                         columnNumber: 143
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 104,
+                                lineNumber: 123,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/sales-manual/page.js",
-                        lineNumber: 102,
+                        lineNumber: 121,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -352,7 +573,7 @@ function PosPage() {
                             children: "Loading..."
                         }, void 0, false, {
                             fileName: "[project]/app/sales-manual/page.js",
-                            lineNumber: 107,
+                            lineNumber: 126,
                             columnNumber: 32
                         }, this) : filteredProducts.map((p)=>{
                             const stock = p.variants.reduce((a, b)=>a + (snapshots[`${b.id}_${selectedWh}`] || 0), 0);
@@ -373,35 +594,35 @@ function PosPage() {
                                                         children: p.base_sku
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/sales-manual/page.js",
-                                                        lineNumber: 113,
-                                                        columnNumber: 80
+                                                        lineNumber: 130,
+                                                        columnNumber: 81
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         className: `text-[10px] px-2 rounded ${stock > 0 ? 'text-emerald-400 bg-emerald-900/30' : 'text-rose-400 bg-rose-900/30'}`,
                                                         children: stock
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/sales-manual/page.js",
-                                                        lineNumber: 113,
-                                                        columnNumber: 197
+                                                        lineNumber: 130,
+                                                        columnNumber: 198
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 113,
-                                                columnNumber: 37
+                                                lineNumber: 130,
+                                                columnNumber: 38
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
                                                 className: "text-sm font-bold text-lumina-text group-hover:text-lumina-gold line-clamp-2",
                                                 children: p.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 114,
-                                                columnNumber: 37
+                                                lineNumber: 130,
+                                                columnNumber: 342
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 112,
+                                        lineNumber: 130,
                                         columnNumber: 33
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -412,25 +633,25 @@ function PosPage() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 116,
+                                        lineNumber: 131,
                                         columnNumber: 33
                                     }, this)
                                 ]
                             }, p.id, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 110,
+                                lineNumber: 129,
                                 columnNumber: 29
                             }, this);
                         })
                     }, void 0, false, {
                         fileName: "[project]/app/sales-manual/page.js",
-                        lineNumber: 106,
+                        lineNumber: 125,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/sales-manual/page.js",
-                lineNumber: 101,
+                lineNumber: 120,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -448,7 +669,7 @@ function PosPage() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 125,
+                                lineNumber: 141,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -457,13 +678,13 @@ function PosPage() {
                                 children: "CLEAR (F8)"
                             }, void 0, false, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 126,
+                                lineNumber: 142,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/sales-manual/page.js",
-                        lineNumber: 124,
+                        lineNumber: 140,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -479,7 +700,7 @@ function PosPage() {
                                                 children: item.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 131,
+                                                lineNumber: 147,
                                                 columnNumber: 58
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -492,13 +713,13 @@ function PosPage() {
                                                         children: item.spec
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/sales-manual/page.js",
-                                                        lineNumber: 131,
+                                                        lineNumber: 147,
                                                         columnNumber: 185
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 131,
+                                                lineNumber: 147,
                                                 columnNumber: 129
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -506,13 +727,13 @@ function PosPage() {
                                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(item.price)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 131,
+                                                lineNumber: 147,
                                                 columnNumber: 244
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 131,
+                                        lineNumber: 147,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -531,7 +752,7 @@ function PosPage() {
                                                 children: "-"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 132,
+                                                lineNumber: 148,
                                                 columnNumber: 118
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -539,7 +760,7 @@ function PosPage() {
                                                 children: item.qty
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 132,
+                                                lineNumber: 148,
                                                 columnNumber: 297
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -556,24 +777,24 @@ function PosPage() {
                                                 children: "+"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 132,
+                                                lineNumber: 148,
                                                 columnNumber: 383
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 132,
+                                        lineNumber: 148,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, idx, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 130,
+                                lineNumber: 146,
                                 columnNumber: 25
                             }, this))
                     }, void 0, false, {
                         fileName: "[project]/app/sales-manual/page.js",
-                        lineNumber: 128,
+                        lineNumber: 144,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -592,7 +813,7 @@ function PosPage() {
                                                 children: "Customer (Guest)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 137,
+                                                lineNumber: 153,
                                                 columnNumber: 180
                                             }, this),
                                             customers.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -600,13 +821,13 @@ function PosPage() {
                                                     children: c.name
                                                 }, c.id, false, {
                                                     fileName: "[project]/app/sales-manual/page.js",
-                                                    lineNumber: 137,
+                                                    lineNumber: 153,
                                                     columnNumber: 240
                                                 }, this))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 137,
+                                        lineNumber: 153,
                                         columnNumber: 61
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -618,18 +839,18 @@ function PosPage() {
                                                 children: a.name
                                             }, a.id, false, {
                                                 fileName: "[project]/app/sales-manual/page.js",
-                                                lineNumber: 137,
+                                                lineNumber: 153,
                                                 columnNumber: 432
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 137,
+                                        lineNumber: 153,
                                         columnNumber: 300
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 137,
+                                lineNumber: 153,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -640,7 +861,7 @@ function PosPage() {
                                         children: "Total"
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 138,
+                                        lineNumber: 154,
                                         columnNumber: 64
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -648,13 +869,13 @@ function PosPage() {
                                         children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(cartTotal)
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 138,
+                                        lineNumber: 154,
                                         columnNumber: 112
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 138,
+                                lineNumber: 154,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -665,7 +886,7 @@ function PosPage() {
                                         children: "Cash"
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 139,
+                                        lineNumber: 155,
                                         columnNumber: 127
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -676,13 +897,13 @@ function PosPage() {
                                         placeholder: "0"
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 139,
+                                        lineNumber: 155,
                                         columnNumber: 182
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 139,
+                                lineNumber: 155,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -693,7 +914,7 @@ function PosPage() {
                                         children: "Change"
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 140,
+                                        lineNumber: 156,
                                         columnNumber: 59
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -701,13 +922,13 @@ function PosPage() {
                                         children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(Math.max(0, change))
                                     }, void 0, false, {
                                         fileName: "[project]/app/sales-manual/page.js",
-                                        lineNumber: 140,
+                                        lineNumber: 156,
                                         columnNumber: 116
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 140,
+                                lineNumber: 156,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -716,19 +937,19 @@ function PosPage() {
                                 children: "PAY (F9)"
                             }, void 0, false, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 141,
+                                lineNumber: 157,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/sales-manual/page.js",
-                        lineNumber: 136,
+                        lineNumber: 152,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/sales-manual/page.js",
-                lineNumber: 123,
+                lineNumber: 139,
                 columnNumber: 13
             }, this),
             modalVariantOpen && selectedProdForVariant && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -744,7 +965,7 @@ function PosPage() {
                                     children: selectedProdForVariant.name
                                 }, void 0, false, {
                                     fileName: "[project]/app/sales-manual/page.js",
-                                    lineNumber: 148,
+                                    lineNumber: 165,
                                     columnNumber: 115
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -753,13 +974,13 @@ function PosPage() {
                                     children: "✕"
                                 }, void 0, false, {
                                     fileName: "[project]/app/sales-manual/page.js",
-                                    lineNumber: 148,
+                                    lineNumber: 165,
                                     columnNumber: 192
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/sales-manual/page.js",
-                            lineNumber: 148,
+                            lineNumber: 165,
                             columnNumber: 25
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -780,7 +1001,7 @@ function PosPage() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/sales-manual/page.js",
-                                                    lineNumber: 149,
+                                                    lineNumber: 166,
                                                     columnNumber: 244
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -788,7 +1009,7 @@ function PosPage() {
                                                     children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(v.price)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/sales-manual/page.js",
-                                                    lineNumber: 149,
+                                                    lineNumber: 166,
                                                     columnNumber: 305
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -796,7 +1017,7 @@ function PosPage() {
                                                     children: qty
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/sales-manual/page.js",
-                                                    lineNumber: 149,
+                                                    lineNumber: 166,
                                                     columnNumber: 360
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -808,51 +1029,220 @@ function PosPage() {
                                                         children: "+ Add"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/sales-manual/page.js",
-                                                        lineNumber: 149,
+                                                        lineNumber: 166,
                                                         columnNumber: 430
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/sales-manual/page.js",
-                                                    lineNumber: 149,
+                                                    lineNumber: 166,
                                                     columnNumber: 398
                                                 }, this)
                                             ]
                                         }, v.id, true, {
                                             fileName: "[project]/app/sales-manual/page.js",
-                                            lineNumber: 149,
+                                            lineNumber: 166,
                                             columnNumber: 229
                                         }, this);
                                     })
                                 }, void 0, false, {
                                     fileName: "[project]/app/sales-manual/page.js",
-                                    lineNumber: 149,
+                                    lineNumber: 166,
                                     columnNumber: 101
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/sales-manual/page.js",
-                                lineNumber: 149,
+                                lineNumber: 166,
                                 columnNumber: 71
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/sales-manual/page.js",
-                            lineNumber: 149,
+                            lineNumber: 166,
                             columnNumber: 25
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/sales-manual/page.js",
-                    lineNumber: 147,
+                    lineNumber: 164,
                     columnNumber: 21
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/sales-manual/page.js",
-                lineNumber: 146,
+                lineNumber: 163,
+                columnNumber: 17
+            }, this),
+            modalInvoiceOpen && invoiceData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "card-luxury max-w-sm w-full p-8 text-center relative overflow-hidden fade-in-up border-lumina-gold/50",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                className: "w-8 h-8",
+                                fill: "none",
+                                stroke: "currentColor",
+                                viewBox: "0 0 24 24",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                    strokeLinecap: "round",
+                                    strokeLinejoin: "round",
+                                    strokeWidth: "3",
+                                    d: "M5 13l4 4L19 7"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 176,
+                                    columnNumber: 108
+                                }, this)
+                            }, void 0, false, {
+                                fileName: "[project]/app/sales-manual/page.js",
+                                lineNumber: 176,
+                                columnNumber: 29
+                            }, this)
+                        }, void 0, false, {
+                            fileName: "[project]/app/sales-manual/page.js",
+                            lineNumber: 175,
+                            columnNumber: 25
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                            className: "text-2xl font-extrabold text-white",
+                            children: "Transaksi Sukses!"
+                        }, void 0, false, {
+                            fileName: "[project]/app/sales-manual/page.js",
+                            lineNumber: 178,
+                            columnNumber: 25
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "bg-lumina-base p-5 rounded-2xl border border-lumina-border space-y-3 mt-6",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between text-sm",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-lumina-muted",
+                                            children: "Total"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 180,
+                                            columnNumber: 75
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "font-bold text-white",
+                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(invoiceData.total)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 180,
+                                            columnNumber: 123
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 180,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between text-sm",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-lumina-muted",
+                                            children: "Tunai"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 181,
+                                            columnNumber: 75
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "font-bold text-white",
+                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(invoiceData.received)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 181,
+                                            columnNumber: 123
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 181,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "border-t border-lumina-border my-2"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 182,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex justify-between items-center",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-sm font-bold text-emerald-400",
+                                            children: "Kembali"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 183,
+                                            columnNumber: 80
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                            className: "text-xl font-extrabold text-emerald-400",
+                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(Math.max(0, invoiceData.change))
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/sales-manual/page.js",
+                                            lineNumber: 183,
+                                            columnNumber: 147
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 183,
+                                    columnNumber: 29
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/sales-manual/page.js",
+                            lineNumber: 179,
+                            columnNumber: 25
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "mt-6 flex gap-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: handlePrint,
+                                    className: "flex-1 btn-ghost-dark py-3 flex items-center justify-center gap-2",
+                                    children: "Print Struk"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 186,
+                                    columnNumber: 29
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>setModalInvoiceOpen(false),
+                                    className: "flex-1 btn-gold py-3",
+                                    children: "New Order"
+                                }, void 0, false, {
+                                    fileName: "[project]/app/sales-manual/page.js",
+                                    lineNumber: 187,
+                                    columnNumber: 29
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/app/sales-manual/page.js",
+                            lineNumber: 185,
+                            columnNumber: 25
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/app/sales-manual/page.js",
+                    lineNumber: 174,
+                    columnNumber: 21
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/app/sales-manual/page.js",
+                lineNumber: 173,
                 columnNumber: 17
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/sales-manual/page.js",
-        lineNumber: 99,
+        lineNumber: 101,
         columnNumber: 9
     }, this);
 }

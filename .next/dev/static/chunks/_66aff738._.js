@@ -159,6 +159,14 @@ function ProductsPage() {
             setLoadingVariants(false);
         }
     };
+    const handleImageChange = (e)=>{
+        if (e.target.files[0]) {
+            const file = e.target.files[0];
+            if (!file.type.startsWith('image/')) return alert('Harap upload file gambar.');
+            setImageFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
     const openModal = (p = null)=>{
         setImageFile(null);
         setUploading(false);
@@ -232,7 +240,7 @@ function ProductsPage() {
                         children: "Product Models"
                     }, void 0, false, {
                         fileName: "[project]/app/products/page.js",
-                        lineNumber: 86,
+                        lineNumber: 95,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -241,13 +249,13 @@ function ProductsPage() {
                         children: "Add Product"
                     }, void 0, false, {
                         fileName: "[project]/app/products/page.js",
-                        lineNumber: 87,
+                        lineNumber: 96,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/products/page.js",
-                lineNumber: 85,
+                lineNumber: 94,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -259,12 +267,12 @@ function ProductsPage() {
                     onChange: (e)=>setSearchTerm(e.target.value)
                 }, void 0, false, {
                     fileName: "[project]/app/products/page.js",
-                    lineNumber: 90,
+                    lineNumber: 99,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/products/page.js",
-                lineNumber: 89,
+                lineNumber: 98,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -280,28 +288,28 @@ function ProductsPage() {
                                         children: "Img"
                                     }, void 0, false, {
                                         fileName: "[project]/app/products/page.js",
-                                        lineNumber: 95,
+                                        lineNumber: 104,
                                         columnNumber: 32
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                         children: "Info"
                                     }, void 0, false, {
                                         fileName: "[project]/app/products/page.js",
-                                        lineNumber: 95,
+                                        lineNumber: 104,
                                         columnNumber: 66
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                         children: "Brand"
                                     }, void 0, false, {
                                         fileName: "[project]/app/products/page.js",
-                                        lineNumber: 95,
+                                        lineNumber: 104,
                                         columnNumber: 79
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                         children: "Status"
                                     }, void 0, false, {
                                         fileName: "[project]/app/products/page.js",
-                                        lineNumber: 95,
+                                        lineNumber: 104,
                                         columnNumber: 93
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -309,18 +317,18 @@ function ProductsPage() {
                                         children: "Act"
                                     }, void 0, false, {
                                         fileName: "[project]/app/products/page.js",
-                                        lineNumber: 95,
+                                        lineNumber: 104,
                                         columnNumber: 108
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/products/page.js",
-                                lineNumber: 95,
+                                lineNumber: 104,
                                 columnNumber: 28
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/products/page.js",
-                            lineNumber: 95,
+                            lineNumber: 104,
                             columnNumber: 21
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -331,12 +339,12 @@ function ProductsPage() {
                                     children: "Loading..."
                                 }, void 0, false, {
                                     fileName: "[project]/app/products/page.js",
-                                    lineNumber: 97,
+                                    lineNumber: 106,
                                     columnNumber: 40
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/products/page.js",
-                                lineNumber: 97,
+                                lineNumber: 106,
                                 columnNumber: 36
                             }, this) : filtered.map((p)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].Fragment, {
                                     children: [
@@ -353,17 +361,17 @@ function ProductsPage() {
                                                             className: "w-full h-full object-cover"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 100,
+                                                            lineNumber: 109,
                                                             columnNumber: 173
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/products/page.js",
-                                                        lineNumber: 100,
+                                                        lineNumber: 109,
                                                         columnNumber: 63
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 100,
+                                                    lineNumber: 109,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -378,13 +386,13 @@ function ProductsPage() {
                                                                     children: "▼"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/products/page.js",
-                                                                    lineNumber: 101,
+                                                                    lineNumber: 110,
                                                                     columnNumber: 127
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 101,
+                                                            lineNumber: 110,
                                                             columnNumber: 41
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -392,13 +400,13 @@ function ProductsPage() {
                                                             children: p.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 101,
+                                                            lineNumber: 110,
                                                             columnNumber: 185
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 101,
+                                                    lineNumber: 110,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -407,12 +415,12 @@ function ProductsPage() {
                                                         children: p.brand_name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/products/page.js",
-                                                        lineNumber: 102,
+                                                        lineNumber: 111,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 102,
+                                                    lineNumber: 111,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -421,12 +429,12 @@ function ProductsPage() {
                                                         children: p.status
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/products/page.js",
-                                                        lineNumber: 103,
+                                                        lineNumber: 112,
                                                         columnNumber: 41
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 103,
+                                                    lineNumber: 112,
                                                     columnNumber: 37
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -441,7 +449,7 @@ function ProductsPage() {
                                                             children: "Edit"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 104,
+                                                            lineNumber: 113,
                                                             columnNumber: 69
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -453,19 +461,19 @@ function ProductsPage() {
                                                             children: "Del"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 104,
+                                                            lineNumber: 113,
                                                             columnNumber: 211
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 104,
+                                                    lineNumber: 113,
                                                     columnNumber: 37
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/products/page.js",
-                                            lineNumber: 99,
+                                            lineNumber: 108,
                                             columnNumber: 33
                                         }, this),
                                         expandedProductId === p.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -487,7 +495,7 @@ function ProductsPage() {
                                                                             children: "SKU"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/products/page.js",
-                                                                            lineNumber: 107,
+                                                                            lineNumber: 116,
                                                                             columnNumber: 372
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -495,7 +503,7 @@ function ProductsPage() {
                                                                             children: "Spec"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/products/page.js",
-                                                                            lineNumber: 107,
+                                                                            lineNumber: 116,
                                                                             columnNumber: 406
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -503,18 +511,18 @@ function ProductsPage() {
                                                                             children: "Price"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/products/page.js",
-                                                                            lineNumber: 107,
+                                                                            lineNumber: 116,
                                                                             columnNumber: 441
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/products/page.js",
-                                                                    lineNumber: 107,
+                                                                    lineNumber: 116,
                                                                     columnNumber: 368
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/products/page.js",
-                                                                lineNumber: 107,
+                                                                lineNumber: 116,
                                                                 columnNumber: 268
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -526,7 +534,7 @@ function ProductsPage() {
                                                                                 children: v.sku
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/products/page.js",
-                                                                                lineNumber: 107,
+                                                                                lineNumber: 116,
                                                                                 columnNumber: 617
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -538,7 +546,7 @@ function ProductsPage() {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/products/page.js",
-                                                                                lineNumber: 107,
+                                                                                lineNumber: 116,
                                                                                 columnNumber: 682
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -546,422 +554,550 @@ function ProductsPage() {
                                                                                 children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatRupiah"])(v.price)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/products/page.js",
-                                                                                lineNumber: 107,
+                                                                                lineNumber: 116,
                                                                                 columnNumber: 750
                                                                             }, this)
                                                                         ]
                                                                     }, v.id, true, {
                                                                         fileName: "[project]/app/products/page.js",
-                                                                        lineNumber: 107,
+                                                                        lineNumber: 116,
                                                                         columnNumber: 602
                                                                     }, this))
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/products/page.js",
-                                                                lineNumber: 107,
+                                                                lineNumber: 116,
                                                                 columnNumber: 501
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/products/page.js",
-                                                        lineNumber: 107,
+                                                        lineNumber: 116,
                                                         columnNumber: 206
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 107,
+                                                    lineNumber: 116,
                                                     columnNumber: 134
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/products/page.js",
-                                                lineNumber: 107,
+                                                lineNumber: 116,
                                                 columnNumber: 96
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/products/page.js",
-                                            lineNumber: 107,
+                                            lineNumber: 116,
                                             columnNumber: 37
                                         }, this)
                                     ]
                                 }, p.id, true, {
                                     fileName: "[project]/app/products/page.js",
-                                    lineNumber: 98,
+                                    lineNumber: 107,
                                     columnNumber: 29
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/products/page.js",
-                            lineNumber: 96,
+                            lineNumber: 105,
                             columnNumber: 21
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/products/page.js",
-                    lineNumber: 94,
+                    lineNumber: 103,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/products/page.js",
-                lineNumber: 93,
+                lineNumber: 102,
                 columnNumber: 13
             }, this),
-            modalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]",
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Portal, {
+                children: modalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "fixed inset-0 z-[9999] flex items-center justify-center",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "px-6 py-5 border-b border-lumina-border flex justify-between items-center",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                    className: "text-lg font-bold text-white",
-                                    children: [
-                                        formData.id ? 'Edit' : 'New',
-                                        " Product"
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 118,
-                                    columnNumber: 116
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: ()=>setModalOpen(false),
-                                    className: "text-lumina-muted hover:text-white",
-                                    children: "✕"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 118,
-                                    columnNumber: 200
-                                }, this)
-                            ]
-                        }, void 0, true, {
+                            className: "fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999]",
+                            onClick: ()=>setModalOpen(false)
+                        }, void 0, false, {
                             fileName: "[project]/app/products/page.js",
-                            lineNumber: 118,
-                            columnNumber: 25
+                            lineNumber: 128,
+                            columnNumber: 17
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar",
+                            className: "relative z-[10000] bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl mx-4 flex flex-col max-h-[90vh]",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-center gap-4 p-4 bg-lumina-base rounded-xl border border-dashed border-lumina-border",
+                                    className: "px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                            className: "text-xl font-bold text-white",
+                                            children: formData.id ? "Edit Product" : "New Product"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 138,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: ()=>setModalOpen(false),
+                                            className: "text-lumina-muted hover:text-white transition-colors p-1",
+                                            "aria-label": "Close modal",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
+                                                className: "w-6 h-6",
+                                                fill: "none",
+                                                stroke: "currentColor",
+                                                viewBox: "0 0 24 24",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
+                                                    strokeLinecap: "round",
+                                                    strokeLinejoin: "round",
+                                                    strokeWidth: 2,
+                                                    d: "M6 18L18 6M6 6l12 12"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 147,
+                                                    columnNumber: 25
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/products/page.js",
+                                                lineNumber: 146,
+                                                columnNumber: 25
+                                            }, this)
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 141,
+                                            columnNumber: 21
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "[project]/app/products/page.js",
+                                    lineNumber: 137,
+                                    columnNumber: 21
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-base custom-scrollbar",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "w-20 h-20 rounded-lg bg-lumina-surface flex items-center justify-center overflow-hidden border border-lumina-border relative",
-                                            children: [
-                                                previewUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                                    src: previewUrl,
-                                                    className: "w-full h-full object-cover"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 120,
-                                                    columnNumber: 298
-                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "text-xs text-lumina-muted",
-                                                    children: "Img"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 120,
-                                                    columnNumber: 361
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                    type: "file",
-                                                    accept: "image/*",
-                                                    onChange: (e)=>{
-                                                        if (e.target.files[0]) {
-                                                            setImageFile(e.target.files[0]);
-                                                            setPreviewUrl(URL.createObjectURL(e.target.files[0]));
-                                                        }
-                                                    },
-                                                    className: "absolute inset-0 opacity-0 cursor-pointer"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 120,
-                                                    columnNumber: 416
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 120,
-                                            columnNumber: 142
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex-1",
+                                            className: "flex items-center gap-4 p-4 bg-lumina-surface rounded-lg border border-dashed border-lumina-border hover:border-lumina-gold/50 transition-colors",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "text-xs text-lumina-muted mb-2",
-                                                    children: "Upload Image"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 120,
-                                                    columnNumber: 665
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                    ref: fileInputRef,
-                                                    type: "file",
-                                                    accept: "image/*",
-                                                    onChange: (e)=>{
-                                                        if (e.target.files[0]) {
-                                                            setImageFile(e.target.files[0]);
-                                                            setPreviewUrl(URL.createObjectURL(e.target.files[0]));
-                                                        }
-                                                    },
-                                                    className: "text-xs text-lumina-muted file:mr-2 file:py-1 file:px-3 file:rounded-full file:bg-lumina-highlight file:text-white file:border-0"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 120,
-                                                    columnNumber: 731
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 120,
-                                            columnNumber: 641
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 120,
-                                    columnNumber: 29
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "grid grid-cols-2 gap-4",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "text-xs font-bold text-lumina-muted",
-                                                    children: "Brand"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 121,
-                                                    columnNumber: 74
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                                    className: "input-luxury mt-1",
-                                                    value: formData.brand_id,
-                                                    onChange: (e)=>setFormData({
-                                                            ...formData,
-                                                            brand_id: e.target.value
-                                                        }),
-                                                    children: brands.map((b)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                            value: b.id,
-                                                            children: b.name
-                                                        }, b.id, false, {
-                                                            fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 121,
-                                                            columnNumber: 287
-                                                        }, this))
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 121,
-                                                    columnNumber: 142
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 121,
-                                            columnNumber: 69
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "text-xs font-bold text-lumina-muted",
-                                                    children: "SKU Base"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 121,
-                                                    columnNumber: 358
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                                    className: "input-luxury mt-1 font-mono uppercase",
-                                                    value: formData.base_sku,
-                                                    onChange: (e)=>setFormData({
-                                                            ...formData,
-                                                            base_sku: e.target.value
-                                                        })
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 121,
-                                                    columnNumber: 429
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 121,
-                                            columnNumber: 353
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 121,
-                                    columnNumber: 29
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                            className: "text-xs font-bold text-lumina-muted",
-                                            children: "Name"
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 122,
-                                            columnNumber: 34
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
-                                            className: "input-luxury mt-1",
-                                            value: formData.name,
-                                            onChange: (e)=>setFormData({
-                                                    ...formData,
-                                                    name: e.target.value
-                                                })
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 122,
-                                            columnNumber: 101
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 122,
-                                    columnNumber: 29
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "grid grid-cols-2 gap-4",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "text-xs font-bold text-lumina-muted",
-                                                    children: "Category"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 123,
-                                                    columnNumber: 74
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                                    className: "input-luxury mt-1",
-                                                    value: formData.category,
-                                                    onChange: (e)=>setFormData({
-                                                            ...formData,
-                                                            category: e.target.value
-                                                        }),
-                                                    children: categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                            value: c.name,
-                                                            children: c.name
-                                                        }, c.id, false, {
-                                                            fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 123,
-                                                            columnNumber: 294
-                                                        }, this))
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 123,
-                                                    columnNumber: 145
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/products/page.js",
-                                            lineNumber: 123,
-                                            columnNumber: 69
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                                                    className: "text-xs font-bold text-lumina-muted",
-                                                    children: "Status"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 123,
-                                                    columnNumber: 367
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                                    className: "input-luxury mt-1",
-                                                    value: formData.status,
-                                                    onChange: (e)=>setFormData({
-                                                            ...formData,
-                                                            status: e.target.value
-                                                        }),
+                                                    className: "w-24 h-24 rounded-lg bg-lumina-base flex items-center justify-center overflow-hidden border border-lumina-border flex-shrink-0 relative",
                                                     children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                            value: "active",
-                                                            children: "Active"
+                                                        previewUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                                            src: previewUrl,
+                                                            alt: "Preview",
+                                                            className: "w-full h-full object-cover"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 123,
-                                                            columnNumber: 562
+                                                            lineNumber: 159,
+                                                            columnNumber: 29
+                                                        }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                            className: "text-xs text-lumina-muted font-mono",
+                                                            children: "IMG"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 161,
+                                                            columnNumber: 29
                                                         }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                                            value: "inactive",
-                                                            children: "Inactive"
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                            type: "file",
+                                                            accept: "image/*",
+                                                            onChange: handleImageChange,
+                                                            className: "absolute inset-0 opacity-0 cursor-pointer",
+                                                            disabled: uploading
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/products/page.js",
-                                                            lineNumber: 123,
-                                                            columnNumber: 600
+                                                            lineNumber: 163,
+                                                            columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/products/page.js",
-                                                    lineNumber: 123,
-                                                    columnNumber: 436
+                                                    lineNumber: 157,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    className: "flex-1",
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-sm font-semibold text-lumina-text mb-1",
+                                                            children: "Product Image"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 172,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                            className: "text-xs text-lumina-muted mb-3",
+                                                            children: "Max 2MB, Auto WebP Compress."
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 173,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "inline-block",
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                                    ref: fileInputRef,
+                                                                    type: "file",
+                                                                    accept: "image/*",
+                                                                    onChange: handleImageChange,
+                                                                    className: "hidden",
+                                                                    disabled: uploading
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 175,
+                                                                    columnNumber: 29
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                    className: "inline-block px-4 py-2 bg-lumina-highlight text-white text-xs font-semibold rounded-full cursor-pointer hover:bg-lumina-gold transition-colors",
+                                                                    children: "Choose File"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 183,
+                                                                    columnNumber: 29
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 174,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 171,
+                                                    columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/products/page.js",
-                                            lineNumber: 123,
-                                            columnNumber: 362
+                                            lineNumber: 156,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "grid grid-cols-2 gap-4",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                            children: "Brand"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 193,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                                            className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none",
+                                                            value: formData.brandId || "",
+                                                            onChange: (e)=>setFormData({
+                                                                    ...formData,
+                                                                    brandId: e.target.value
+                                                                }),
+                                                            disabled: uploading,
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                    value: "",
+                                                                    children: "-- Select --"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 200,
+                                                                    columnNumber: 29
+                                                                }, this),
+                                                                brands.map((b)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                        value: b.id,
+                                                                        children: b.name
+                                                                    }, b.id, false, {
+                                                                        fileName: "[project]/app/products/page.js",
+                                                                        lineNumber: 202,
+                                                                        columnNumber: 29
+                                                                    }, this))
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 194,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 192,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                            children: "Base SKU"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 207,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                            type: "text",
+                                                            required: true,
+                                                            className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white font-mono uppercase focus:border-lumina-gold outline-none",
+                                                            value: formData.baseSku || "PRD-001",
+                                                            onChange: (e)=>setFormData({
+                                                                    ...formData,
+                                                                    baseSku: e.target.value
+                                                                }),
+                                                            placeholder: "PRD-001",
+                                                            disabled: uploading
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 208,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 206,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 191,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                    className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                    children: "Product Name"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 222,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                    type: "text",
+                                                    required: true,
+                                                    className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none",
+                                                    value: formData.name || "",
+                                                    onChange: (e)=>setFormData({
+                                                            ...formData,
+                                                            name: e.target.value
+                                                        }),
+                                                    placeholder: "Enter product name...",
+                                                    disabled: uploading
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 223,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 221,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "grid grid-cols-2 gap-4",
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                            children: "Category"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 237,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                                            required: true,
+                                                            className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none",
+                                                            value: formData.category || "",
+                                                            onChange: (e)=>setFormData({
+                                                                    ...formData,
+                                                                    category: e.target.value
+                                                                }),
+                                                            disabled: uploading,
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                    value: "",
+                                                                    children: "-- Select --"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 245,
+                                                                    columnNumber: 29
+                                                                }, this),
+                                                                categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                        value: c.name,
+                                                                        children: c.name
+                                                                    }, c.id, false, {
+                                                                        fileName: "[project]/app/products/page.js",
+                                                                        lineNumber: 247,
+                                                                        columnNumber: 29
+                                                                    }, this))
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 238,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 236,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                            className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                            children: "Status"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 252,
+                                                            columnNumber: 25
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                                            className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none",
+                                                            value: formData.status || "active",
+                                                            onChange: (e)=>setFormData({
+                                                                    ...formData,
+                                                                    status: e.target.value
+                                                                }),
+                                                            disabled: uploading,
+                                                            children: [
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                    value: "active",
+                                                                    children: "Active"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 259,
+                                                                    columnNumber: 29
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                                    value: "inactive",
+                                                                    children: "Inactive"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/products/page.js",
+                                                                    lineNumber: 260,
+                                                                    columnNumber: 29
+                                                                }, this)
+                                                            ]
+                                                        }, void 0, true, {
+                                                            fileName: "[project]/app/products/page.js",
+                                                            lineNumber: 253,
+                                                            columnNumber: 25
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 251,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 235,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                    className: "block text-xs font-bold text-lumina-muted uppercase mb-2",
+                                                    children: "Description"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 267,
+                                                    columnNumber: 25
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                                                    rows: 5,
+                                                    className: "w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none resize-none",
+                                                    value: formData.description || "",
+                                                    onChange: (e)=>setFormData({
+                                                            ...formData,
+                                                            description: e.target.value
+                                                        }),
+                                                    placeholder: "Product details...",
+                                                    disabled: uploading
+                                                }, void 0, false, {
+                                                    fileName: "[project]/app/products/page.js",
+                                                    lineNumber: 268,
+                                                    columnNumber: 25
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 266,
+                                            columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/products/page.js",
-                                    lineNumber: 123,
-                                    columnNumber: 29
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/products/page.js",
-                            lineNumber: 119,
-                            columnNumber: 25
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "p-6 border-t border-lumina-border bg-lumina-base rounded-b-2xl flex justify-end gap-3",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: ()=>setModalOpen(false),
-                                    className: "btn-ghost-dark",
-                                    children: "Cancel"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/products/page.js",
-                                    lineNumber: 125,
-                                    columnNumber: 128
+                                    lineNumber: 153,
+                                    columnNumber: 21
                                 }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: handleSubmit,
-                                    className: "btn-gold w-32",
-                                    disabled: uploading,
-                                    children: uploading ? '...' : 'Save'
-                                }, void 0, false, {
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                    className: "px-6 py-4 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end gap-3 flex-shrink-0",
+                                    children: [
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: ()=>setModalOpen(false),
+                                            className: "px-6 py-2 bg-lumina-base text-white rounded-lg hover:bg-lumina-highlight transition-colors font-medium",
+                                            disabled: uploading,
+                                            children: "Cancel"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 282,
+                                            columnNumber: 21
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            type: "button",
+                                            onClick: handleSubmit,
+                                            className: "px-8 py-2 bg-lumina-gold text-black rounded-lg hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2",
+                                            disabled: uploading,
+                                            children: uploading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        className: "inline-block w-4 h-4 border-2 border-transparent border-t-black rounded-full animate-spin"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/products/page.js",
+                                                        lineNumber: 298,
+                                                        columnNumber: 29
+                                                    }, this),
+                                                    "Saving..."
+                                                ]
+                                            }, void 0, true) : "SAVE"
+                                        }, void 0, false, {
+                                            fileName: "[project]/app/products/page.js",
+                                            lineNumber: 290,
+                                            columnNumber: 21
+                                        }, this)
+                                    ]
+                                }, void 0, true, {
                                     fileName: "[project]/app/products/page.js",
-                                    lineNumber: 125,
-                                    columnNumber: 212
+                                    lineNumber: 281,
+                                    columnNumber: 21
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/products/page.js",
-                            lineNumber: 125,
-                            columnNumber: 25
+                            lineNumber: 134,
+                            columnNumber: 17
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/products/page.js",
-                    lineNumber: 117,
-                    columnNumber: 21
+                    lineNumber: 126,
+                    columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/products/page.js",
-                lineNumber: 116,
-                columnNumber: 17
+                lineNumber: 124,
+                columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/products/page.js",
-        lineNumber: 84,
+        lineNumber: 93,
         columnNumber: 9
     }, this);
 }

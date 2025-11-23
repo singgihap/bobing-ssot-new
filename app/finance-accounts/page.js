@@ -57,8 +57,8 @@ export default function CoaPage() {
                     const docRef = doc(db, "chart_of_accounts", String(row['AccountID']));
                     batch.set(docRef, {
                         code: String(row['AccountID']),
-                        name: row['Account Name'],
-                        category: row['Account Type'],
+                        name: String(row['Account Name']),
+                        category: String(row['Account Type']), // Paksa jadi String
                         status: 'Aktif',
                         updated_at: serverTimestamp()
                     });
@@ -103,18 +103,20 @@ export default function CoaPage() {
                         </thead>
                         <tbody>
                             {loading ? <tr><td colSpan="5" className="text-center py-12 text-lumina-muted">Loading...</td></tr> : accounts.map(acc => {
+                                // PERBAIKAN UTAMA: Pastikan category adalah String sebelum di-cek
+                                const category = String(acc.category || '');
+                                
                                 let catColor = 'badge-neutral';
-                                // Warna badge disesuaikan untuk dark mode (lebih terang/neon)
-                                if (acc.category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                                if (acc.category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                                if (acc.category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-                                if (acc.category.includes('Kewajiban') || acc.category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                                if (category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                                if (category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                                if (category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+                                if (category.includes('Kewajiban') || category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
 
                                 return (
                                     <tr key={acc.id} className="group hover:bg-lumina-highlight/20 transition-colors">
                                         <td className="pl-6 font-mono font-bold text-lumina-gold text-sm">{acc.code}</td>
                                         <td className="font-medium text-lumina-text group-hover:text-white transition-colors">{acc.name}</td>
-                                        <td><span className={`badge-luxury ${catColor}`}>{acc.category}</span></td>
+                                        <td><span className={`badge-luxury ${catColor}`}>{category}</span></td>
                                         
                                         <td className="text-center">
                                             <button onClick={() => toggleStatus(acc.id, acc.status)} 

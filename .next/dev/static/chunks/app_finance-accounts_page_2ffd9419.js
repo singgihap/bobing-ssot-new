@@ -83,8 +83,8 @@ function CoaPage() {
                     const docRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["doc"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "chart_of_accounts", String(row['AccountID']));
                     batch.set(docRef, {
                         code: String(row['AccountID']),
-                        name: row['Account Name'],
-                        category: row['Account Type'],
+                        name: String(row['Account Name']),
+                        category: String(row['Account Type']),
                         status: 'Aktif',
                         updated_at: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["serverTimestamp"])()
                     });
@@ -256,12 +256,13 @@ function CoaPage() {
                                     lineNumber: 105,
                                     columnNumber: 40
                                 }, this) : accounts.map((acc)=>{
+                                    // PERBAIKAN UTAMA: Pastikan category adalah String sebelum di-cek
+                                    const category = String(acc.category || '');
                                     let catColor = 'badge-neutral';
-                                    // Warna badge disesuaikan untuk dark mode (lebih terang/neon)
-                                    if (acc.category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                                    if (acc.category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                                    if (acc.category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-                                    if (acc.category.includes('Kewajiban') || acc.category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+                                    if (category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                                    if (category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+                                    if (category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+                                    if (category.includes('Kewajiban') || category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
                                     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                         className: "group hover:bg-lumina-highlight/20 transition-colors",
                                         children: [
@@ -270,7 +271,7 @@ function CoaPage() {
                                                 children: acc.code
                                             }, void 0, false, {
                                                 fileName: "[project]/app/finance-accounts/page.js",
-                                                lineNumber: 115,
+                                                lineNumber: 117,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -278,21 +279,21 @@ function CoaPage() {
                                                 children: acc.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/finance-accounts/page.js",
-                                                lineNumber: 116,
+                                                lineNumber: 118,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                     className: `badge-luxury ${catColor}`,
-                                                    children: acc.category
+                                                    children: category
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/finance-accounts/page.js",
-                                                    lineNumber: 117,
+                                                    lineNumber: 119,
                                                     columnNumber: 45
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/finance-accounts/page.js",
-                                                lineNumber: 117,
+                                                lineNumber: 119,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -304,17 +305,17 @@ function CoaPage() {
                                                         className: `inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${acc.status === 'Aktif' ? 'translate-x-5' : 'translate-x-1'}`
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/finance-accounts/page.js",
-                                                        lineNumber: 123,
+                                                        lineNumber: 125,
                                                         columnNumber: 49
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/finance-accounts/page.js",
-                                                    lineNumber: 120,
+                                                    lineNumber: 122,
                                                     columnNumber: 45
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/finance-accounts/page.js",
-                                                lineNumber: 119,
+                                                lineNumber: 121,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -325,18 +326,18 @@ function CoaPage() {
                                                     children: "Del"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/finance-accounts/page.js",
-                                                    lineNumber: 128,
+                                                    lineNumber: 130,
                                                     columnNumber: 45
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/finance-accounts/page.js",
-                                                lineNumber: 127,
+                                                lineNumber: 129,
                                                 columnNumber: 41
                                             }, this)
                                         ]
                                     }, acc.id, true, {
                                         fileName: "[project]/app/finance-accounts/page.js",
-                                        lineNumber: 114,
+                                        lineNumber: 116,
                                         columnNumber: 37
                                     }, this);
                                 })
