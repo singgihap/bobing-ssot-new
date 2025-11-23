@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { Portal } from '@/lib/usePortal';
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState([]);
@@ -142,6 +143,7 @@ export default function CustomersPage() {
             </div>
 
             {/* Modal */}
+            <Portal>
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
@@ -180,6 +182,7 @@ export default function CustomersPage() {
                     </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

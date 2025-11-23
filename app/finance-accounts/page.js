@@ -1,141 +1,328 @@
-// app/finance-accounts/page.js
-"use client";
-import { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
-import * as XLSX from 'xlsx';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { Portal } from '@/lib/usePortal';
 
-export default function CoaPage() {
-    const [accounts, setAccounts] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function FinanceAccountsPage() {
+  const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    code: '',
+    name: '',
+    category: '',
+  });
 
-    useEffect(() => { fetchData(); }, []);
+  const accountCategories = [
+    'ASET (ASSETS)',
+    'ASET (CONTRA)',
+    'KEWAJIBAN (LIABILITIES)',
+    'EKUITAS (EQUITY)',
+    'PENDAPATAN (REVENUE)',
+    'PENDAPATAN (CONTRA)',
+    'BEBAN (EXPENSES)',
+  ];
 
-    const fetchData = async () => {
-        try {
-            const q = query(collection(db, "chart_of_accounts"), orderBy("code", "asc"));
-            const snap = await getDocs(q);
-            const data = [];
-            snap.forEach(d => data.push({id: d.id, ...d.data()}));
-            setAccounts(data);
-        } catch (e) { console.error(e); } finally { setLoading(false); }
-    };
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
 
-    const toggleStatus = async (id, current) => {
-        try {
-            const newState = current === 'Aktif' ? 'Nonaktif' : 'Aktif';
-            await updateDoc(doc(db, "chart_of_accounts", id), { status: newState, updated_at: serverTimestamp() });
-            fetchData();
-        } catch (e) { alert(e.message); }
-    };
+  const fetchAccounts = async () => {
+    try {
+      setLoading(true);
+      const q = query(
+        collection(db, 'chart_of_accounts'),
+        orderBy('code', 'asc')
+      );
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setAccounts(data);
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const deleteAccount = async (id) => {
-        if(confirm("Hapus akun ini?")) {
-            await deleteDoc(doc(db, "chart_of_accounts", id));
-            fetchData();
-        }
-    };
+  // ✅ Helper function: Check if status is Active
+  const isActive = (status) => {
+    return status === 'Aktif' || status === 'Active';
+  };
 
-    const handleImport = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+  // ✅ TOGGLE STATUS FUNCTION - Update status field (string)
+  const toggleStatus = async (id, currentStatus) => {
+    try {
+      const accountRef = doc(db, 'chart_of_accounts', id);
+      const isCurrentlyActive = isActive(currentStatus);
+      const newStatus = isCurrentlyActive ? 'Tidak Aktif' : 'Aktif';
+      
+      await updateDoc(accountRef, {
+        status: newStatus,
+        updated_at: serverTimestamp(),
+      });
+      fetchAccounts();
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status: ' + error.message);
+    }
+  };
 
-        const reader = new FileReader();
-        reader.onload = async (ev) => {
-            try {
-                const data = ev.target.result;
-                const workbook = XLSX.read(data, { type: 'array' });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const rows = XLSX.utils.sheet_to_json(sheet);
+  const openModal = (account = null) => {
+    if (account) {
+      setFormData({
+        code: account.code,
+        name: account.name,
+        category: account.category,
+      });
+    } else {
+      setFormData({
+        code: '',
+        name: '',
+        category: '',
+      });
+    }
+    setModalOpen(true);
+  };
 
-                if (rows.length === 0) throw new Error("File kosong");
-                if (!rows[0]['AccountID']) throw new Error("Format salah! Kolom harus: AccountID, Account Name, Account Type");
-                if (!confirm(`Import ${rows.length} akun?`)) return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
 
-                const batch = writeBatch(db);
-                rows.forEach(row => {
-                    const docRef = doc(db, "chart_of_accounts", String(row['AccountID']));
-                    batch.set(docRef, {
-                        code: String(row['AccountID']),
-                        name: String(row['Account Name']),
-                        category: String(row['Account Type']), // Paksa jadi String
-                        status: 'Aktif',
-                        updated_at: serverTimestamp()
-                    });
-                });
+    try {
+      if (!formData.code || !formData.name || !formData.category) {
+        alert('Semua field harus diisi!');
+        setUploading(false);
+        return;
+      }
 
-                await batch.commit();
-                alert("Import Berhasil!");
-                fetchData();
-            } catch (err) { alert("Gagal Import: " + err.message); }
-            e.target.value = '';
-        };
-        reader.readAsArrayBuffer(file);
-    };
+      const existingAccounts = accounts.filter(a => a.code === formData.code);
+      if (existingAccounts.length > 0) {
+        alert('Kode akun sudah ada!');
+        setUploading(false);
+        return;
+      }
 
-    return (
-        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h2 className="text-2xl font-display font-bold text-lumina-text tracking-tight">Chart of Accounts</h2>
-                    <p className="text-sm text-lumina-muted mt-1 font-light">Master financial accounts (Assets, Liabilities, Equity).</p>
-                </div>
-                <label className="btn-ghost-dark cursor-pointer border-lumina-gold/50 text-lumina-gold hover:bg-lumina-gold/10 hover:border-lumina-gold">
-                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                    <span>Import CSV</span>
-                    <input type="file" className="hidden" accept=".csv, .xlsx" onChange={handleImport} />
-                </label>
-            </div>
+      await addDoc(collection(db, 'chart_of_accounts'), {
+        code: formData.code,
+        name: formData.name,
+        category: formData.category,
+        status: 'Aktif', // ✅ Default: Aktif
+        createdAt: serverTimestamp(),
+        updated_at: serverTimestamp(),
+      });
 
-            {/* Table Card */}
-            <div className="card-luxury overflow-hidden">
-                <div className="table-wrapper-dark border-none shadow-none rounded-none">
-                    <table className="table-dark">
-                        <thead>
-                            <tr>
-                                <th className="pl-6 w-24">Code</th>
-                                <th>Account Name</th>
-                                <th>Category</th>
-                                <th className="text-center">Status</th>
-                                <th className="text-right pr-6">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-lumina-muted">Loading...</td></tr> : accounts.map(acc => {
-                                // PERBAIKAN UTAMA: Pastikan category adalah String sebelum di-cek
-                                const category = String(acc.category || '');
-                                
-                                let catColor = 'badge-neutral';
-                                if (category.includes('Aset')) catColor = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-                                if (category.includes('Pendapatan')) catColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-                                if (category.includes('Beban')) catColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-                                if (category.includes('Kewajiban') || category.includes('Modal')) catColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      setModalOpen(false);
+      fetchAccounts();
+      alert('Akun berhasil ditambahkan!');
+    } catch (error) {
+      console.error('Error saving account:', error);
+      alert('Error: ' + error.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
-                                return (
-                                    <tr key={acc.id} className="group hover:bg-lumina-highlight/20 transition-colors">
-                                        <td className="pl-6 font-mono font-bold text-lumina-gold text-sm">{acc.code}</td>
-                                        <td className="font-medium text-lumina-text group-hover:text-white transition-colors">{acc.name}</td>
-                                        <td><span className={`badge-luxury ${catColor}`}>{category}</span></td>
-                                        
-                                        <td className="text-center">
-                                            <button onClick={() => toggleStatus(acc.id, acc.status)} 
-                                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-lumina-gold focus:ring-offset-1 focus:ring-offset-lumina-base ${acc.status === 'Aktif' ? 'bg-emerald-500' : 'bg-lumina-border'}`}
-                                            >
-                                                <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${acc.status === 'Aktif' ? 'translate-x-5' : 'translate-x-1'}`} />
-                                            </button>
-                                        </td>
+  const deleteAccount = async (id) => {
+    if (confirm('Hapus akun ini? Tindakan ini tidak dapat dibatalkan!')) {
+      try {
+        await deleteDoc(doc(db, 'chart_of_accounts', id));
+        fetchAccounts();
+        alert('Akun berhasil dihapus!');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        alert('Error: ' + error.message);
+      }
+    }
+  };
 
-                                        <td className="text-right pr-6">
-                                            <button onClick={() => deleteAccount(acc.id)} className="text-xs font-bold text-lumina-muted hover:text-rose-500 transition-colors px-2 py-1 rounded hover:bg-rose-500/10">Del</button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+  return (
+    <div className="space-y-6 fade-in pb-20">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-lumina-text">Chart of Accounts</h1>
+          <p className="text-lumina-muted mt-1">Master financial accounts (Assets, Liabilities, Equity).</p>
         </div>
-    );
+        <button
+          onClick={() => openModal()}
+          className="px-6 py-2 bg-lumina-gold text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap"
+        >
+          + ADD ACCOUNT
+        </button>
+      </div>
+
+      {/* Table */}
+      <div className="card-luxury overflow-hidden">
+        <table className="table-dark w-full">
+          <thead>
+            <tr>
+              <th className="text-left pl-6 py-3 w-20">CODE</th>
+              <th className="text-left">ACCOUNT NAME</th>
+              <th className="text-left">CATEGORY</th>
+              <th className="text-center w-32">STATUS</th>
+              <th className="text-right pr-6 w-20">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="5" className="p-8 text-center text-lumina-muted">Loading...</td>
+              </tr>
+            ) : accounts.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="p-8 text-center text-lumina-muted">No accounts found.</td>
+              </tr>
+            ) : (
+              accounts.map((account) => {
+                const statusIsActive = isActive(account.status);
+                
+                return (
+                  <tr key={account.id} className="border-t border-lumina-border hover:bg-lumina-highlight/10 transition">
+                    <td className="text-left pl-6 py-3 font-mono font-bold text-lumina-gold">{account.code}</td>
+                    <td className="text-left text-lumina-text py-3">{account.name}</td>
+                    <td className="text-left py-3">
+                      <span className="badge-luxury badge-neutral">{account.category}</span>
+                    </td>
+                    
+                    {/* ✅ TOGGLE STATUS BUTTON */}
+                    <td className="text-center py-3">
+                      <button
+                        onClick={() => toggleStatus(account.id, account.status)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-semibold text-xs transition-all cursor-pointer ${
+                          statusIsActive
+                            ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                            : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                        }`}
+                        title="Click to toggle status"
+                      >
+                        <span className={`w-2 h-2 rounded-full ${statusIsActive ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                        {statusIsActive ? 'ACTIVE' : 'INACTIVE'}
+                      </button>
+                    </td>
+                    
+                    <td className="text-right pr-6 py-3">
+                      <button
+                        onClick={() => deleteAccount(account.id)}
+                        className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors"
+                      >
+                        Del
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
+      <Portal>
+        {modalOpen && (
+          <div className="fixed inset-0 z- flex items-center justify-center">
+            <div
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-"
+              onClick={() => setModalOpen(false)}
+            />
+
+            <div className="relative z- bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
+              
+              <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0">
+                <h3 className="text-lg font-bold text-white">Add New Account</h3>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="text-lumina-muted hover:text-white transition-colors p-1"
+                  aria-label="Close modal"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-base custom-scrollbar">
+                
+                <div>
+                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Account Code</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white font-mono uppercase focus:border-lumina-gold outline-none"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                    placeholder="e.g., 1101"
+                    disabled={uploading}
+                    maxLength="10"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Account Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g., Utang Gaji"
+                    disabled={uploading}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Category</label>
+                  <select
+                    required
+                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    disabled={uploading}
+                  >
+                    <option value="">-- Select Category --</option>
+                    {accountCategories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+              </form>
+
+              <div className="px-6 py-4 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setModalOpen(false)}
+                  className="px-6 py-2 bg-lumina-base text-white rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
+                  disabled={uploading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  className="px-8 py-2 bg-lumina-gold text-black rounded-lg hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  {uploading ? (
+                    <>
+                      <span className="inline-block w-4 h-4 border-2 border-transparent border-t-black rounded-full animate-spin"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    "ADD ACCOUNT"
+                  )}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+      </Portal>
+    </div>
+  );
 }

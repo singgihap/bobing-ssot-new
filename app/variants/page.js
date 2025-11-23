@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, where } from 'firebase/firestore';
 import { sortBySize, formatRupiah } from '@/lib/utils';
+import { Portal } from '@/lib/usePortal';
 
 export default function VariantsPage() {
     const [variants, setVariants] = useState([]);
@@ -62,6 +63,7 @@ export default function VariantsPage() {
             </div>
 
             {/* --- CENTERED MODAL --- */}
+            <Portal>
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
@@ -96,6 +98,7 @@ export default function VariantsPage() {
                     </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, runTransaction, query, orderBy, where, serverTimestamp, limit } from 'firebase/firestore';
 import { sortBySize } from '@/lib/utils';
+import { Portal } from '@/lib/usePortal';
 
 export default function InventoryPage() {
     // --- STATE ---
@@ -291,6 +292,7 @@ export default function InventoryPage() {
             </div>
 
             {/* --- DETAIL MODAL (FIXED HEIGHT & SCROLL) --- */}
+            <Portal>
             {modalDetailOpen && selectedProduct && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden">
@@ -345,8 +347,10 @@ export default function InventoryPage() {
                     </div>
                 </div>
             )}
+            </Portal>
 
             {/* --- STOCK OPNAME MODAL (FIXED) --- */}
+            <Portal>
             {modalAdjOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-lumina-gold/20">
@@ -396,8 +400,10 @@ export default function InventoryPage() {
                     </div>
                 </div>
             )}
+            </Portal>
 
             {/* --- STOCK CARD MODAL (FIXED) --- */}
+            <Portal>
             {modalCardOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-2xl flex flex-col max-h-[80vh] overflow-hidden">
@@ -426,6 +432,7 @@ export default function InventoryPage() {
                     </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

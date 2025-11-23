@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, runTransaction, addDoc, serverTimestamp, query, orderBy, where, limit } from 'firebase/firestore';
 import { formatRupiah, sortBySize } from '@/lib/utils';
+import { Portal } from '@/lib/usePortal';
 
 export default function PosPage() {
     const [products, setProducts] = useState([]);
@@ -159,6 +160,7 @@ export default function PosPage() {
             </div>
 
             {/* MODAL VARIANT */}
+            <Portal>
             {modalVariantOpen && selectedProdForVariant && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                     <div className="card-luxury w-full max-w-lg p-0 overflow-hidden fade-in-up">
@@ -167,8 +169,10 @@ export default function PosPage() {
                     </div>
                 </div>
             )}
+            </Portal>
 
             {/* MODAL SUCCESS */}
+            <Portal>
             {modalInvoiceOpen && invoiceData && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
                     <div className="card-luxury max-w-sm w-full p-8 text-center relative overflow-hidden fade-in-up border-lumina-gold/50">
@@ -189,6 +193,7 @@ export default function PosPage() {
                     </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

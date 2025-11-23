@@ -938,231 +938,237 @@ function PurchasesPage() {
                 lineNumber: 100,
                 columnNumber: 44
             }, this),
-            detailOpen && selectedPO && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "card-luxury w-full max-w-2xl p-6 fade-in-up",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex justify-between mb-4",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                    className: "text-lg font-bold text-lumina-text",
-                                    children: "PO Details"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/purchases/page.js",
-                                    lineNumber: 101,
-                                    columnNumber: 269
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: ()=>setDetailOpen(false),
-                                    className: "text-lumina-muted",
-                                    children: "✕"
-                                }, void 0, false, {
-                                    fileName: "[project]/app/purchases/page.js",
-                                    lineNumber: 101,
-                                    columnNumber: 335
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/purchases/page.js",
-                            lineNumber: 101,
-                            columnNumber: 226
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "space-y-4",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex justify-between text-sm border-b border-lumina-border pb-3",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-lumina-muted",
-                                            children: [
-                                                "Supplier: ",
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "text-white",
-                                                    children: selectedPO.supplier_name
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/purchases/page.js",
-                                                    lineNumber: 101,
-                                                    columnNumber: 578
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/purchases/page.js",
-                                            lineNumber: 101,
-                                            columnNumber: 532
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-lumina-muted",
-                                            children: [
-                                                "Status: ",
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                    className: "text-white uppercase",
-                                                    children: selectedPO.payment_status
-                                                }, void 0, false, {
-                                                    fileName: "[project]/app/purchases/page.js",
-                                                    lineNumber: 101,
-                                                    columnNumber: 695
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/app/purchases/page.js",
-                                            lineNumber: 101,
-                                            columnNumber: 651
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/purchases/page.js",
-                                    lineNumber: 101,
-                                    columnNumber: 451
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
-                                    className: "w-full text-sm text-lumina-text",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
-                                            className: "bg-lumina-base text-lumina-muted",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(Portal, {
+                children: detailOpen && selectedPO && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "card-luxury w-full max-w-2xl p-6 fade-in-up",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "flex justify-between mb-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                                        className: "text-lg font-bold text-lumina-text",
+                                        children: "PO Details"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/purchases/page.js",
+                                        lineNumber: 103,
+                                        columnNumber: 253
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: ()=>setDetailOpen(false),
+                                        className: "text-lumina-muted",
+                                        children: "✕"
+                                    }, void 0, false, {
+                                        fileName: "[project]/app/purchases/page.js",
+                                        lineNumber: 103,
+                                        columnNumber: 319
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/purchases/page.js",
+                                lineNumber: 103,
+                                columnNumber: 210
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "space-y-4",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "flex justify-between text-sm border-b border-lumina-border pb-3",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-lumina-muted",
                                                 children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                                        className: "p-2 text-left",
-                                                        children: "Product"
+                                                    "Supplier: ",
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white",
+                                                        children: selectedPO.supplier_name
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/purchases/page.js",
-                                                        lineNumber: 101,
-                                                        columnNumber: 892
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                                        className: "p-2 text-right",
-                                                        children: "Qty"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/purchases/page.js",
-                                                        lineNumber: 101,
-                                                        columnNumber: 934
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                                        className: "p-2 text-right",
-                                                        children: "Subtotal"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/purchases/page.js",
-                                                        lineNumber: 101,
-                                                        columnNumber: 973
+                                                        lineNumber: 103,
+                                                        columnNumber: 562
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/purchases/page.js",
-                                                lineNumber: 101,
-                                                columnNumber: 888
+                                                lineNumber: 103,
+                                                columnNumber: 516
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "text-lumina-muted",
+                                                children: [
+                                                    "Status: ",
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                        className: "text-white uppercase",
+                                                        children: selectedPO.payment_status
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/app/purchases/page.js",
+                                                        lineNumber: 103,
+                                                        columnNumber: 679
+                                                    }, this)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/app/purchases/page.js",
+                                                lineNumber: 103,
+                                                columnNumber: 635
                                             }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/purchases/page.js",
-                                            lineNumber: 101,
-                                            columnNumber: 836
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
-                                            className: "divide-y divide-lumina-border",
-                                            children: poItems.map((i, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/purchases/page.js",
+                                        lineNumber: 103,
+                                        columnNumber: 435
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
+                                        className: "w-full text-sm text-lumina-text",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
+                                                className: "bg-lumina-base text-lumina-muted",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                                     children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                            className: "p-2",
-                                                            children: [
-                                                                i.name,
-                                                                " ",
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                                    className: "text-xs text-lumina-muted block",
-                                                                    children: i.sku
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/purchases/page.js",
-                                                                    lineNumber: 101,
-                                                                    columnNumber: 1148
-                                                                }, this)
-                                                            ]
-                                                        }, void 0, true, {
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                                            className: "p-2 text-left",
+                                                            children: "Product"
+                                                        }, void 0, false, {
                                                             fileName: "[project]/app/purchases/page.js",
-                                                            lineNumber: 101,
-                                                            columnNumber: 1119
+                                                            lineNumber: 103,
+                                                            columnNumber: 876
                                                         }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                             className: "p-2 text-right",
-                                                            children: i.qty
+                                                            children: "Qty"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/purchases/page.js",
-                                                            lineNumber: 101,
-                                                            columnNumber: 1217
+                                                            lineNumber: 103,
+                                                            columnNumber: 918
                                                         }, this),
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                            className: "p-2 text-right font-mono",
-                                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatRupiah"])(i.subtotal)
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                                            className: "p-2 text-right",
+                                                            children: "Subtotal"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/purchases/page.js",
-                                                            lineNumber: 101,
-                                                            columnNumber: 1260
+                                                            lineNumber: 103,
+                                                            columnNumber: 957
                                                         }, this)
                                                     ]
-                                                }, idx, true, {
+                                                }, void 0, true, {
                                                     fileName: "[project]/app/purchases/page.js",
-                                                    lineNumber: 101,
-                                                    columnNumber: 1105
-                                                }, this))
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/purchases/page.js",
-                                            lineNumber: 101,
-                                            columnNumber: 1030
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tfoot", {
-                                            className: "bg-lumina-base font-bold",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
-                                                children: [
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        colSpan: "2",
-                                                        className: "p-2 text-right",
-                                                        children: "Total"
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/purchases/page.js",
-                                                        lineNumber: 101,
-                                                        columnNumber: 1396
-                                                    }, this),
-                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                                        className: "p-2 text-right text-lumina-gold",
-                                                        children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatRupiah"])(selectedPO.total_amount)
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/app/purchases/page.js",
-                                                        lineNumber: 101,
-                                                        columnNumber: 1449
-                                                    }, this)
-                                                ]
-                                            }, void 0, true, {
+                                                    lineNumber: 103,
+                                                    columnNumber: 872
+                                                }, this)
+                                            }, void 0, false, {
                                                 fileName: "[project]/app/purchases/page.js",
-                                                lineNumber: 101,
-                                                columnNumber: 1392
+                                                lineNumber: 103,
+                                                columnNumber: 820
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
+                                                className: "divide-y divide-lumina-border",
+                                                children: poItems.map((i, idx)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                                className: "p-2",
+                                                                children: [
+                                                                    i.name,
+                                                                    " ",
+                                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                                        className: "text-xs text-lumina-muted block",
+                                                                        children: i.sku
+                                                                    }, void 0, false, {
+                                                                        fileName: "[project]/app/purchases/page.js",
+                                                                        lineNumber: 103,
+                                                                        columnNumber: 1132
+                                                                    }, this)
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/app/purchases/page.js",
+                                                                lineNumber: 103,
+                                                                columnNumber: 1103
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                                className: "p-2 text-right",
+                                                                children: i.qty
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/purchases/page.js",
+                                                                lineNumber: 103,
+                                                                columnNumber: 1201
+                                                            }, this),
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                                className: "p-2 text-right font-mono",
+                                                                children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatRupiah"])(i.subtotal)
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/app/purchases/page.js",
+                                                                lineNumber: 103,
+                                                                columnNumber: 1244
+                                                            }, this)
+                                                        ]
+                                                    }, idx, true, {
+                                                        fileName: "[project]/app/purchases/page.js",
+                                                        lineNumber: 103,
+                                                        columnNumber: 1089
+                                                    }, this))
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/purchases/page.js",
+                                                lineNumber: 103,
+                                                columnNumber: 1014
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tfoot", {
+                                                className: "bg-lumina-base font-bold",
+                                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                                    children: [
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                            colSpan: "2",
+                                                            className: "p-2 text-right",
+                                                            children: "Total"
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/purchases/page.js",
+                                                            lineNumber: 103,
+                                                            columnNumber: 1380
+                                                        }, this),
+                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                                            className: "p-2 text-right text-lumina-gold",
+                                                            children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["formatRupiah"])(selectedPO.total_amount)
+                                                        }, void 0, false, {
+                                                            fileName: "[project]/app/purchases/page.js",
+                                                            lineNumber: 103,
+                                                            columnNumber: 1433
+                                                        }, this)
+                                                    ]
+                                                }, void 0, true, {
+                                                    fileName: "[project]/app/purchases/page.js",
+                                                    lineNumber: 103,
+                                                    columnNumber: 1376
+                                                }, this)
+                                            }, void 0, false, {
+                                                fileName: "[project]/app/purchases/page.js",
+                                                lineNumber: 103,
+                                                columnNumber: 1332
                                             }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/app/purchases/page.js",
-                                            lineNumber: 101,
-                                            columnNumber: 1348
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/app/purchases/page.js",
-                                    lineNumber: 101,
-                                    columnNumber: 785
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/app/purchases/page.js",
-                            lineNumber: 101,
-                            columnNumber: 424
-                        }, this)
-                    ]
-                }, void 0, true, {
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/app/purchases/page.js",
+                                        lineNumber: 103,
+                                        columnNumber: 769
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/app/purchases/page.js",
+                                lineNumber: 103,
+                                columnNumber: 408
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/app/purchases/page.js",
+                        lineNumber: 103,
+                        columnNumber: 149
+                    }, this)
+                }, void 0, false, {
                     fileName: "[project]/app/purchases/page.js",
-                    lineNumber: 101,
-                    columnNumber: 165
+                    lineNumber: 103,
+                    columnNumber: 47
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/purchases/page.js",
-                lineNumber: 101,
-                columnNumber: 63
+                lineNumber: 102,
+                columnNumber: 13
             }, this)
         ]
     }, void 0, true, {

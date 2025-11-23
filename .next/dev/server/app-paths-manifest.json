@@ -18,8 +18,10 @@
   "/purchases/page": "app/purchases/page.js",
   "/sales-import/page": "app/sales-import/page.js",
   "/sales-manual/page": "app/sales-manual/page.js",
+  "/settings/page": "app/settings/page.js",
   "/supplier-sessions/page": "app/supplier-sessions/page.js",
   "/suppliers/page": "app/suppliers/page.js",
+  "/transactions-history/page": "app/transactions-history/page.js",
   "/variants/page": "app/variants/page.js",
   "/warehouses/page": "app/warehouses/page.js"
 }

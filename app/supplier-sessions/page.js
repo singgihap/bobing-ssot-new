@@ -5,6 +5,8 @@ import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, runTransaction, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { sortBySize } from '@/lib/utils';
 import Sortable from 'sortablejs';
+import { Portal } from '@/lib/usePortal';
+
 
 export default function VirtualStockPage() {
     const [suppliers, setSuppliers] = useState([]);
@@ -21,13 +23,27 @@ export default function VirtualStockPage() {
     const [currentModalProd, setCurrentModalProd] = useState(null);
     const [modalUpdates, setModalUpdates] = useState({});
 
+
     useEffect(() => { fetchData(); }, []);
+
+    // ✅ Set default supplier ke Mas Tohir setelah data loaded
+    useEffect(() => {
+        if (suppliers.length > 0 && !selectedSupplierId) {
+            const masTohir = suppliers.find(s => s.name === 'Mas Tohir');
+            if (masTohir) {
+                setSelectedSupplierId(masTohir.id);
+                handleSupplierChange({ target: { value: masTohir.id } });
+            }
+        }
+    }, [suppliers]);
+
 
     useEffect(() => {
         if (gridRef.current && visibleProducts.length > 0) {
             new Sortable(gridRef.current, { animation: 150, ghostClass: 'opacity-50' });
         }
     }, [visibleProducts]);
+
 
     const fetchData = async () => {
         try {
@@ -46,12 +62,14 @@ export default function VirtualStockPage() {
         } catch (e) { console.error(e); }
     };
 
+
     const handleSupplierChange = (e) => {
         const suppId = e.target.value;
         setSelectedSupplierId(suppId);
         if (!suppId) { setVisibleProducts([]); return; }
         const wh = warehouses.find(w => w.type === 'virtual_supplier' && w.supplier_id === suppId);
         if (!wh) { alert("Supplier ini belum punya Gudang Virtual."); return; }
+
 
         const grouped = {};
         variants.forEach(v => {
@@ -67,7 +85,42 @@ export default function VirtualStockPage() {
         setVisibleProducts(Object.values(grouped).sort((a,b) => (a.base_sku||'').localeCompare(b.base_sku||'')));
     };
 
+
     const openModal = (prod) => { setCurrentModalProd(prod); setModalUpdates({}); setModalOpen(true); };
+
+    // ✅ Calculate total updates
+    const calculateUpdatesSummary = () => {
+        const wh = warehouses.find(w => w.type === 'virtual_supplier' && w.supplier_id === selectedSupplierId);
+        let totalItemsChanged = 0;
+        let totalQtyBefore = 0;
+        let totalQtyAfter = 0;
+
+        Object.keys(modalUpdates).forEach(vid => {
+            const newQty = parseInt(modalUpdates[vid]);
+            const oldQty = snapshots[`${vid}_${wh.id}`]?.qty || 0;
+            
+            if (!isNaN(newQty) && newQty !== oldQty) {
+                totalItemsChanged++;
+                totalQtyBefore += oldQty;
+                totalQtyAfter += newQty;
+            }
+        });
+
+        // Also count unchanged items
+        const totalItems = currentModalProd?.variants.length || 0;
+
+        return {
+            itemsChanged: totalItemsChanged,
+            totalItems: totalItems,
+            totalQtyBefore,
+            totalQtyAfter,
+            totalDiff: totalQtyAfter - totalQtyBefore,
+            hasChanges: totalItemsChanged > 0
+        };
+    };
+
+    const summary = calculateUpdatesSummary();
+
 
     const saveModal = async () => {
         const wh = warehouses.find(w => w.type === 'virtual_supplier' && w.supplier_id === selectedSupplierId);
@@ -78,6 +131,7 @@ export default function VirtualStockPage() {
             if (!isNaN(real) && real !== current) updates.push({ variantId: vid, real, diff: real - current });
         });
         if(updates.length === 0) { setModalOpen(false); return; }
+
 
         try {
             await runTransaction(db, async (t) => {
@@ -95,6 +149,7 @@ export default function VirtualStockPage() {
         } catch(e) { alert(e.message); }
     };
 
+
     return (
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -107,6 +162,7 @@ export default function VirtualStockPage() {
                     {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
             </div>
+
 
             {selectedSupplierId && (
                 <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -124,6 +180,7 @@ export default function VirtualStockPage() {
             )}
 
             {/* Update Stock Modal (Centered Dark) */}
+            <Portal>
             {modalOpen && currentModalProd && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[80vh] flex flex-col ring-1 ring-lumina-gold/20">
@@ -175,6 +232,7 @@ export default function VirtualStockPage() {
                     </div>
                 </div>
             )}
+            </Portal>
         </div>
     );
 }

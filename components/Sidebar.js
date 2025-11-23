@@ -4,8 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { useLayout } from '../context/LayoutContext';
-import { signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -68,7 +66,6 @@ export default function Sidebar() {
       <aside 
         className={`
           bg-lumina-surface border-r border-lumina-border font-sans z-40
-          /* FIX SCROLLING: Gunakan h-screen fixed atau h-full relatif terhadap layout parent */
           fixed md:static top-0 left-0 h-full 
           flex flex-col shrink-0
           transition-all duration-300 ease-in-out
@@ -76,7 +73,7 @@ export default function Sidebar() {
           ${isSidebarCollapsed ? 'w-20' : 'w-64'}
         `}
       >
-        {/* HEADER LOGO (Tanpa Tombol Toggle) */}
+        {/* HEADER LOGO */}
         <div className={`h-16 flex items-center border-b border-lumina-border shrink-0 transition-all ${isSidebarCollapsed ? 'justify-center px-0' : 'justify-start px-6'}`}>
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="w-8 h-8 shrink-0 bg-gradient-to-br from-lumina-gold to-[#F6C945] rounded-lg flex items-center justify-center text-black shadow-gold-glow">
@@ -91,9 +88,8 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* MENU LIST (Scrollable Area) */}
-        {/* FIX SCROLL: flex-1 dan overflow-y-auto wajib ada di sini */}
-        <nav className="flex-1 px-0 py-4 overflow-y-auto scrollbar-hide">
+        {/* MENU LIST */}
+        <nav className="flex-1 px-0 py-4 overflow-y-auto scrollbar-hide pb-10">
           
           <NavHeader title="Overview" />
           <NavItem href="/dashboard" label="Dashboard" icon={<Icon d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />} />
@@ -116,6 +112,7 @@ export default function Sidebar() {
           <NavItem href="/purchases" label="Pembelian" icon={<Icon d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />} />
 
           <NavHeader title="Penjualan" />
+          <NavItem href="/transactions-history" label="Sales Order" icon={<Icon d="M9 12h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />} />
           <NavItem href="/sales-manual" label="Kasir (POS)" icon={<Icon d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />} />
           <NavItem href="/sales-import" label="Import Sales" icon={<Icon d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />} />
           
@@ -131,25 +128,7 @@ export default function Sidebar() {
           <div className="h-20"></div>
         </nav>
 
-        {/* FOOTER USER */}
-        <div className={`p-4 border-t border-lumina-border bg-lumina-base/50 shrink-0 transition-all ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
-          <div className={`flex items-center gap-3 mb-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-9 h-9 rounded-full bg-lumina-border flex items-center justify-center text-white text-xs font-bold ring-1 ring-lumina-highlight shrink-0">
-              {user?.email?.charAt(0).toUpperCase()}
-            </div>
-            {!isSidebarCollapsed && (
-              <div className="flex-1 min-w-0 overflow-hidden">
-                <p className="text-xs font-medium text-white truncate font-display">{user?.email}</p>
-                <p className="text-[10px] text-emerald-500 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Online
-                </p>
-              </div>
-            )}
-          </div>
-          <button onClick={() => signOut(auth)} className={`w-full py-2.5 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/5 hover:bg-rose-500/10 rounded-lg border border-rose-500/20 uppercase tracking-wider transition-all ${isSidebarCollapsed ? 'px-0' : ''}`}>
-            {isSidebarCollapsed ? <Icon d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /> : "Sign Out"}
-          </button>
-        </div>
+        {/* FOOTER DIHAPUS SESUAI REQUEST */}
       </aside>
     </>
   );
