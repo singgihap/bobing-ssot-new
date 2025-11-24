@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, orderBy, getAggregateFromServer, sum } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, getAggregateFromServer, sum, doc, getDoc, limit } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, BarElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -9,11 +9,10 @@ import { Line, Doughnut } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
 
 // --- KONFIGURASI CACHE (OPTIMIZED) ---
-// Menggunakan localStorage agar cache persist antar sesi/tab
-const CACHE_MASTER_KEY = 'lumina_dash_master_v2'; 
-const CACHE_SALES_PREFIX = 'lumina_dash_sales_v2_'; 
-const CACHE_DURATION_MASTER = 15 * 60 * 1000; // 15 Menit untuk Master Data (Hemat Reads)
-const CACHE_DURATION_SALES = 5 * 60 * 1000;   // 5 Menit untuk Sales (Realtime but cached)
+const CACHE_MASTER_KEY = 'lumina_dash_master_v3'; 
+const CACHE_SALES_PREFIX = 'lumina_dash_sales_v3_'; 
+const CACHE_DURATION_MASTER = 30 * 60 * 1000;
+const CACHE_DURATION_SALES = 5 * 60 * 1000;
 
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
@@ -21,6 +20,7 @@ export default function Dashboard() {
     
     // Data States
     const [masterData, setMasterData] = useState(null);
+    const [inventoryStats, setInventoryStats] = useState({ total_value: 0, total_qty: 0 });
     
     // UI States
     const [kpi, setKpi] = useState({ gross: 0, net: 0, profit: 0, margin: 0, cash: 0, inventoryAsset: 0, txCount: 0 });
@@ -30,9 +30,9 @@ export default function Dashboard() {
     const [lowStockItems, setLowStockItems] = useState([]);
     const [recentSales, setRecentSales] = useState([]);
 
-    // 1. Fetch Master Data (Optimized)
+    // 1. Fetch Master Data (Optimized & Aggregated)
     const fetchMasterData = async () => {
-        // Cek Cache LocalStorage (Persist walau tab ditutup)
+        // Cek Cache LocalStorage
         if (typeof window !== 'undefined') {
             const cached = localStorage.getItem(CACHE_MASTER_KEY);
             if (cached) {
@@ -41,60 +41,80 @@ export default function Dashboard() {
             }
         }
 
-        // COST OPTIMIZATION: Gunakan Aggregation Query untuk Cash Balance
-        // Biaya: 1 Read (berapapun jumlah dokumennya)
+        // COST OPTIMIZATION:
+        // 1. Cash Balance via Aggregation (1 Read)
         const cashAggPromise = getAggregateFromServer(collection(db, "cash_accounts"), {
             totalBalance: sum('balance')
         });
 
-        // Fetch Data Lain (Tetap diambil karena butuh detail untuk inventory value)
-        const [snapCashAgg, snapStock, snapVar, snapProd] = await Promise.all([
+        // 2. Inventory Stats via Cloud Function Aggregation Doc (1 Read)
+        // Menggantikan pengambilan ribuan stock_snapshots
+        const invStatsPromise = getDoc(doc(db, "stats_inventory", "general"));
+
+        // 3. Low Stock Items via Query (Hanya ambil yg < 5, limit 10)
+        const lowStockPromise = getDocs(query(collection(db, "stock_snapshots"), where("qty", "<=", 5), limit(10)));
+
+        // 4. Master Products & Variants (Tetap butuh untuk mapping nama)
+        const productsPromise = getDocs(collection(db, "products"));
+        const variantsPromise = getDocs(collection(db, "product_variants"));
+
+        const [snapCashAgg, snapInvStats, snapLowStock, snapProd, snapVar] = await Promise.all([
             cashAggPromise,
-            getDocs(collection(db, "stock_snapshots")),
-            getDocs(collection(db, "product_variants")),
-            getDocs(collection(db, "products"))
+            invStatsPromise,
+            lowStockPromise,
+            productsPromise,
+            variantsPromise
         ]);
 
         // Process Data
         const cashBalance = snapCashAgg.data().totalBalance || 0;
         
+        const invData = snapInvStats.exists() ? snapInvStats.data() : { total_value: 0, total_qty: 0 };
+        setInventoryStats(invData);
+
         const products = [];
         snapProd.forEach(d => products.push({ id: d.id, name: d.data().name }));
         
         const variants = [];
         snapVar.forEach(d => variants.push({ id: d.id, ...d.data() }));
         
-        const stocks = [];
-        snapStock.forEach(d => stocks.push({ ...d.data() }));
+        // Process Low Stock (Mapping ID ke Nama)
+        const lowStocks = [];
+        snapLowStock.forEach(d => {
+            const s = d.data();
+            const v = variants.find(vr => vr.id === s.variant_id);
+            const p = v ? products.find(pr => pr.id === v.product_id) : null;
+            if (v && p) {
+                lowStocks.push({
+                    id: d.id,
+                    sku: v.sku,
+                    name: p.name,
+                    qty: s.qty,
+                    min: v.min_stock || 5
+                });
+            }
+        });
 
-        const result = { cashBalance, products, variants, stocks };
+        const result = { cashBalance, products, variants, lowStocks, invStats: invData };
         
-        // Simpan Cache ke LocalStorage
         if (typeof window !== 'undefined') {
             localStorage.setItem(CACHE_MASTER_KEY, JSON.stringify({ data: result, ts: Date.now() }));
         }
         return result;
     };
 
-    // 2. Fetch Sales Data (Optimized Cache)
     const fetchSalesData = async (range) => {
         const cacheKey = `${CACHE_SALES_PREFIX}${range}`;
-        
-        // Cek Cache LocalStorage
         if (typeof window !== 'undefined') {
             const cached = localStorage.getItem(cacheKey);
             if (cached) {
                 const { data, ts } = JSON.parse(cached);
                 if (Date.now() - ts < CACHE_DURATION_SALES) {
-                    return data.map(d => ({
-                        ...d,
-                        order_date: new Date(d.order_date)
-                    }));
+                    return data.map(d => ({ ...d, order_date: new Date(d.order_date) }));
                 }
             }
         }
 
-        // Tentukan Query Date
         const now = new Date();
         let start = new Date();
         let end = new Date();
@@ -108,34 +128,18 @@ export default function Dashboard() {
             end.setHours(23, 59, 59, 999);
         }
 
-        // Fetch Firebase
-        const q = query(
-            collection(db, "sales_orders"), 
-            where("order_date", ">=", start), 
-            where("order_date", "<=", end), 
-            orderBy("order_date", "asc")
-        );
+        const q = query(collection(db, "sales_orders"), where("order_date", ">=", start), where("order_date", "<=", end), orderBy("order_date", "asc"));
         const snap = await getDocs(q);
-        
         const sales = [];
         snap.forEach(d => {
             const data = d.data();
-            sales.push({
-                id: d.id,
-                ...data,
-                order_date: data.order_date.toDate()
-            });
+            sales.push({ id: d.id, ...data, order_date: data.order_date.toDate() });
         });
 
-        // Simpan Cache LocalStorage
-        if (typeof window !== 'undefined') {
-            localStorage.setItem(cacheKey, JSON.stringify({ data: sales, ts: Date.now() }));
-        }
-        
+        if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify({ data: sales, ts: Date.now() }));
         return sales;
     };
 
-    // 3. Main Orchestrator
     useEffect(() => {
         const loadDashboard = async () => {
             setLoading(true);
@@ -145,21 +149,13 @@ export default function Dashboard() {
                     currentMaster = await fetchMasterData();
                     setMasterData(currentMaster);
                 }
-
                 const sales = await fetchSalesData(filterRange);
                 processDashboard(sales, currentMaster);
-
-            } catch (e) {
-                console.error("Dashboard Error:", e);
-            } finally {
-                setLoading(false);
-            }
+            } catch (e) { console.error(e); } finally { setLoading(false); }
         };
-
         loadDashboard();
     }, [filterRange]);
 
-    // 4. Calculation Logic (Tetap Sama, hanya memastikan safety check)
     const processDashboard = (sales, master) => {
         if (!master) return;
 
@@ -190,57 +186,16 @@ export default function Dashboard() {
                 });
             }
 
-            recentList.push({ 
-                id: d.order_number, 
-                customer: d.customer_name, 
-                amount: d.gross_amount, 
-                status: d.payment_status, 
-                time: d.order_date 
-            });
-        });
-
-        // Inventory Logic
-        let totalInvValue = 0;
-        const lowStocks = [];
-        
-        const varMap = {}; 
-        master.variants.forEach(v => varMap[v.id] = v);
-        
-        const prodMap = {}; 
-        master.products.forEach(p => prodMap[p.id] = p.name);
-        
-        const stockAgg = {}; 
-        master.stocks.forEach(s => { 
-            if(s.qty > 0) stockAgg[s.variant_id] = (stockAgg[s.variant_id] || 0) + s.qty; 
-        });
-
-        Object.keys(varMap).forEach(vid => {
-            const v = varMap[vid];
-            const qty = stockAgg[vid] || 0;
-            totalInvValue += (qty * (v.cost || 0));
-            
-            if (qty <= (v.min_stock || 5)) {
-                lowStocks.push({ 
-                    id: vid, 
-                    sku: v.sku, 
-                    name: prodMap[v.product_id] || 'Unknown', 
-                    qty: qty, 
-                    min: v.min_stock || 5 
-                });
-            }
+            recentList.push({ id: d.order_number, customer: d.customer_name, amount: d.gross_amount, status: d.payment_status, time: d.order_date });
         });
 
         const profit = totalNet - totalCost;
         const margin = totalGross > 0 ? (profit / totalGross) * 100 : 0;
 
         setKpi({ 
-            gross: totalGross, 
-            net: totalNet, 
-            profit: profit, 
-            margin: margin.toFixed(1), 
-            txCount: sales.length, 
+            gross: totalGross, net: totalNet, profit: profit, margin: margin.toFixed(1), txCount: sales.length, 
             cash: master.cashBalance, 
-            inventoryAsset: totalInvValue 
+            inventoryAsset: master.invStats.total_value // Mengambil langsung dari Cloud Function result
         });
 
         setChartTrendData({
@@ -257,11 +212,10 @@ export default function Dashboard() {
         });
 
         setTopProducts(Object.entries(prodStats).sort((a, b) => b[1] - a[1]).slice(0, 5));
-        setLowStockItems(lowStocks.sort((a,b) => a.qty - b.qty).slice(0, 5));
+        setLowStockItems(master.lowStocks || []); // Menggunakan low stock dari query spesifik
         setRecentSales(recentList.reverse().slice(0, 5));
     };
 
-    // --- SUB COMPONENTS (DARK MODE) ---
     const KpiCard = ({ title, value, sub, icon, color, loading }) => (
         <div className="card-luxury p-6 relative overflow-hidden group hover:border-lumina-gold/30 transition-all">
             <div className="flex justify-between items-start relative z-10">
@@ -282,7 +236,6 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-8 fade-in pb-20">
-            {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
                 <div>
                     <h2 className="text-xl md:text-3xl font-display font-bold text-lumina-text tracking-tight">Executive Dashboard</h2>
@@ -297,15 +250,13 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <KpiCard title="Total Revenue" value={formatRupiah(kpi.gross)} sub={`${kpi.txCount} Transactions`} color="gold" icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>} loading={loading} />
                 <KpiCard title="Net Profit" value={formatRupiah(kpi.profit)} sub={`Margin ${kpi.margin}%`} color="emerald" icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>} loading={loading} />
                 <KpiCard title="Liquid Cash" value={formatRupiah(kpi.cash)} sub="All Wallets" color="blue" icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>} loading={loading} />
-                <KpiCard title="Inventory Value" value={formatRupiah(kpi.inventoryAsset)} sub="Total Assets (HPP)" color="amber" icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>} loading={loading} />
+                <KpiCard title="Inventory Value" value={formatRupiah(kpi.inventoryAsset)} sub="Cloud Aggregated (Live)" color="amber" icon={<svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>} loading={loading} />
             </div>
 
-            {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 card-luxury p-6">
                     <h3 className="font-bold text-lumina-text mb-6">Performance Trend</h3>
@@ -321,9 +272,7 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Tables */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Top Products */}
                 <div className="card-luxury overflow-hidden">
                     <div className="px-6 py-4 border-b border-lumina-border bg-lumina-surface">
                         <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">🔥 Top Products</h3>
@@ -340,10 +289,9 @@ export default function Dashboard() {
                     </table>
                 </div>
 
-                {/* Low Stock */}
                 <div className="card-luxury overflow-hidden border-rose-900/30">
                     <div className="px-6 py-4 border-b border-rose-900/30 bg-rose-900/10 flex justify-between items-center">
-                        <h3 className="font-bold text-rose-400 text-sm uppercase tracking-wider">⚠️ Low Stock</h3>
+                        <h3 className="font-bold text-rose-400 text-sm uppercase tracking-wider">⚠️ Low Stock (Top 10)</h3>
                         <span className="text-[10px] bg-rose-900/20 border border-rose-900/30 text-rose-400 px-2 py-0.5 rounded">{lowStockItems.length} Items</span>
                     </div>
                     <div className="divide-y divide-lumina-border">
@@ -362,7 +310,6 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Recent Sales */}
                 <div className="card-luxury overflow-hidden">
                     <div className="px-6 py-4 border-b border-lumina-border bg-lumina-surface">
                         <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">⚡ Recent Sales</h3>

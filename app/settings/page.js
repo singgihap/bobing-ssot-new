@@ -76,6 +76,53 @@ export default function SettingsPage() {
         fetchSettings();
     }, []);
 
+    // NEW: Fungsi untuk kalkulasi ulang total stok secara manual (Client-Side Batch)
+    const handleRecalculateInventory = async () => {
+        if(!confirm("Hitung ulang total aset? Ini akan membaca semua data stok (Heavy Operation). Lakukan hanya jika perlu.")) return;
+        
+        const tId = toast.loading("Menghitung ulang total aset...");
+        try {
+            // 1. Ambil semua variant untuk harga modal (cost)
+            const varSnap = await getDocs(collection(db, "product_variants"));
+            const costMap = {};
+            varSnap.forEach(d => {
+                costMap[d.id] = d.data().cost || 0;
+            });
+
+            // 2. Ambil semua snapshot stok
+            const stockSnap = await getDocs(collection(db, "stock_snapshots"));
+            
+            let totalQty = 0;
+            let totalValue = 0;
+
+            stockSnap.forEach(d => {
+                const s = d.data();
+                const qty = s.qty || 0;
+                const cost = costMap[s.variant_id] || 0;
+                
+                totalQty += qty;
+                totalValue += (qty * cost);
+            });
+
+            // 3. Update dokumen agregasi
+            await setDoc(doc(db, "stats_inventory", "general"), {
+                total_qty: totalQty,
+                total_value: totalValue,
+                last_calculated: serverTimestamp(),
+                updated_by: user?.email
+            });
+
+            toast.success(`Selesai! Total Qty: ${totalQty}, Value: ${totalValue}`, { id: tId });
+            
+            // Clear cache dashboard agar update terlihat
+            localStorage.removeItem('lumina_dash_master_v3');
+
+        } catch (e) {
+            console.error(e);
+            toast.error("Gagal menghitung ulang: " + e.message, { id: tId });
+        }
+    };
+
     const handleSave = async () => {
         setLoading(true);
         const toastId = toast.loading("Menyimpan pengaturan...");
