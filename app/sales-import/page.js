@@ -4,10 +4,14 @@ import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, writeBatch, serverTimestamp, query, where, orderBy, increment } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_VARIANTS = 'lumina_import_variants_cache'; // Shared cache dengan purchase import
-const CACHE_DURATION = 5 * 60 * 1000;
+// Konfigurasi Cache Keys (Reuse dari halaman lain)
+const CACHE_KEY_VARIANTS = 'lumina_variants_v2';
+const CACHE_KEY_POS_MASTER = 'lumina_pos_master_v2';
+const CACHE_KEY_INVENTORY = 'lumina_inventory_v2';
+const CACHE_KEY_ACCOUNTS = 'lumina_finance_accounts_v2';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 Jam reuse data master
 
 export default function ImportSalesPage() {
     const { user } = useAuth();
@@ -19,65 +23,139 @@ export default function ImportSalesPage() {
 
     useEffect(() => {
         const init = async () => {
-            // Load dropdown data (Ringan, tidak perlu cache berat)
-            const whSnap = await getDocs(query(collection(db, "warehouses"), orderBy("created_at")));
-            const whData = []; whSnap.forEach(d => { if(d.data().type!=='virtual_supplier') whData.push({id:d.id, ...d.data()}) });
+            if (typeof window === 'undefined') return;
+
+            // 1. Load Warehouses (Reuse Cache Inventory/POS)
+            let whData = null;
+            const invCache = localStorage.getItem(CACHE_KEY_INVENTORY);
+            const posCache = localStorage.getItem(CACHE_KEY_POS_MASTER);
+
+            if (invCache) {
+                try { 
+                    const p = JSON.parse(invCache); 
+                    if (p.warehouses && p.warehouses.length > 0) whData = p.warehouses;
+                } catch(e) {}
+            }
+            if (!whData && posCache) {
+                try {
+                    const p = JSON.parse(posCache);
+                    if (p.data?.wh && p.data.wh.length > 0) whData = p.data.wh;
+                } catch(e) {}
+            }
+
+            if (!whData) {
+                // Fallback Fetch
+                const whSnap = await getDocs(query(collection(db, "warehouses"), orderBy("created_at")));
+                whData = []; whSnap.forEach(d => { if(d.data().type!=='virtual_supplier') whData.push({id:d.id, ...d.data()}) });
+            } else {
+                 // Filter jika dari cache inventory mungkin masih ada virtual
+                 whData = whData.filter(d => d.type !== 'virtual_supplier');
+            }
             setWarehouses(whData);
 
-            const accSnap = await getDocs(query(collection(db, "chart_of_accounts"), orderBy("code")));
-            const accData = []; accSnap.forEach(d => { 
-                const c = d.data().category.toLowerCase();
-                if(c.includes('aset') || c.includes('kas') || c.includes('bank')) accData.push({id:d.id, ...d.data()});
+            // 2. Load Accounts (Reuse Cache Finance/POS)
+            let accData = null;
+            const accCache = localStorage.getItem(CACHE_KEY_ACCOUNTS);
+            
+            if (accCache) {
+                try {
+                    const p = JSON.parse(accCache);
+                    if (p.data && p.data.length > 0) accData = p.data;
+                } catch(e) {}
+            }
+            if (!accData && posCache) { // Coba dari POS
+                try {
+                     const p = JSON.parse(posCache);
+                     if (p.data?.acc) accData = p.data.acc;
+                } catch(e) {}
+            }
+
+            if (!accData) {
+                // Fallback Fetch
+                const accSnap = await getDocs(query(collection(db, "chart_of_accounts"), orderBy("code")));
+                accData = []; accSnap.forEach(d => accData.push({id:d.id, ...d.data()}));
+            }
+            
+            // Filter Account Cash/Bank Only
+            const filteredAcc = accData.filter(d => {
+                 const c = (d.category || '').toLowerCase();
+                 return c.includes('aset') || c.includes('kas') || c.includes('bank');
             });
-            setAccounts(accData);
+            setAccounts(filteredAcc);
         };
         init();
     }, []);
 
     const addLog = (msg, type='info') => setLogs(prev => [...prev, {msg, type}]);
 
-    // Invalidate Cache
-    const invalidateCaches = () => {
-        sessionStorage.removeItem('lumina_inventory_data'); // Stok berkurang
-        sessionStorage.removeItem('lumina_balance_data');   // Kas bertambah
-        sessionStorage.removeItem('lumina_cash_accounts');  // Saldo akun berubah
-        sessionStorage.removeItem('lumina_cash_transactions'); // History kas berubah
-        // Kita tidak cache sales history di dashboard/transaction list secara full, jadi aman.
+    // Invalidate Cache Related
+    const invalidateRelatedCaches = () => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem('lumina_inventory_v2');     // Stok berkurang
+        localStorage.removeItem('lumina_balance_v2');       // Kas bertambah
+        localStorage.removeItem('lumina_cash_data_v2');     // Saldo akun & history berubah
+        localStorage.removeItem('lumina_sales_history_v2'); // History sales baru
+        localStorage.removeItem('lumina_dash_master_v2');   // Dashboard KPI berubah
+        localStorage.removeItem('lumina_pos_snapshots_v2'); // POS Stock berubah
         console.log("Caches invalidated.");
     };
 
     const getMasterVariants = async () => {
-        const cached = sessionStorage.getItem(CACHE_VARIANTS);
-        if (cached) {
-            const { varMap, timestamp } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_DURATION) {
-                addLog("Menggunakan data varian dari Cache...", "info");
-                return varMap;
+        let varMap = {};
+        let loadedFromCache = false;
+
+        // 1. Cek Cache LocalStorage (Reuse dari Variants Page)
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(CACHE_KEY_VARIANTS);
+            if (cached) {
+                try {
+                    const { data, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp < CACHE_DURATION) {
+                        data.forEach(v => {
+                            if(v.sku) varMap[v.sku.toUpperCase().trim()] = v;
+                        });
+                        addLog(`Loaded ${Object.keys(varMap).length} variants from cache.`, "success");
+                        loadedFromCache = true;
+                    }
+                } catch(e) {}
             }
         }
 
-        addLog("Mengambil data master varian...", "info");
-        const vSnap = await getDocs(collection(db, "product_variants"));
-        const varMap = {};
-        vSnap.forEach(d => { 
-            const v=d.data(); 
-            if(v.sku) varMap[v.sku.toUpperCase().trim()] = {id:d.id, ...v}; 
-        });
+        // 2. Fetch Firebase (Hanya jika cache kosong)
+        if (!loadedFromCache) {
+            addLog("Mengambil data master varian dari server...", "warning");
+            const vSnap = await getDocs(collection(db, "product_variants"));
+            const variantsArray = [];
+            vSnap.forEach(d => { 
+                const v=d.data(); 
+                if(v.sku) {
+                    const variantObj = {id:d.id, ...v};
+                    varMap[v.sku.toUpperCase().trim()] = variantObj;
+                    variantsArray.push(variantObj);
+                } 
+            });
 
-        sessionStorage.setItem(CACHE_VARIANTS, JSON.stringify({ varMap, timestamp: Date.now() }));
+            // Simpan Cache untuk masa depan
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY_VARIANTS, JSON.stringify({ 
+                    data: variantsArray, 
+                    timestamp: Date.now() 
+                }));
+            }
+        }
         return varMap;
     };
 
     const handleFile = async (e) => {
         const file = e.target.files[0];
-        if (!file || !config.warehouse_id || !config.account_id) return alert("Lengkapi konfigurasi gudang & akun!");
+        if (!file || !config.warehouse_id || !config.account_id) return toast.error("Lengkapi konfigurasi gudang & akun!");
 
         setProcessing(true);
         setLogs([]);
         addLog("Mulai proses import...", "info");
 
         try {
-            // 1. Master SKU
+            // 1. Master SKU (Cached)
             const varMap = await getMasterVariants();
 
             const reader = new FileReader();
@@ -98,7 +176,7 @@ export default function ImportSalesPage() {
                     }
                 });
 
-                // 3. Process Batch
+                // 3. Process Batch (Chunked)
                 let batch = writeBatch(db);
                 let count = 0;
                 let opCount = 0;
@@ -121,13 +199,13 @@ export default function ImportSalesPage() {
                     const netAmount = parseFloat(String(head[kNet]||0).replace(/[^\d.-]/g,'')) || 0;
                     const grossAmount = parseFloat(String(head[kGross]||0).replace(/[^\d.-]/g,'')) || 0;
 
-                    // Check Existing
+                    // Check Existing (Cost: 1 Read per Order)
+                    // Idealnya batch check "in" query, tapi untuk import simple ini ok.
                     const qEx = query(collection(db, "sales_orders"), where("order_number", "==", id));
                     const sEx = await getDocs(qEx);
                     
                     if(!sEx.empty) {
                         const exDoc = sEx.docs[0];
-                        // Hanya update jika status berubah dari proses -> selesai
                         if(exDoc.data().status !== statusRaw) {
                             batch.update(doc(db, "sales_orders", exDoc.id), { status: statusRaw, updated_at: serverTimestamp() });
                             opCount++;
@@ -178,13 +256,13 @@ export default function ImportSalesPage() {
                                 });
                                 opCount++;
 
-                                // D. Update Snapshot (1 Op) - FIX PENTING!
+                                // D. Update Snapshot with Increment (1 Op, 0 Read)
                                 const snapRef = doc(db, "stock_snapshots", `${v.id}_${config.warehouse_id}`);
                                 batch.set(snapRef, {
                                     id: `${v.id}_${config.warehouse_id}`,
                                     variant_id: v.id,
                                     warehouse_id: config.warehouse_id,
-                                    qty: increment(-qty) // Mengurangi stok
+                                    qty: increment(-qty) 
                                 }, { merge: true });
                                 opCount++;
                             }
@@ -203,7 +281,7 @@ export default function ImportSalesPage() {
                             });
                             opCount++;
 
-                            // F. Update Account Balance (1 Op) - FIX PENTING!
+                            // F. Update Account Balance (1 Op, 0 Read)
                             const accRef = doc(db, "cash_accounts", config.account_id);
                             batch.update(accRef, {
                                 balance: increment(totalIn)
@@ -215,7 +293,7 @@ export default function ImportSalesPage() {
                         addLog(`NEW ${id}: Created`, "success");
                     }
 
-                    // Chunking Batch
+                    // Chunking Batch (Limit 500 operations)
                     if (opCount >= 450) {
                         await batch.commit();
                         batch = writeBatch(db);
@@ -227,8 +305,9 @@ export default function ImportSalesPage() {
                 // Commit sisa
                 if (opCount > 0) await batch.commit();
                 
-                invalidateCaches();
+                invalidateRelatedCaches();
                 addLog(`SELESAI! Proses ${count} order baru.`, "success");
+                toast.success("Import Sales Berhasil!");
                 setProcessing(false);
             };
             reader.readAsArrayBuffer(file);
@@ -293,7 +372,7 @@ export default function ImportSalesPage() {
                             <span>{l.msg}</span>
                         </div>
                     ))}
-                     {processing && <div className="text-lumina-gold animate-pulse mt-2">_ Processing data...</div>}
+                    {processing && <div className="text-lumina-gold animate-pulse mt-2">_ Processing data...</div>}
                 </div>
             </div>
         </div>

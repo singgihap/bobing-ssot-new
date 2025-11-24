@@ -3,11 +3,12 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, limit } from 'firebase/firestore';
 import { Portal } from '@/lib/usePortal';
-import toast from 'react-hot-toast'; // Import toast
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_brands_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_brands_v2';
+const CACHE_KEY_PRODUCTS = 'lumina_products_data_v2'; // Reuse cache dari Products Page
+const CACHE_DURATION = 60 * 60 * 1000; // 60 Menit (Master data jarang berubah)
 
 export default function BrandsPage() {
     const [brands, setBrands] = useState([]);
@@ -22,33 +23,54 @@ export default function BrandsPage() {
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            let data = null;
+
+            // 1. Cek Cache LocalStorage (Prioritas 1: Cache Sendiri)
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    if (Date.now() - timestamp < CACHE_DURATION) {
-                        setBrands(data);
-                        setLoading(false);
-                        return; 
+                    const parsed = JSON.parse(cached);
+                    if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+                        data = parsed.data;
                     }
                 }
             }
 
-            const q = query(
-                collection(db, "brands"), 
-                orderBy("name"), 
-                limit(100) 
-            );
-            
-            const s = await getDocs(q);
-            const d = []; 
-            s.forEach(x => d.push({id:x.id, ...x.data()}));
-            
-            setBrands(d);
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                data: d,
-                timestamp: Date.now()
-            }));
+            // 2. Cek Cache Produk (Prioritas 2: Reuse dari halaman Products - Hemat Biaya)
+            if (!data && !forceRefresh && typeof window !== 'undefined') {
+                const cachedProds = localStorage.getItem(CACHE_KEY_PRODUCTS);
+                if (cachedProds) {
+                    try {
+                        const parsed = JSON.parse(cachedProds);
+                        // Struktur cache products biasanya: { brands: [], categories: [], products: [], ... }
+                        if (parsed.brands && parsed.brands.length > 0 && (Date.now() - parsed.timestamp < CACHE_DURATION)) {
+                            data = parsed.brands;
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            // 3. Jika Cache Kosong, Fetch Firebase
+            if (!data) {
+                const q = query(
+                    collection(db, "brands"), 
+                    orderBy("name"), 
+                    limit(100) 
+                );
+                const s = await getDocs(q);
+                data = []; 
+                s.forEach(x => data.push({id:x.id, ...x.data()}));
+                
+                // Simpan ke LocalStorage
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                }
+            }
+
+            setBrands(data || []);
 
         } catch(e) {
             console.error(e);
@@ -61,7 +83,6 @@ export default function BrandsPage() {
     const handleSubmit = async (e) => { 
         e.preventDefault(); 
         
-        // Menggunakan toast.promise untuk feedback loading/sukses/gagal
         const savePromise = new Promise(async (resolve, reject) => {
             try { 
                 if(formData.id) {
@@ -70,7 +91,12 @@ export default function BrandsPage() {
                     await addDoc(collection(db,"brands"), {...formData, created_at: serverTimestamp()}); 
                 }
                 
-                sessionStorage.removeItem(CACHE_KEY);
+                // Invalidate Caches (Hapus cache sendiri DAN cache produk agar konsisten)
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem(CACHE_KEY);
+                    localStorage.removeItem(CACHE_KEY_PRODUCTS); 
+                }
+
                 setModalOpen(false); 
                 fetchData(true); 
                 resolve();

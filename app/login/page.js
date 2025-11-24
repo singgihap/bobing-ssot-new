@@ -1,4 +1,3 @@
-// app/login/page.js
 "use client";
 import { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -22,7 +21,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Auth tidak memakan kuota Firestore Reads
+      // Note: Auth operations are free (do not consume Firestore Reads)
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/dashboard');
     } catch (error) {

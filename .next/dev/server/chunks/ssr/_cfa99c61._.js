@@ -64,6 +64,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.node.mjs [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/usePortal.js [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-hot-toast/dist/index.mjs [app-ssr] (ecmascript)");
 'use client';
 ;
 ;
@@ -72,11 +73,13 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$
 ;
 ;
 ;
-// --- KONFIGURASI CACHE ---
-const CACHE_ACC = 'lumina_cash_accounts';
-const CACHE_TX = 'lumina_cash_transactions';
-const CACHE_CAT = 'lumina_cash_categories';
-const CACHE_TIME = 5 * 60 * 1000; // 5 Menit
+;
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY_DATA = 'lumina_cash_data_v2'; // Accounts & Transactions
+const CACHE_KEY_CATS = 'lumina_cash_categories_v2';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// Cache Key External untuk di-reuse
+const CACHE_KEY_POS = 'lumina_pos_master_v2';
 function CashFlowPage() {
     const [accounts, setAccounts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
     const [transactions, setTransactions] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
@@ -113,94 +116,68 @@ function CashFlowPage() {
         amount: '',
         description: ''
     });
+    // Helper: Invalidate Cache Relevan
+    const invalidateRelatedCaches = ()=>{
+        if ("TURBOPACK compile-time truthy", 1) return;
+        //TURBOPACK unreachable
+        ;
+    };
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
         fetchData();
-        fetchCategories(); // Load categories separate with cache
+        fetchCategories();
     }, []);
-    // 1. Fetch Categories (Optimized: Cache vs Realtime)
+    // 1. Fetch Categories (Optimized)
     const fetchCategories = async ()=>{
-        const cached = sessionStorage.getItem(CACHE_CAT);
-        if (cached) {
-            const { data, ts } = JSON.parse(cached);
-            if (Date.now() - ts < CACHE_TIME) {
-                setCategories(data);
-                return;
-            }
-        }
-        try {
-            const q = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "chart_of_accounts"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("code"));
-            const snap = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])(q);
-            const cats = [];
-            snap.forEach((d)=>{
-                const c = d.data();
-                if (c.category && (c.category.includes('Beban') || c.category.includes('Pendapatan'))) {
-                    cats.push({
-                        id: d.id,
-                        name: c.name,
-                        category: c.category
-                    });
-                }
-            });
-            setCategories(cats);
-            sessionStorage.setItem(CACHE_CAT, JSON.stringify({
-                data: cats,
-                ts: Date.now()
-            }));
-        } catch (e) {
-            console.error(e);
-        }
+        if ("TURBOPACK compile-time truthy", 1) return;
+        //TURBOPACK unreachable
+        ;
+        const cached = undefined;
     };
     // 2. Fetch Data Utama (Accounts & Transactions)
     const fetchData = async (forceRefresh = false)=>{
         setLoading(true);
         try {
-            // --- ACCOUNTS ---
             let accList = [];
-            if (!forceRefresh) {
-                const cAcc = sessionStorage.getItem(CACHE_ACC);
-                if (cAcc) {
-                    const { data, ts } = JSON.parse(cAcc);
-                    if (Date.now() - ts < CACHE_TIME) accList = data;
+            let transList = [];
+            let loadedFromCache = false;
+            // A. Cek Cache LocalStorage
+            if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+            ;
+            // B. Reuse Cache POS untuk Accounts (Jika cache halaman ini expired/kosong)
+            if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+            ;
+            // C. Fetch Firebase jika belum lengkap
+            const promises = [];
+            if (accList.length === 0) promises.push((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "cash_accounts"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("created_at"))));
+            if (!loadedFromCache) promises.push((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "cash_transactions"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("date", "desc"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["limit"])(50))));
+            if (promises.length > 0) {
+                const results = await Promise.all(promises);
+                let idx = 0;
+                if (accList.length === 0) {
+                    const accSnap = results[idx++];
+                    accList = [];
+                    accSnap.forEach((d)=>accList.push({
+                            id: d.id,
+                            ...d.data()
+                        }));
                 }
-            }
-            if (accList.length === 0) {
-                const accSnap = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "cash_accounts"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("created_at")));
-                accSnap.forEach((d)=>accList.push({
-                        id: d.id,
-                        ...d.data()
-                    }));
-                sessionStorage.setItem(CACHE_ACC, JSON.stringify({
-                    data: accList,
-                    ts: Date.now()
-                }));
+                if (!loadedFromCache) {
+                    const transSnap = results[idx];
+                    transList = [];
+                    transSnap.forEach((d)=>{
+                        const t = d.data();
+                        transList.push({
+                            id: d.id,
+                            ...t,
+                            date: t.date?.toDate ? t.date.toDate().toISOString() : t.date
+                        });
+                    });
+                }
+                // Simpan Cache Baru
+                if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+                ;
             }
             setAccounts(accList);
-            // --- TRANSACTIONS ---
-            let transList = [];
-            if (!forceRefresh) {
-                const cTx = sessionStorage.getItem(CACHE_TX);
-                if (cTx) {
-                    const { data, ts } = JSON.parse(cTx);
-                    if (Date.now() - ts < CACHE_TIME) transList = data;
-                }
-            }
-            if (transList.length === 0) {
-                // Gunakan Limit 50 untuk hemat reads
-                const transSnap = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "cash_transactions"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["orderBy"])("date", "desc"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["limit"])(50)));
-                transSnap.forEach((d)=>{
-                    const t = d.data();
-                    // Serialize Date agar aman masuk JSON Storage
-                    transList.push({
-                        id: d.id,
-                        ...t,
-                        date: t.date?.toDate ? t.date.toDate().toISOString() : t.date
-                    });
-                });
-                sessionStorage.setItem(CACHE_TX, JSON.stringify({
-                    data: transList,
-                    ts: Date.now()
-                }));
-            }
             setTransactions(transList);
             // Hitung Summary Client-Side
             let totalIn = 0, totalOut = 0;
@@ -214,18 +191,14 @@ function CashFlowPage() {
             });
         } catch (e) {
             console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error("Gagal memuat data kas");
         } finally{
             setLoading(false);
         }
     };
-    // Fungsi Helper: Reset Cache saat ada update data
-    const clearCacheAndRefresh = ()=>{
-        sessionStorage.removeItem(CACHE_ACC); // Saldo berubah
-        sessionStorage.removeItem(CACHE_TX); // List berubah
-        fetchData(true);
-    };
     const submitTransaction = async (e)=>{
         e.preventDefault();
+        const toastId = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].loading("Menyimpan...");
         try {
             const amt = parseInt(formData.amount);
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], async (t)=>{
@@ -253,14 +226,22 @@ function CashFlowPage() {
                 description: '',
                 date: ''
             });
-            clearCacheAndRefresh(); // Refresh data
+            invalidateRelatedCaches();
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].success("Transaksi disimpan!", {
+                id: toastId
+            });
+            fetchData(true);
         } catch (e) {
-            alert(e.message);
+            console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error(`Gagal: ${e.message}`, {
+                id: toastId
+            });
         }
     };
     const submitTransfer = async (e)=>{
         e.preventDefault();
-        if (tfData.from === tfData.to) return alert("Akun sama!");
+        if (tfData.from === tfData.to) return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error("Akun asal dan tujuan tidak boleh sama!");
+        const toastId = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].loading("Transferring...");
         try {
             const amt = parseInt(tfData.amount);
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], async (t)=>{
@@ -300,9 +281,16 @@ function CashFlowPage() {
                 amount: '',
                 note: ''
             });
-            clearCacheAndRefresh();
+            invalidateRelatedCaches();
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].success("Transfer Berhasil!", {
+                id: toastId
+            });
+            fetchData(true);
         } catch (e) {
-            alert(e.message);
+            console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error(`Gagal: ${e.message}`, {
+                id: toastId
+            });
         }
     };
     // --- HELPER DATA PROCESSING ---
@@ -368,6 +356,7 @@ function CashFlowPage() {
     };
     const submitEditTransaction = async (e)=>{
         e.preventDefault();
+        const toastId = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].loading("Updating...");
         try {
             const newAmount = parseInt(editFormData.amount);
             const oldAmount = editingTransaction.amount;
@@ -412,13 +401,21 @@ function CashFlowPage() {
                 amount: '',
                 description: ''
             });
-            clearCacheAndRefresh();
+            invalidateRelatedCaches();
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].success("Update Berhasil!", {
+                id: toastId
+            });
+            fetchData(true);
         } catch (e) {
-            alert('Error: ' + e.message);
+            console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error(`Gagal: ${e.message}`, {
+                id: toastId
+            });
         }
     };
     const handleDeleteTransaction = async ()=>{
         if (!confirm('Yakin ingin menghapus transaksi ini?')) return;
+        const toastId = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].loading("Menghapus...");
         try {
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["runTransaction"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], async (t)=>{
                 const transRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$node$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["doc"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["db"], "cash_transactions", editingTransaction.id);
@@ -434,9 +431,16 @@ function CashFlowPage() {
             });
             setModalEditOpen(false);
             setEditingTransaction(null);
-            clearCacheAndRefresh();
+            invalidateRelatedCaches();
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].success("Dihapus!", {
+                id: toastId
+            });
+            fetchData(true);
         } catch (e) {
-            alert('Error: ' + e.message);
+            console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"].error(`Gagal: ${e.message}`, {
+                id: toastId
+            });
         }
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -452,7 +456,7 @@ function CashFlowPage() {
                                 children: "Cash Flow"
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 319,
+                                lineNumber: 384,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -460,13 +464,13 @@ function CashFlowPage() {
                                 children: "Manage wallets & transactions."
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 322,
+                                lineNumber: 387,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 318,
+                        lineNumber: 383,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -478,7 +482,7 @@ function CashFlowPage() {
                                 children: "Transfer"
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 327,
+                                lineNumber: 392,
                                 columnNumber: 17
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -497,19 +501,19 @@ function CashFlowPage() {
                                 children: "Record Transaction"
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 333,
+                                lineNumber: 398,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 326,
+                        lineNumber: 391,
                         columnNumber: 13
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 317,
+                lineNumber: 382,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -525,7 +529,7 @@ function CashFlowPage() {
                                         children: acc.name
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 356,
+                                        lineNumber: 421,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -533,13 +537,13 @@ function CashFlowPage() {
                                         children: (0, __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["formatRupiah"])(acc.balance)
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 357,
+                                        lineNumber: 422,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 355,
+                                lineNumber: 420,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -549,12 +553,12 @@ function CashFlowPage() {
                                     children: acc.code
                                 }, void 0, false, {
                                     fileName: "[project]/app/cash/page.js",
-                                    lineNumber: 360,
+                                    lineNumber: 425,
                                     columnNumber: 29
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 359,
+                                lineNumber: 424,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -568,7 +572,7 @@ function CashFlowPage() {
                                             d: "M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"
                                         }, void 0, false, {
                                             fileName: "[project]/app/cash/page.js",
-                                            lineNumber: 363,
+                                            lineNumber: 428,
                                             columnNumber: 113
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -577,29 +581,29 @@ function CashFlowPage() {
                                             clipRule: "evenodd"
                                         }, void 0, false, {
                                             fileName: "[project]/app/cash/page.js",
-                                            lineNumber: 363,
+                                            lineNumber: 428,
                                             columnNumber: 165
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/cash/page.js",
-                                    lineNumber: 363,
+                                    lineNumber: 428,
                                     columnNumber: 29
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 362,
+                                lineNumber: 427,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, acc.id, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 354,
+                        lineNumber: 419,
                         columnNumber: 21
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 352,
+                lineNumber: 417,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -613,7 +617,7 @@ function CashFlowPage() {
                                 children: "Recent Transactions"
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 371,
+                                lineNumber: 436,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -621,13 +625,13 @@ function CashFlowPage() {
                                 children: "Last 50 entries"
                             }, void 0, false, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 372,
+                                lineNumber: 437,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 370,
+                        lineNumber: 435,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -642,7 +646,7 @@ function CashFlowPage() {
                                                 className: "pl-6 w-8"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 378,
+                                                lineNumber: 443,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -650,28 +654,28 @@ function CashFlowPage() {
                                                 children: "Date"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 379,
+                                                lineNumber: 444,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Wallet"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 380,
+                                                lineNumber: 445,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Category"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 381,
+                                                lineNumber: 446,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                 children: "Description"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 382,
+                                                lineNumber: 447,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -679,18 +683,18 @@ function CashFlowPage() {
                                                 children: "Amount (Editable)"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 383,
+                                                lineNumber: 448,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 377,
+                                        lineNumber: 442,
                                         columnNumber: 29
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/cash/page.js",
-                                    lineNumber: 376,
+                                    lineNumber: 441,
                                     columnNumber: 25
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -706,7 +710,7 @@ function CashFlowPage() {
                                                         children: [
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {}, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 395,
+                                                                lineNumber: 460,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -714,7 +718,7 @@ function CashFlowPage() {
                                                                 children: getDateObj(t.date).toLocaleDateString()
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 396,
+                                                                lineNumber: 461,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -722,7 +726,7 @@ function CashFlowPage() {
                                                                 children: accounts.find((a)=>a.id === t.account_id)?.name || 'Unknown'
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 397,
+                                                                lineNumber: 462,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -731,12 +735,12 @@ function CashFlowPage() {
                                                                     children: t.category || 'General'
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/cash/page.js",
-                                                                    lineNumber: 398,
+                                                                    lineNumber: 463,
                                                                     columnNumber: 53
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 398,
+                                                                lineNumber: 463,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -744,7 +748,7 @@ function CashFlowPage() {
                                                                 children: t.description
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 399,
+                                                                lineNumber: 464,
                                                                 columnNumber: 49
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -755,13 +759,13 @@ function CashFlowPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 400,
+                                                                lineNumber: 465,
                                                                 columnNumber: 49
                                                             }, this)
                                                         ]
                                                     }, t.id, true, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 394,
+                                                        lineNumber: 459,
                                                         columnNumber: 45
                                                     }, this);
                                                 }),
@@ -781,12 +785,12 @@ function CashFlowPage() {
                                                                             children: "▼"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 412,
+                                                                            lineNumber: 477,
                                                                             columnNumber: 86
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/cash/page.js",
-                                                                        lineNumber: 412,
+                                                                        lineNumber: 477,
                                                                         columnNumber: 53
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -796,12 +800,12 @@ function CashFlowPage() {
                                                                             children: group.date
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 413,
+                                                                            lineNumber: 478,
                                                                             columnNumber: 79
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/cash/page.js",
-                                                                        lineNumber: 413,
+                                                                        lineNumber: 478,
                                                                         columnNumber: 53
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -815,12 +819,12 @@ function CashFlowPage() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 414,
+                                                                            lineNumber: 479,
                                                                             columnNumber: 69
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/cash/page.js",
-                                                                        lineNumber: 414,
+                                                                        lineNumber: 479,
                                                                         columnNumber: 53
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -831,7 +835,7 @@ function CashFlowPage() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/cash/page.js",
-                                                                        lineNumber: 415,
+                                                                        lineNumber: 480,
                                                                         columnNumber: 53
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -842,13 +846,13 @@ function CashFlowPage() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/cash/page.js",
-                                                                        lineNumber: 416,
+                                                                        lineNumber: 481,
                                                                         columnNumber: 53
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 411,
+                                                                lineNumber: 476,
                                                                 columnNumber: 49
                                                             }, this),
                                                             expandedDates[group.date] && group.items.map((t)=>{
@@ -859,7 +863,7 @@ function CashFlowPage() {
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {}, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 422,
+                                                                            lineNumber: 487,
                                                                             columnNumber: 61
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -867,7 +871,7 @@ function CashFlowPage() {
                                                                             children: getDateObj(t.date).toLocaleDateString()
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 423,
+                                                                            lineNumber: 488,
                                                                             columnNumber: 61
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -875,7 +879,7 @@ function CashFlowPage() {
                                                                             children: accounts.find((a)=>a.id === t.account_id)?.name || 'Unknown'
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 424,
+                                                                            lineNumber: 489,
                                                                             columnNumber: 61
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -884,12 +888,12 @@ function CashFlowPage() {
                                                                                 children: t.category || 'General'
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/cash/page.js",
-                                                                                lineNumber: 425,
+                                                                                lineNumber: 490,
                                                                                 columnNumber: 65
                                                                             }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 425,
+                                                                            lineNumber: 490,
                                                                             columnNumber: 61
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -897,7 +901,7 @@ function CashFlowPage() {
                                                                             children: t.description
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 426,
+                                                                            lineNumber: 491,
                                                                             columnNumber: 61
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -908,20 +912,20 @@ function CashFlowPage() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/cash/page.js",
-                                                                            lineNumber: 427,
+                                                                            lineNumber: 492,
                                                                             columnNumber: 61
                                                                         }, this)
                                                                     ]
                                                                 }, t.id, true, {
                                                                     fileName: "[project]/app/cash/page.js",
-                                                                    lineNumber: 421,
+                                                                    lineNumber: 486,
                                                                     columnNumber: 57
                                                                 }, this);
                                                             })
                                                         ]
                                                     }, group.date, true, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 410,
+                                                        lineNumber: 475,
                                                         columnNumber: 45
                                                     }, this);
                                                 })
@@ -930,24 +934,24 @@ function CashFlowPage() {
                                     })()
                                 }, void 0, false, {
                                     fileName: "[project]/app/cash/page.js",
-                                    lineNumber: 386,
+                                    lineNumber: 451,
                                     columnNumber: 25
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/cash/page.js",
-                            lineNumber: 375,
+                            lineNumber: 440,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 374,
+                        lineNumber: 439,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 369,
+                lineNumber: 434,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Portal"], {
@@ -964,7 +968,7 @@ function CashFlowPage() {
                                         children: "Edit Transaction"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 448,
+                                        lineNumber: 513,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -973,13 +977,13 @@ function CashFlowPage() {
                                         children: "✕"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 449,
+                                        lineNumber: 514,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 447,
+                                lineNumber: 512,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1000,7 +1004,7 @@ function CashFlowPage() {
                                                     })
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 453,
+                                                lineNumber: 518,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1017,7 +1021,7 @@ function CashFlowPage() {
                                                         children: "-- Select Wallet --"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 455,
+                                                        lineNumber: 520,
                                                         columnNumber: 37
                                                     }, this),
                                                     accounts.map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1025,19 +1029,19 @@ function CashFlowPage() {
                                                             children: a.name
                                                         }, a.id, false, {
                                                             fileName: "[project]/app/cash/page.js",
-                                                            lineNumber: 456,
+                                                            lineNumber: 521,
                                                             columnNumber: 54
                                                         }, this))
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 454,
+                                                lineNumber: 519,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 452,
+                                        lineNumber: 517,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1054,7 +1058,7 @@ function CashFlowPage() {
                                                 children: "-- Select Category --"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 460,
+                                                lineNumber: 525,
                                                 columnNumber: 33
                                             }, this),
                                             categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1062,7 +1066,7 @@ function CashFlowPage() {
                                                     children: c.name
                                                 }, c.id, false, {
                                                     fileName: "[project]/app/cash/page.js",
-                                                    lineNumber: 461,
+                                                    lineNumber: 526,
                                                     columnNumber: 52
                                                 }, this)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1070,13 +1074,13 @@ function CashFlowPage() {
                                                 children: "Lainnya"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 462,
+                                                lineNumber: 527,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 459,
+                                        lineNumber: 524,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1091,7 +1095,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 464,
+                                        lineNumber: 529,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1106,7 +1110,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 465,
+                                        lineNumber: 530,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1119,7 +1123,7 @@ function CashFlowPage() {
                                                 children: "🗑️ Delete"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 467,
+                                                lineNumber: 532,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1132,7 +1136,7 @@ function CashFlowPage() {
                                                         children: "Cancel"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 469,
+                                                        lineNumber: 534,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1141,41 +1145,41 @@ function CashFlowPage() {
                                                         children: "Update"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 470,
+                                                        lineNumber: 535,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 468,
+                                                lineNumber: 533,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 466,
+                                        lineNumber: 531,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 451,
+                                lineNumber: 516,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 446,
+                        lineNumber: 511,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/cash/page.js",
-                    lineNumber: 445,
+                    lineNumber: 510,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 443,
+                lineNumber: 508,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Portal"], {
@@ -1192,7 +1196,7 @@ function CashFlowPage() {
                                         children: "Record Transaction"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 484,
+                                        lineNumber: 549,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1201,13 +1205,13 @@ function CashFlowPage() {
                                         children: "✕"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 485,
+                                        lineNumber: 550,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 483,
+                                lineNumber: 548,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1228,7 +1232,7 @@ function CashFlowPage() {
                                                     })
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 489,
+                                                lineNumber: 554,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1244,7 +1248,7 @@ function CashFlowPage() {
                                                         children: "Expense (Keluar)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 491,
+                                                        lineNumber: 556,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1252,19 +1256,19 @@ function CashFlowPage() {
                                                         children: "Income (Masuk)"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 492,
+                                                        lineNumber: 557,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 490,
+                                                lineNumber: 555,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 488,
+                                        lineNumber: 553,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1281,7 +1285,7 @@ function CashFlowPage() {
                                                 children: "-- Select Wallet --"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 496,
+                                                lineNumber: 561,
                                                 columnNumber: 33
                                             }, this),
                                             accounts.map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1289,13 +1293,13 @@ function CashFlowPage() {
                                                     children: a.name
                                                 }, a.id, false, {
                                                     fileName: "[project]/app/cash/page.js",
-                                                    lineNumber: 497,
+                                                    lineNumber: 562,
                                                     columnNumber: 50
                                                 }, this))
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 495,
+                                        lineNumber: 560,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1312,7 +1316,7 @@ function CashFlowPage() {
                                                 children: "-- Select Category --"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 500,
+                                                lineNumber: 565,
                                                 columnNumber: 33
                                             }, this),
                                             categories.map((c)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1320,7 +1324,7 @@ function CashFlowPage() {
                                                     children: c.name
                                                 }, c.id, false, {
                                                     fileName: "[project]/app/cash/page.js",
-                                                    lineNumber: 501,
+                                                    lineNumber: 566,
                                                     columnNumber: 52
                                                 }, this)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1328,13 +1332,13 @@ function CashFlowPage() {
                                                 children: "Lainnya"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 502,
+                                                lineNumber: 567,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 499,
+                                        lineNumber: 564,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1348,7 +1352,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 504,
+                                        lineNumber: 569,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1363,7 +1367,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 505,
+                                        lineNumber: 570,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1376,7 +1380,7 @@ function CashFlowPage() {
                                                 children: "Cancel"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 507,
+                                                lineNumber: 572,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1385,35 +1389,35 @@ function CashFlowPage() {
                                                 children: "Save Record"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 508,
+                                                lineNumber: 573,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 506,
+                                        lineNumber: 571,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 487,
+                                lineNumber: 552,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 482,
+                        lineNumber: 547,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/cash/page.js",
-                    lineNumber: 481,
+                    lineNumber: 546,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 479,
+                lineNumber: 544,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Portal"], {
@@ -1430,7 +1434,7 @@ function CashFlowPage() {
                                         children: "Transfer Funds"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 521,
+                                        lineNumber: 586,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1439,13 +1443,13 @@ function CashFlowPage() {
                                         children: "✕"
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 522,
+                                        lineNumber: 587,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 520,
+                                lineNumber: 585,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1462,7 +1466,7 @@ function CashFlowPage() {
                                                         children: "From"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 527,
+                                                        lineNumber: 592,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1479,7 +1483,7 @@ function CashFlowPage() {
                                                                 children: "Select"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 529,
+                                                                lineNumber: 594,
                                                                 columnNumber: 41
                                                             }, this),
                                                             accounts.map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1487,19 +1491,19 @@ function CashFlowPage() {
                                                                     children: a.name
                                                                 }, a.id, false, {
                                                                     fileName: "[project]/app/cash/page.js",
-                                                                    lineNumber: 530,
+                                                                    lineNumber: 595,
                                                                     columnNumber: 58
                                                                 }, this))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 528,
+                                                        lineNumber: 593,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 526,
+                                                lineNumber: 591,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1509,7 +1513,7 @@ function CashFlowPage() {
                                                         children: "To"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 534,
+                                                        lineNumber: 599,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1526,7 +1530,7 @@ function CashFlowPage() {
                                                                 children: "Select"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/cash/page.js",
-                                                                lineNumber: 536,
+                                                                lineNumber: 601,
                                                                 columnNumber: 41
                                                             }, this),
                                                             accounts.map((a)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
@@ -1534,25 +1538,25 @@ function CashFlowPage() {
                                                                     children: a.name
                                                                 }, a.id, false, {
                                                                     fileName: "[project]/app/cash/page.js",
-                                                                    lineNumber: 537,
+                                                                    lineNumber: 602,
                                                                     columnNumber: 58
                                                                 }, this))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/cash/page.js",
-                                                        lineNumber: 535,
+                                                        lineNumber: 600,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 533,
+                                                lineNumber: 598,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 525,
+                                        lineNumber: 590,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1567,7 +1571,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 541,
+                                        lineNumber: 606,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1580,7 +1584,7 @@ function CashFlowPage() {
                                             })
                                     }, void 0, false, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 542,
+                                        lineNumber: 607,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1593,7 +1597,7 @@ function CashFlowPage() {
                                                 children: "Cancel"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 544,
+                                                lineNumber: 609,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1602,41 +1606,41 @@ function CashFlowPage() {
                                                 children: "Transfer"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/cash/page.js",
-                                                lineNumber: 545,
+                                                lineNumber: 610,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/cash/page.js",
-                                        lineNumber: 543,
+                                        lineNumber: 608,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/cash/page.js",
-                                lineNumber: 524,
+                                lineNumber: 589,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/cash/page.js",
-                        lineNumber: 519,
+                        lineNumber: 584,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/cash/page.js",
-                    lineNumber: 518,
+                    lineNumber: 583,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/cash/page.js",
-                lineNumber: 516,
+                lineNumber: 581,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/cash/page.js",
-        lineNumber: 316,
+        lineNumber: 381,
         columnNumber: 9
     }, this);
 }

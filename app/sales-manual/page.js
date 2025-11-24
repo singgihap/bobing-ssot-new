@@ -1,14 +1,20 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, doc, runTransaction, addDoc, serverTimestamp, query, orderBy, where, limit, increment } from 'firebase/firestore';
+import { collection, getDocs, doc, runTransaction, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import { formatRupiah, sortBySize } from '@/lib/utils';
 import { Portal } from '@/lib/usePortal';
 import toast from 'react-hot-toast'; 
 
-// Konfigurasi Cache
-const CACHE_POS_MASTER = 'lumina_pos_master_data';
-const CACHE_DURATION = 5 * 60 * 1000; 
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_POS_MASTER = 'lumina_pos_master_v2'; // Cache utama POS
+const CACHE_POS_SNAPSHOTS = 'lumina_pos_snapshots_v2'; // Cache stok
+const CACHE_DURATION_MASTER = 30 * 60 * 1000; // 30 Menit (Master Data)
+const CACHE_DURATION_SNAPSHOTS = 5 * 60 * 1000; // 5 Menit (Stock Data)
+
+// Keys from other pages to reuse
+const CACHE_KEY_PRODUCTS = 'lumina_products_data_v2';
+const CACHE_KEY_VARIANTS = 'lumina_variants_v2';
 
 export default function PosPage() {
     const [products, setProducts] = useState([]);
@@ -23,7 +29,7 @@ export default function PosPage() {
     const [cashReceived, setCashReceived] = useState('');
     
     // Mobile State
-    const [activeMobileTab, setActiveMobileTab] = useState('products'); // 'products' | 'cart'
+    const [activeMobileTab, setActiveMobileTab] = useState('products'); 
 
     const [modalVariantOpen, setModalVariantOpen] = useState(false);
     const [selectedProdForVariant, setSelectedProdForVariant] = useState(null);
@@ -34,25 +40,75 @@ export default function PosPage() {
 
     const searchInputRef = useRef(null);
 
-    // Helper: Invalidate Cache Lain
-    const invalidateOtherCaches = () => {
-        sessionStorage.removeItem('lumina_inventory_data');
-        sessionStorage.removeItem('lumina_balance_data');
-        sessionStorage.removeItem('lumina_cash_accounts');
-        sessionStorage.removeItem('lumina_cash_transactions');
-        sessionStorage.removeItem('lumina_purchases_history');
+    // Helper: Invalidate Cache LocalStorage
+    const invalidateRelatedCaches = () => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(CACHE_POS_SNAPSHOTS); // Stok berubah
+        localStorage.removeItem('lumina_inventory_v2'); // Inventory perlu refresh
+        localStorage.removeItem('lumina_dash_master_v2'); // Dashboard cash/stock perlu refresh
+        localStorage.removeItem('lumina_sales_history_v2'); // History transaksi baru
     };
 
     useEffect(() => {
         const init = async () => {
+            setLoading(true);
             try {
+                if (typeof window === 'undefined') return;
+
+                // 1. Load / Reuse Master Data
                 let masterData = null;
-                const cached = sessionStorage.getItem(CACHE_POS_MASTER);
-                if (cached) {
-                    const { data, ts } = JSON.parse(cached);
-                    if (Date.now() - ts < CACHE_DURATION) masterData = data;
+                
+                // Cek Cache POS Sendiri
+                const cachedPos = localStorage.getItem(CACHE_POS_MASTER);
+                if (cachedPos) {
+                    const { data, ts } = JSON.parse(cachedPos);
+                    if (Date.now() - ts < CACHE_DURATION_MASTER) masterData = data;
                 }
 
+                // Jika tidak ada cache POS, coba reuse cache dari halaman Products/Variants (Zero Cost Strategy)
+                if (!masterData) {
+                    const rawProd = localStorage.getItem(CACHE_KEY_PRODUCTS);
+                    const rawVar = localStorage.getItem(CACHE_KEY_VARIANTS);
+                    
+                    if (rawProd && rawVar) {
+                        try {
+                            const pCache = JSON.parse(rawProd);
+                            const vCache = JSON.parse(rawVar);
+                            // Validasi umur cache lain (jika < 60 menit kita anggap valid utk POS awal)
+                            if (Date.now() - pCache.timestamp < 60 * 60 * 1000) {
+                                // Reconstruct structure: Product -> Variants
+                                const pList = pCache.products || [];
+                                const vList = vCache.data || [];
+                                
+                                const mergedProds = pList.map(p => ({
+                                    ...p,
+                                    variants: vList.filter(v => v.product_id === p.id)
+                                }));
+
+                                // Kita masih butuh warehouse, customer, accounts. Fetch parsial.
+                                const [whS, custS, accS] = await Promise.all([
+                                    getDocs(query(collection(db, "warehouses"), orderBy("created_at"))),
+                                    getDocs(query(collection(db, "customers"), orderBy("name"))),
+                                    getDocs(query(collection(db, "chart_of_accounts"), orderBy("code")))
+                                ]);
+
+                                const wh = []; whS.forEach(d => wh.push({id:d.id, ...d.data()}));
+                                const cust = []; custS.forEach(d => cust.push({id:d.id, ...d.data()}));
+                                const acc = []; 
+                                accS.forEach(d => { 
+                                    const c = d.data().category.toLowerCase(); 
+                                    if(c.includes('kas') || c.includes('bank')) acc.push({id:d.id, ...d.data()}); 
+                                });
+
+                                masterData = { wh, cust, acc, prods: mergedProds };
+                                // Simpan ke cache POS
+                                localStorage.setItem(CACHE_POS_MASTER, JSON.stringify({ data: masterData, ts: Date.now() }));
+                            }
+                        } catch (e) { console.warn("Failed to reuse cache", e); }
+                    }
+                }
+
+                // Fallback: Full Fetch jika tidak ada cache sama sekali
                 if (!masterData) {
                     const [whS, prodS, varS, custS, accS] = await Promise.all([
                         getDocs(query(collection(db, "warehouses"), orderBy("created_at"))),
@@ -78,7 +134,7 @@ export default function PosPage() {
                     });
 
                     masterData = { wh, cust, acc, prods };
-                    sessionStorage.setItem(CACHE_POS_MASTER, JSON.stringify({ data: masterData, ts: Date.now() }));
+                    localStorage.setItem(CACHE_POS_MASTER, JSON.stringify({ data: masterData, ts: Date.now() }));
                 }
 
                 setWarehouses(masterData.wh);
@@ -86,14 +142,31 @@ export default function PosPage() {
                 setAccounts(masterData.acc);
                 setProducts(masterData.prods);
 
-                if(masterData.wh.length > 0) setSelectedWh(masterData.wh.find(w=>w.type!=='virtual_supplier')?.id || masterData.wh[0].id);
+                if(masterData.wh.length > 0) {
+                    // Default ke warehouse non-virtual jika ada
+                    const defWh = masterData.wh.find(w=>w.type!=='virtual_supplier')?.id || masterData.wh[0].id;
+                    setSelectedWh(defWh);
+                }
+                
                 const defAcc = masterData.acc.find(a => a.code === '1101' || a.code === '1201'); 
                 if(defAcc) setPaymentAccId(defAcc.id);
 
-                const snapS = await getDocs(collection(db, "stock_snapshots"));
-                const snaps = {}; 
-                snapS.forEach(d => snaps[d.id] = d.data().qty || 0); 
-                setSnapshots(snaps);
+                // 2. Load Snapshots (Stok) - Cached separately
+                let stockData = {};
+                const cachedSnaps = localStorage.getItem(CACHE_POS_SNAPSHOTS);
+                if (cachedSnaps) {
+                    const { data, ts } = JSON.parse(cachedSnaps);
+                    if (Date.now() - ts < CACHE_DURATION_SNAPSHOTS) {
+                        stockData = data;
+                    }
+                }
+
+                if (Object.keys(stockData).length === 0) {
+                    const snapS = await getDocs(collection(db, "stock_snapshots"));
+                    snapS.forEach(d => stockData[d.id] = d.data().qty || 0); 
+                    localStorage.setItem(CACHE_POS_SNAPSHOTS, JSON.stringify({ data: stockData, ts: Date.now() }));
+                }
+                setSnapshots(stockData);
 
             } catch(e) { console.error(e); toast.error("Gagal memuat data POS"); } finally { setLoading(false); }
         };
@@ -169,7 +242,7 @@ export default function PosPage() {
                         order_date: serverTimestamp(), status: 'completed', payment_status: 'paid', 
                         gross_amount: total, net_amount: total, payment_account_id: paymentAccId, 
                         items_summary: cart.map(c => `${c.sku}(${c.qty})`).join(', '), 
-                        created_by: user?.email 
+                        created_by: auth.currentUser?.email 
                     });
                     
                     for(const i of cart) {
@@ -202,13 +275,16 @@ export default function PosPage() {
                     if(accDoc.exists()) t.update(accRef, { balance: (accDoc.data().balance || 0) + total });
                 });
 
-                invalidateOtherCaches();
+                invalidateRelatedCaches();
+                
+                // Update Local Snapshots Optimistically
                 const newSnaps = { ...snapshots };
                 cart.forEach(i => {
                     const key = `${i.id}_${selectedWh}`;
                     if (newSnaps[key]) newSnaps[key] -= i.qty;
                 });
                 setSnapshots(newSnaps);
+                localStorage.setItem(CACHE_POS_SNAPSHOTS, JSON.stringify({ data: newSnaps, ts: Date.now() })); // Update cache lokal
 
                 setInvoiceData({ id: orderId, total, received, change: received - total, items: cart, date: new Date(), customer: custName }); 
                 setModalInvoiceOpen(true); 

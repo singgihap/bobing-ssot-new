@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Portal } from '@/lib/usePortal'; 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
@@ -11,6 +10,7 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Pindahkan logic redirect ke sini untuk mencegah flash content
     if (!loading) {
       if (user) {
         router.push("/dashboard");

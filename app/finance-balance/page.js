@@ -1,13 +1,14 @@
-// app/finance-balance/page.js
 "use client";
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, getAggregateFromServer, sum, orderBy } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_balance_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_balance_v2';
+const CACHE_KEY_DASHBOARD = 'lumina_dash_master_v2'; // Reuse cache dashboard untuk inventory
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit (Data Neraca cukup stabil)
 
 export default function BalanceSheetPage() {
     const [assets, setAssets] = useState({ cash: 0, inventory: 0, receivable: 0, listCash: [] });
@@ -21,9 +22,9 @@ export default function BalanceSheetPage() {
     const calculate = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache (Hemat Reads & CPU)
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // 1. Cek Cache LocalStorage
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { assets: cAssets, liabilities: cLiabilities, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -35,11 +36,11 @@ export default function BalanceSheetPage() {
                 }
             }
 
-            // 2. Fetch Data Real-time (Jika cache expired / force refresh)
-            // Note: Tidak menggunakan limit() agar Kalkulasi Neraca AKURAT
+            // 2. Fetch Data (Optimized)
             
-            // A. Cash (Kas & Bank)
-            const snapCash = await getDocs(collection(db, "cash_accounts"));
+            // A. Cash (Kas & Bank) - Tetap fetch docs karena butuh rincian list nama akun
+            // Biaya: Jumlah akun kas (biasanya sedikit, < 20)
+            const snapCash = await getDocs(query(collection(db, "cash_accounts"), orderBy("created_at")));
             let totalCash = 0; 
             const listCash = [];
             snapCash.forEach(doc => { 
@@ -48,30 +49,62 @@ export default function BalanceSheetPage() {
                 listCash.push({ name: d.name, val: d.balance || 0 }); 
             });
 
-            // B. Inventory (HPP Aset) - Parallel Fetch
-            const [snapSnap, snapVar] = await Promise.all([
-                getDocs(collection(db, "stock_snapshots")), 
-                getDocs(collection(db, "product_variants"))
-            ]);
-            
-            const costMap = {}; 
-            snapVar.forEach(d => costMap[d.id] = d.data().cost || 0);
-            
-            let totalInv = 0; 
-            snapSnap.forEach(doc => { 
-                const d = doc.data(); 
-                if(d.qty > 0) totalInv += (d.qty * (costMap[d.variant_id] || 0)); 
-            });
+            // B. Inventory (HPP Aset) - Smart Reuse Cache
+            let totalInv = 0;
+            let inventorySource = 'fetch'; // 'cache' or 'fetch'
 
-            // C. Receivables (Piutang - Sales Unpaid)
-            const snapPiutang = await getDocs(query(collection(db, "sales_orders"), where("payment_status", "==", "unpaid")));
-            let totalPiutang = 0; 
-            snapPiutang.forEach(d => totalPiutang += (d.data().net_amount || 0));
+            if (typeof window !== 'undefined') {
+                const dashCache = localStorage.getItem(CACHE_KEY_DASHBOARD);
+                if (dashCache) {
+                    try {
+                        const { data, ts } = JSON.parse(dashCache);
+                        // Gunakan cache dashboard jika umurnya < 60 menit (cukup akurat untuk nilai aset global)
+                        if (Date.now() - ts < 60 * 60 * 1000 && data.variants && data.stocks) {
+                            // Reuse data dari dashboard (Biaya: 0 Read)
+                            const costMap = {};
+                            data.variants.forEach(v => costMap[v.id] = v.cost || 0);
+                            
+                            data.stocks.forEach(s => {
+                                if (s.qty > 0) totalInv += (s.qty * (costMap[s.variant_id] || 0));
+                            });
+                            inventorySource = 'cache';
+                        }
+                    } catch (e) {}
+                }
+            }
 
-            // D. Payables (Hutang - Purchase Unpaid)
-            const snapHutang = await getDocs(query(collection(db, "purchase_orders"), where("payment_status", "==", "unpaid")));
-            let totalHutang = 0; 
-            snapHutang.forEach(d => totalHutang += (d.data().total_amount || 0));
+            if (inventorySource === 'fetch') {
+                // Jika tidak ada cache dashboard, terpaksa fetch (Biaya Mahal, tapi jarang terjadi jika flow user normal)
+                const [snapSnap, snapVar] = await Promise.all([
+                    getDocs(collection(db, "stock_snapshots")), 
+                    getDocs(collection(db, "product_variants"))
+                ]);
+                
+                const costMap = {}; 
+                snapVar.forEach(d => costMap[d.id] = d.data().cost || 0);
+                
+                snapSnap.forEach(doc => { 
+                    const d = doc.data(); 
+                    if(d.qty > 0) totalInv += (d.qty * (costMap[d.variant_id] || 0)); 
+                });
+            }
+
+            // C. Receivables (Piutang) - AGGREGATION (Biaya: 1 Read)
+            const receivablesPromise = getAggregateFromServer(
+                query(collection(db, "sales_orders"), where("payment_status", "==", "unpaid")), 
+                { totalUnpaid: sum('net_amount') }
+            );
+
+            // D. Payables (Hutang) - AGGREGATION (Biaya: 1 Read)
+            const payablesPromise = getAggregateFromServer(
+                query(collection(db, "purchase_orders"), where("payment_status", "==", "unpaid")),
+                { totalUnpaid: sum('total_amount') }
+            );
+
+            const [snapPiutang, snapHutang] = await Promise.all([receivablesPromise, payablesPromise]);
+
+            const totalPiutang = snapPiutang.data().totalUnpaid || 0;
+            const totalHutang = snapHutang.data().totalUnpaid || 0;
 
             const newAssets = { cash: totalCash, inventory: totalInv, receivable: totalPiutang, listCash };
             const newLiabilities = { payable: totalHutang };
@@ -79,15 +112,18 @@ export default function BalanceSheetPage() {
             setAssets(newAssets);
             setLiabilities(newLiabilities);
 
-            // 3. Simpan Hasil Kalkulasi ke Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                assets: newAssets,
-                liabilities: newLiabilities,
-                timestamp: Date.now()
-            }));
+            // 3. Simpan Cache
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    assets: newAssets,
+                    liabilities: newLiabilities,
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch(e) { 
             console.error(e); 
+            toast.error("Gagal menghitung neraca");
         } finally { 
             setLoading(false); 
         }

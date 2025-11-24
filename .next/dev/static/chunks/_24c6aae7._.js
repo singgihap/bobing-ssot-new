@@ -66,6 +66,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$firebase$2f$
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@firebase/firestore/dist/index.esm2017.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$utils$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/utils.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/lib/usePortal.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-hot-toast/dist/index.mjs [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
@@ -74,39 +75,56 @@ var _s = __turbopack_context__.k.signature();
 ;
 ;
 ;
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_inventory_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+;
+// --- KONFIGURASI CACHE ---
+const CACHE_KEY = 'lumina_inventory_v2'; // Key baru untuk versi optimized
+const CACHE_DURATION = 15 * 60 * 1000; // 15 Menit (Data stok inventory tidak perlu realtime detik-an untuk list view)
 function InventoryPage() {
     _s();
     // --- STATE ---
     const [products, setProducts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [warehouses, setWarehouses] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [snapshots, setSnapshots] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
+    const [snapshots, setSnapshots] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({}); // Map: variantId_warehouseId -> qty
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [expandedProductId, setExpandedProductId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     // Modals State
     const [modalAdjOpen, setModalAdjOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [modalCardOpen, setModalCardOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [modalDetailOpen, setModalDetailOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [selectedProduct, setSelectedProduct] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     // Selected Data for Modals
     const [adjData, setAdjData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])({});
     const [cardData, setCardData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [modalGroup, setModalGroup] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('color');
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "InventoryPage.useEffect": ()=>{
             fetchData();
         }
     }["InventoryPage.useEffect"], []);
-    // --- FETCH DATA (Optimized) ---
+    // Helper untuk chunking query "IN" (Firestore limit 30 per batch)
+    const fetchInBatches = async (collectionName, fieldName, values)=>{
+        const results = [];
+        const chunks = [];
+        const chunkSize = 30; // Aman di bawah limit 30 Firestore
+        for(let i = 0; i < values.length; i += chunkSize){
+            chunks.push(values.slice(i, i + chunkSize));
+        }
+        await Promise.all(chunks.map(async (chunk)=>{
+            if (chunk.length === 0) return;
+            const q = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], collectionName), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["where"])(fieldName, 'in', chunk));
+            const snap = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])(q);
+            snap.forEach((d)=>results.push({
+                    id: d.id,
+                    ...d.data()
+                }));
+        }));
+        return results;
+    };
+    // --- FETCH DATA (Highly Optimized) ---
     const fetchData = async (forceRefresh = false)=>{
         setLoading(true);
         try {
-            // 1. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // 1. Cek Cache LocalStorage (Bukan Session)
+            if (!forceRefresh && ("TURBOPACK compile-time value", "object") !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { products, warehouses, snapshots, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -118,12 +136,10 @@ function InventoryPage() {
                     }
                 }
             }
-            // 2. Fetch Firebase (Jika cache expired / force)
-            const [snapWh, snapProd, snapVar, snapShot] = await Promise.all([
+            // 2. Fetch Data Ringan (Warehouses & Products Limit)
+            const [snapWh, snapProd] = await Promise.all([
                 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "warehouses"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["orderBy"])("created_at", "asc"))),
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "products"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["limit"])(100))),
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "product_variants"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["orderBy"])("sku", "asc"))),
-                (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "stock_snapshots")) // Perlu semua snapshot untuk total stock
+                (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "products"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["orderBy"])("name", "asc"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["limit"])(50))) // Limit 50: Hemat Biaya
             ]);
             const whList = [];
             snapWh.forEach((d)=>whList.push({
@@ -131,15 +147,8 @@ function InventoryPage() {
                     ...d.data()
                 }));
             setWarehouses(whList);
-            const shots = {};
-            snapShot.forEach((d)=>shots[d.id] = d.data().qty || 0);
-            setSnapshots(shots);
-            const vars = [];
-            snapVar.forEach((d)=>vars.push({
-                    id: d.id,
-                    ...d.data()
-                }));
             const prodMap = {};
+            const productIds = [];
             snapProd.forEach((d)=>{
                 const p = d.data();
                 prodMap[d.id] = {
@@ -148,41 +157,63 @@ function InventoryPage() {
                     variants: [],
                     totalStock: 0
                 };
+                productIds.push(d.id);
             });
+            // 3. Targeted Fetching (Hanya data terkait produk yang diambil)
+            let vars = [];
+            let shots = {};
+            if (productIds.length > 0) {
+                // Hanya ambil variants milik 50 produk ini
+                vars = await fetchInBatches("product_variants", "product_id", productIds);
+                const variantIds = vars.map((v)=>v.id);
+                if (variantIds.length > 0) {
+                    // Hanya ambil snapshots milik variants ini
+                    const snapshotList = await fetchInBatches("stock_snapshots", "variant_id", variantIds);
+                    snapshotList.forEach((s)=>{
+                        shots[`${s.variant_id}_${s.warehouse_id}`] = s.qty || 0; // Mapping ID manual jika perlu, atau pakai ID dokumen
+                        shots[s.id] = s.qty || 0; // Fallback access
+                    });
+                }
+            }
+            setSnapshots(shots);
             // Mapping Logic
             vars.forEach((v)=>{
                 if (prodMap[v.product_id]) {
                     let total = 0;
-                    whList.forEach((w)=>total += shots[`${v.id}_${w.id}`] || 0);
+                    whList.forEach((w)=>{
+                        // Coba akses pakai ID komposit standar
+                        const key = `${v.id}_${w.id}`;
+                        total += shots[key] || 0;
+                    });
                     prodMap[v.product_id].variants.push(v);
                     prodMap[v.product_id].totalStock += total;
                 }
             });
             const sorted = Object.values(prodMap).sort((a, b)=>b.totalStock - a.totalStock);
             setProducts(sorted);
-            // 3. Simpan Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                products: sorted,
-                warehouses: whList,
-                snapshots: shots,
-                timestamp: Date.now()
-            }));
+            // 4. Simpan Cache
+            if ("TURBOPACK compile-time truthy", 1) {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    products: sorted,
+                    warehouses: whList,
+                    snapshots: shots,
+                    timestamp: Date.now()
+                }));
+            }
         } catch (e) {
-            console.error(e);
+            console.error("Inventory Fetch Error:", e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].error("Gagal memuat stok");
         } finally{
             setLoading(false);
         }
     };
-    // --- LOGIC ---
+    // --- SEARCH LOGIC (Client Side Filter for Cached Data) ---
+    // Note: Untuk dataset besar (>1000), sebaiknya buat fungsi search khusus ke server
     const filteredProducts = products.filter((p)=>p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.base_sku.toLowerCase().includes(searchTerm.toLowerCase()));
     const toggleAccordion = (id)=>{
         setExpandedProductId(expandedProductId === id ? null : id);
     };
     // --- ACTIONS ---
-    const openDetail = (prod)=>{
-        setSelectedProduct(prod);
-        setModalDetailOpen(true);
-    };
     const openOpname = (v, prodName)=>{
         setAdjData({
             variantId: v.id,
@@ -206,9 +237,11 @@ function InventoryPage() {
     const submitOpname = async (e)=>{
         e.preventDefault();
         const diff = parseInt(adjData.realQty) - adjData.currentQty;
-        if (isNaN(diff) || diff === 0) return alert("Tidak ada perubahan.");
+        if (isNaN(diff) || diff === 0) return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].error("Tidak ada perubahan.");
+        const toastId = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].loading("Mengupdate stok...");
         try {
             await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["runTransaction"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], async (t)=>{
+                // 1. Catat Movement
                 const mRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["doc"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "stock_movements"));
                 t.set(mRef, {
                     variant_id: adjData.variantId,
@@ -219,33 +252,44 @@ function InventoryPage() {
                     ref_type: 'opname',
                     date: (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["serverTimestamp"])(),
                     notes: adjData.note,
-                    created_by: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["auth"].currentUser?.email
+                    created_by: __TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["auth"].currentUser?.email || 'system'
                 });
-                const sRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["doc"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "stock_snapshots", `${adjData.variantId}_${adjData.warehouseId}`);
+                // 2. Update Snapshot (Pakai ID Composite variantId_warehouseId)
+                const snapshotId = `${adjData.variantId}_${adjData.warehouseId}`;
+                const sRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["doc"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "stock_snapshots", snapshotId);
                 const sDoc = await t.get(sRef);
-                if (sDoc.exists()) t.update(sRef, {
-                    qty: parseInt(adjData.realQty)
-                });
-                else t.set(sRef, {
-                    id: sRef.id,
-                    variant_id: adjData.variantId,
-                    warehouse_id: adjData.warehouseId,
-                    qty: parseInt(adjData.realQty)
-                });
+                if (sDoc.exists()) {
+                    t.update(sRef, {
+                        qty: parseInt(adjData.realQty)
+                    });
+                } else {
+                    t.set(sRef, {
+                        id: snapshotId,
+                        variant_id: adjData.variantId,
+                        warehouse_id: adjData.warehouseId,
+                        qty: parseInt(adjData.realQty)
+                    });
+                }
             });
-            alert("Stok berhasil diupdate!");
-            // Clear Cache & Refresh
-            sessionStorage.removeItem(CACHE_KEY);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].success("Stok berhasil diupdate!", {
+                id: toastId
+            });
+            // Invalidate Cache & Refresh
+            if ("TURBOPACK compile-time truthy", 1) localStorage.removeItem(CACHE_KEY);
             setModalAdjOpen(false);
             fetchData(true);
         } catch (e) {
-            alert(e.message);
+            console.error(e);
+            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$hot$2d$toast$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].error(`Gagal: ${e.message}`, {
+                id: toastId
+            });
         }
     };
     const openCard = async (vId, sku)=>{
         setModalCardOpen(true);
         setCardData(null);
         try {
+            // Query history tetap on-demand (tidak di-cache agresif karena realtime)
             const q = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["query"])((0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["collection"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$firebase$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["db"], "stock_movements"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["where"])("variant_id", "==", vId), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["orderBy"])("date", "desc"), (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["limit"])(20));
             const snap = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$firebase$2f$firestore$2f$dist$2f$index$2e$esm2017$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["getDocs"])(q);
             setCardData(snap.docs.map((d)=>({
@@ -269,7 +313,7 @@ function InventoryPage() {
                                 children: "Inventory Control"
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 185,
+                                lineNumber: 237,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -277,13 +321,13 @@ function InventoryPage() {
                                 children: "Monitor stok fisik & virtual secara real-time."
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 188,
+                                lineNumber: 240,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 184,
+                        lineNumber: 236,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -303,17 +347,17 @@ function InventoryPage() {
                                         d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 195,
+                                        lineNumber: 247,
                                         columnNumber: 100
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/inventory/page.js",
-                                    lineNumber: 195,
+                                    lineNumber: 247,
                                     columnNumber: 21
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 194,
+                                lineNumber: 246,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -324,19 +368,19 @@ function InventoryPage() {
                                 onChange: (e)=>setSearchTerm(e.target.value)
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 197,
+                                lineNumber: 249,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 193,
+                        lineNumber: 245,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/inventory/page.js",
-                lineNumber: 183,
+                lineNumber: 235,
                 columnNumber: 17
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -354,21 +398,21 @@ function InventoryPage() {
                                             children: "Img"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 213,
+                                            lineNumber: 265,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                             children: "Product Name"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 214,
+                                            lineNumber: 266,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                             children: "Base SKU"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 215,
+                                            lineNumber: 267,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -376,7 +420,7 @@ function InventoryPage() {
                                             children: "Category"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 216,
+                                            lineNumber: 268,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -384,25 +428,25 @@ function InventoryPage() {
                                             children: "Total Stock"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 217,
+                                            lineNumber: 269,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                             className: "w-10"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 218,
+                                            lineNumber: 270,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/inventory/page.js",
-                                    lineNumber: 212,
+                                    lineNumber: 264,
                                     columnNumber: 29
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 211,
+                                lineNumber: 263,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -410,15 +454,15 @@ function InventoryPage() {
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                         colSpan: "6",
                                         className: "px-6 py-12 text-center text-lumina-muted animate-pulse",
-                                        children: "Calculating Stock..."
+                                        children: "Loading Inventory Data..."
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 223,
+                                        lineNumber: 275,
                                         columnNumber: 37
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/inventory/page.js",
-                                    lineNumber: 223,
+                                    lineNumber: 275,
                                     columnNumber: 33
                                 }, this) : filteredProducts.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -427,12 +471,12 @@ function InventoryPage() {
                                         children: "No products found."
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 225,
+                                        lineNumber: 277,
                                         columnNumber: 37
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/inventory/page.js",
-                                    lineNumber: 225,
+                                    lineNumber: 277,
                                     columnNumber: 33
                                 }, this) : filteredProducts.map((p)=>{
                                     const isExpanded = expandedProductId === p.id;
@@ -453,7 +497,7 @@ function InventoryPage() {
                                                                 className: "w-full h-full object-cover"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 241,
+                                                                lineNumber: 293,
                                                                 columnNumber: 61
                                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
                                                                 className: "w-5 h-5 text-lumina-muted opacity-30",
@@ -467,22 +511,22 @@ function InventoryPage() {
                                                                     d: "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                    lineNumber: 243,
+                                                                    lineNumber: 295,
                                                                     columnNumber: 169
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 243,
+                                                                lineNumber: 295,
                                                                 columnNumber: 61
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 239,
+                                                            lineNumber: 291,
                                                             columnNumber: 53
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 238,
+                                                        lineNumber: 290,
                                                         columnNumber: 49
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -493,7 +537,7 @@ function InventoryPage() {
                                                                 children: p.name
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 248,
+                                                                lineNumber: 300,
                                                                 columnNumber: 53
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -504,13 +548,13 @@ function InventoryPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 249,
+                                                                lineNumber: 301,
                                                                 columnNumber: 53
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 247,
+                                                        lineNumber: 299,
                                                         columnNumber: 49
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -520,12 +564,12 @@ function InventoryPage() {
                                                             children: p.base_sku
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 252,
+                                                            lineNumber: 304,
                                                             columnNumber: 53
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 251,
+                                                        lineNumber: 303,
                                                         columnNumber: 49
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -535,12 +579,12 @@ function InventoryPage() {
                                                             children: p.category
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 255,
+                                                            lineNumber: 307,
                                                             columnNumber: 53
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 254,
+                                                        lineNumber: 306,
                                                         columnNumber: 49
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -550,12 +594,12 @@ function InventoryPage() {
                                                             children: p.totalStock
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 258,
+                                                            lineNumber: 310,
                                                             columnNumber: 53
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 257,
+                                                        lineNumber: 309,
                                                         columnNumber: 49
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -574,28 +618,28 @@ function InventoryPage() {
                                                                     d: "M19 9l-7 7-7-7"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                    lineNumber: 264,
+                                                                    lineNumber: 316,
                                                                     columnNumber: 136
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 264,
+                                                                lineNumber: 316,
                                                                 columnNumber: 57
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 263,
+                                                            lineNumber: 315,
                                                             columnNumber: 53
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 262,
+                                                        lineNumber: 314,
                                                         columnNumber: 49
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 234,
+                                                lineNumber: 286,
                                                 columnNumber: 45
                                             }, this),
                                             isExpanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -619,7 +663,7 @@ function InventoryPage() {
                                                                                     children: "Variant SKU"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                    lineNumber: 278,
+                                                                                    lineNumber: 330,
                                                                                     columnNumber: 77
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -627,7 +671,7 @@ function InventoryPage() {
                                                                                     children: "Spec"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                    lineNumber: 279,
+                                                                                    lineNumber: 331,
                                                                                     columnNumber: 77
                                                                                 }, this),
                                                                                 warehouses.map((w)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -635,7 +679,7 @@ function InventoryPage() {
                                                                                         children: w.name
                                                                                     }, w.id, false, {
                                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                                        lineNumber: 281,
+                                                                                        lineNumber: 333,
                                                                                         columnNumber: 81
                                                                                     }, this)),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -643,18 +687,18 @@ function InventoryPage() {
                                                                                     children: "Actions"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                    lineNumber: 285,
+                                                                                    lineNumber: 337,
                                                                                     columnNumber: 77
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/inventory/page.js",
-                                                                            lineNumber: 277,
+                                                                            lineNumber: 329,
                                                                             columnNumber: 73
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                        lineNumber: 276,
+                                                                        lineNumber: 328,
                                                                         columnNumber: 69
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -667,7 +711,7 @@ function InventoryPage() {
                                                                                         children: v.sku
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                                        lineNumber: 291,
+                                                                                        lineNumber: 343,
                                                                                         columnNumber: 81
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -680,7 +724,7 @@ function InventoryPage() {
                                                                                                     children: v.color
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                                    lineNumber: 294,
+                                                                                                    lineNumber: 346,
                                                                                                     columnNumber: 89
                                                                                                 }, this),
                                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -688,18 +732,18 @@ function InventoryPage() {
                                                                                                     children: v.size
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                                    lineNumber: 295,
+                                                                                                    lineNumber: 347,
                                                                                                     columnNumber: 89
                                                                                                 }, this)
                                                                                             ]
                                                                                         }, void 0, true, {
                                                                                             fileName: "[project]/app/inventory/page.js",
-                                                                                            lineNumber: 293,
+                                                                                            lineNumber: 345,
                                                                                             columnNumber: 85
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                                        lineNumber: 292,
+                                                                                        lineNumber: 344,
                                                                                         columnNumber: 81
                                                                                     }, this),
                                                                                     warehouses.map((w)=>{
@@ -711,12 +755,12 @@ function InventoryPage() {
                                                                                                 children: qty
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                                                lineNumber: 302,
+                                                                                                lineNumber: 354,
                                                                                                 columnNumber: 93
                                                                                             }, this)
                                                                                         }, w.id, false, {
                                                                                             fileName: "[project]/app/inventory/page.js",
-                                                                                            lineNumber: 301,
+                                                                                            lineNumber: 353,
                                                                                             columnNumber: 89
                                                                                         }, this);
                                                                                     }),
@@ -734,7 +778,7 @@ function InventoryPage() {
                                                                                                     children: "Opname"
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                                    lineNumber: 310,
+                                                                                                    lineNumber: 362,
                                                                                                     columnNumber: 89
                                                                                                 }, this),
                                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -746,100 +790,100 @@ function InventoryPage() {
                                                                                                     children: "History"
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/inventory/page.js",
-                                                                                                    lineNumber: 313,
+                                                                                                    lineNumber: 365,
                                                                                                     columnNumber: 89
                                                                                                 }, this)
                                                                                             ]
                                                                                         }, void 0, true, {
                                                                                             fileName: "[project]/app/inventory/page.js",
-                                                                                            lineNumber: 309,
+                                                                                            lineNumber: 361,
                                                                                             columnNumber: 85
                                                                                         }, this)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                                        lineNumber: 308,
+                                                                                        lineNumber: 360,
                                                                                         columnNumber: 81
                                                                                     }, this)
                                                                                 ]
                                                                             }, v.id, true, {
                                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                                lineNumber: 290,
+                                                                                lineNumber: 342,
                                                                                 columnNumber: 77
                                                                             }, this))
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/inventory/page.js",
-                                                                        lineNumber: 288,
+                                                                        lineNumber: 340,
                                                                         columnNumber: 69
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 275,
+                                                                lineNumber: 327,
                                                                 columnNumber: 65
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 274,
+                                                            lineNumber: 326,
                                                             columnNumber: 61
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 273,
+                                                        lineNumber: 325,
                                                         columnNumber: 57
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/inventory/page.js",
-                                                    lineNumber: 272,
+                                                    lineNumber: 324,
                                                     columnNumber: 53
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 271,
+                                                lineNumber: 323,
                                                 columnNumber: 49
                                             }, this)
                                         ]
                                     }, p.id, true, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 232,
+                                        lineNumber: 284,
                                         columnNumber: 41
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 221,
+                                lineNumber: 273,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 210,
+                        lineNumber: 262,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/inventory/page.js",
-                    lineNumber: 209,
+                    lineNumber: 261,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/inventory/page.js",
-                lineNumber: 208,
+                lineNumber: 260,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "md:hidden grid grid-cols-1 gap-4",
                 children: loading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "text-center py-10 text-lumina-muted animate-pulse",
-                    children: "Calculating Stock..."
+                    children: "Loading Inventory..."
                 }, void 0, false, {
                     fileName: "[project]/app/inventory/page.js",
-                    lineNumber: 339,
+                    lineNumber: 391,
                     columnNumber: 21
                 }, this) : filteredProducts.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "text-center py-10 text-lumina-muted",
                     children: "No products found."
                 }, void 0, false, {
                     fileName: "[project]/app/inventory/page.js",
-                    lineNumber: 341,
+                    lineNumber: 393,
                     columnNumber: 22
                 }, this) : filteredProducts.map((p)=>{
                     const isExpanded = expandedProductId === p.id;
@@ -859,7 +903,7 @@ function InventoryPage() {
                                             className: "w-full h-full object-cover"
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 353,
+                                            lineNumber: 405,
                                             columnNumber: 45
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "w-full h-full flex items-center justify-center text-lumina-muted",
@@ -868,17 +912,17 @@ function InventoryPage() {
                                                 children: "IMG"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 355,
+                                                lineNumber: 407,
                                                 columnNumber: 127
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 355,
+                                            lineNumber: 407,
                                             columnNumber: 45
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 351,
+                                        lineNumber: 403,
                                         columnNumber: 37
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -892,7 +936,7 @@ function InventoryPage() {
                                                         children: p.base_sku
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 360,
+                                                        lineNumber: 412,
                                                         columnNumber: 46
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -905,19 +949,19 @@ function InventoryPage() {
                                                                 children: "qty"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 362,
+                                                                lineNumber: 414,
                                                                 columnNumber: 64
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 361,
+                                                        lineNumber: 413,
                                                         columnNumber: 46
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 359,
+                                                lineNumber: 411,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -925,7 +969,7 @@ function InventoryPage() {
                                                 children: p.name
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 365,
+                                                lineNumber: 417,
                                                 columnNumber: 41
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -939,7 +983,7 @@ function InventoryPage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 367,
+                                                        lineNumber: 419,
                                                         columnNumber: 45
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -947,25 +991,25 @@ function InventoryPage() {
                                                         children: p.category
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 368,
+                                                        lineNumber: 420,
                                                         columnNumber: 45
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 366,
+                                                lineNumber: 418,
                                                 columnNumber: 41
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 358,
+                                        lineNumber: 410,
                                         columnNumber: 37
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 350,
+                                lineNumber: 402,
                                 columnNumber: 33
                             }, this),
                             isExpanded && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -983,8 +1027,8 @@ function InventoryPage() {
                                                                 children: v.sku
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 380,
-                                                                columnNumber: 57
+                                                                lineNumber: 432,
+                                                                columnNumber: 61
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "text-[10px] text-white",
@@ -995,14 +1039,14 @@ function InventoryPage() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 381,
-                                                                columnNumber: 57
+                                                                lineNumber: 433,
+                                                                columnNumber: 61
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 379,
-                                                        columnNumber: 54
+                                                        lineNumber: 431,
+                                                        columnNumber: 58
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "flex gap-2",
@@ -1016,8 +1060,8 @@ function InventoryPage() {
                                                                 children: "Opname"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 384,
-                                                                columnNumber: 58
+                                                                lineNumber: 436,
+                                                                columnNumber: 62
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                                                 onClick: (e)=>{
@@ -1028,20 +1072,20 @@ function InventoryPage() {
                                                                 children: "History"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 385,
-                                                                columnNumber: 58
+                                                                lineNumber: 437,
+                                                                columnNumber: 62
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 383,
-                                                        columnNumber: 54
+                                                        lineNumber: 435,
+                                                        columnNumber: 58
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 378,
-                                                columnNumber: 49
+                                                lineNumber: 430,
+                                                columnNumber: 53
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                 className: "grid grid-cols-2 gap-2",
@@ -1056,50 +1100,50 @@ function InventoryPage() {
                                                                 children: w.name
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 396,
-                                                                columnNumber: 65
+                                                                lineNumber: 448,
+                                                                columnNumber: 69
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                 className: `font-mono font-bold ${qty > 0 ? 'text-white' : 'text-lumina-muted/30'}`,
                                                                 children: qty
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 397,
-                                                                columnNumber: 65
+                                                                lineNumber: 449,
+                                                                columnNumber: 69
                                                             }, this)
                                                         ]
                                                     }, w.id, true, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 395,
-                                                        columnNumber: 61
+                                                        lineNumber: 447,
+                                                        columnNumber: 65
                                                     }, this);
                                                 })
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 390,
-                                                columnNumber: 49
+                                                lineNumber: 442,
+                                                columnNumber: 53
                                             }, this)
                                         ]
                                     }, v.id, true, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 377,
-                                        columnNumber: 45
+                                        lineNumber: 429,
+                                        columnNumber: 49
                                     }, this))
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 375,
+                                lineNumber: 427,
                                 columnNumber: 37
                             }, this)
                         ]
                     }, p.id, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 348,
+                        lineNumber: 400,
                         columnNumber: 30
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/app/inventory/page.js",
-                lineNumber: 337,
+                lineNumber: 389,
                 columnNumber: 14
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Portal"], {
@@ -1116,7 +1160,7 @@ function InventoryPage() {
                                         children: "Stock Opname"
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 418,
+                                        lineNumber: 470,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1124,13 +1168,13 @@ function InventoryPage() {
                                         children: "Adjust stock discrepancy."
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 419,
+                                        lineNumber: 471,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 417,
+                                lineNumber: 469,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1146,7 +1190,7 @@ function InventoryPage() {
                                                         children: adjData.sku
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 426,
+                                                        lineNumber: 478,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1154,13 +1198,13 @@ function InventoryPage() {
                                                         children: adjData.productName
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 427,
+                                                        lineNumber: 479,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 425,
+                                                lineNumber: 477,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1171,7 +1215,7 @@ function InventoryPage() {
                                                         children: "System Qty"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 430,
+                                                        lineNumber: 482,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1179,19 +1223,19 @@ function InventoryPage() {
                                                         children: adjData.currentQty
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 431,
+                                                        lineNumber: 483,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 429,
+                                                lineNumber: 481,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 424,
+                                        lineNumber: 476,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -1205,7 +1249,7 @@ function InventoryPage() {
                                                         children: "Warehouse"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 437,
+                                                        lineNumber: 489,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
@@ -1217,18 +1261,18 @@ function InventoryPage() {
                                                                 children: w.name
                                                             }, w.id, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 439,
+                                                                lineNumber: 491,
                                                                 columnNumber: 62
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 438,
+                                                        lineNumber: 490,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 436,
+                                                lineNumber: 488,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1238,7 +1282,7 @@ function InventoryPage() {
                                                         children: "New Physical Quantity"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 444,
+                                                        lineNumber: 496,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -1254,13 +1298,13 @@ function InventoryPage() {
                                                         placeholder: "0"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 445,
+                                                        lineNumber: 497,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 443,
+                                                lineNumber: 495,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1270,7 +1314,7 @@ function InventoryPage() {
                                                         children: "Reason / Notes"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 449,
+                                                        lineNumber: 501,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -1285,13 +1329,13 @@ function InventoryPage() {
                                                         placeholder: "E.g. Broken goods, Found item..."
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 450,
+                                                        lineNumber: 502,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 448,
+                                                lineNumber: 500,
                                                 columnNumber: 33
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1304,7 +1348,7 @@ function InventoryPage() {
                                                         children: "Cancel"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 455,
+                                                        lineNumber: 507,
                                                         columnNumber: 37
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1313,41 +1357,41 @@ function InventoryPage() {
                                                         children: "Save Adjustment"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 456,
+                                                        lineNumber: 508,
                                                         columnNumber: 37
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 454,
+                                                lineNumber: 506,
                                                 columnNumber: 33
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 435,
+                                        lineNumber: 487,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 423,
+                                lineNumber: 475,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 416,
+                        lineNumber: 468,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/inventory/page.js",
-                    lineNumber: 415,
+                    lineNumber: 467,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/inventory/page.js",
-                lineNumber: 413,
+                lineNumber: 465,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$lib$2f$usePortal$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Portal"], {
@@ -1364,7 +1408,7 @@ function InventoryPage() {
                                         children: "Stock History"
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 471,
+                                        lineNumber: 523,
                                         columnNumber: 29
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1373,13 +1417,13 @@ function InventoryPage() {
                                         children: "✕"
                                     }, void 0, false, {
                                         fileName: "[project]/app/inventory/page.js",
-                                        lineNumber: 472,
+                                        lineNumber: 524,
                                         columnNumber: 29
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 470,
+                                lineNumber: 522,
                                 columnNumber: 25
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1396,21 +1440,21 @@ function InventoryPage() {
                                                         children: "Date"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 477,
+                                                        lineNumber: 529,
                                                         columnNumber: 41
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                         children: "Type"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 477,
+                                                        lineNumber: 529,
                                                         columnNumber: 71
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                         children: "Warehouse"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 477,
+                                                        lineNumber: 529,
                                                         columnNumber: 84
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -1418,25 +1462,25 @@ function InventoryPage() {
                                                         children: "Qty"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 477,
+                                                        lineNumber: 529,
                                                         columnNumber: 102
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                         children: "Note"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/inventory/page.js",
-                                                        lineNumber: 477,
+                                                        lineNumber: 529,
                                                         columnNumber: 137
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 477,
+                                                lineNumber: 529,
                                                 columnNumber: 37
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 476,
+                                            lineNumber: 528,
                                             columnNumber: 33
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -1447,12 +1491,12 @@ function InventoryPage() {
                                                     children: "Loading..."
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/inventory/page.js",
-                                                    lineNumber: 480,
+                                                    lineNumber: 532,
                                                     columnNumber: 54
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 480,
+                                                lineNumber: 532,
                                                 columnNumber: 50
                                             }, this) : cardData.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1461,12 +1505,12 @@ function InventoryPage() {
                                                     children: "No history found."
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/inventory/page.js",
-                                                    lineNumber: 480,
+                                                    lineNumber: 532,
                                                     columnNumber: 167
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/inventory/page.js",
-                                                lineNumber: 480,
+                                                lineNumber: 532,
                                                 columnNumber: 163
                                             }, this) : cardData.map((m)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                                     children: [
@@ -1475,7 +1519,7 @@ function InventoryPage() {
                                                             children: new Date(m.date.toDate()).toLocaleDateString()
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 482,
+                                                            lineNumber: 534,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1484,12 +1528,12 @@ function InventoryPage() {
                                                                 children: m.type
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/inventory/page.js",
-                                                                lineNumber: 483,
+                                                                lineNumber: 535,
                                                                 columnNumber: 49
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 483,
+                                                            lineNumber: 535,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1497,7 +1541,7 @@ function InventoryPage() {
                                                             children: warehouses.find((w)=>w.id === m.warehouse_id)?.name
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 484,
+                                                            lineNumber: 536,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1505,7 +1549,7 @@ function InventoryPage() {
                                                             children: m.qty > 0 ? `+${m.qty}` : m.qty
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 485,
+                                                            lineNumber: 537,
                                                             columnNumber: 45
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -1513,55 +1557,55 @@ function InventoryPage() {
                                                             children: m.notes
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/inventory/page.js",
-                                                            lineNumber: 486,
+                                                            lineNumber: 538,
                                                             columnNumber: 45
                                                         }, this)
                                                     ]
                                                 }, m.id, true, {
                                                     fileName: "[project]/app/inventory/page.js",
-                                                    lineNumber: 481,
+                                                    lineNumber: 533,
                                                     columnNumber: 41
                                                 }, this))
                                         }, void 0, false, {
                                             fileName: "[project]/app/inventory/page.js",
-                                            lineNumber: 479,
+                                            lineNumber: 531,
                                             columnNumber: 33
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/inventory/page.js",
-                                    lineNumber: 475,
+                                    lineNumber: 527,
                                     columnNumber: 29
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/inventory/page.js",
-                                lineNumber: 474,
+                                lineNumber: 526,
                                 columnNumber: 25
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/inventory/page.js",
-                        lineNumber: 469,
+                        lineNumber: 521,
                         columnNumber: 21
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/inventory/page.js",
-                    lineNumber: 468,
+                    lineNumber: 520,
                     columnNumber: 17
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/inventory/page.js",
-                lineNumber: 466,
+                lineNumber: 518,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/inventory/page.js",
-        lineNumber: 181,
+        lineNumber: 233,
         columnNumber: 9
     }, this);
 }
-_s(InventoryPage, "3Li8EWnORrnOpkFxwpCruMencts=");
+_s(InventoryPage, "I/bHwEbsy9KiUZiTRj+c6SKODLs=");
 _c = InventoryPage;
 var _c;
 __turbopack_context__.k.register(_c, "InventoryPage");

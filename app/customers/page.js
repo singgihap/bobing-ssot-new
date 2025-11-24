@@ -5,8 +5,9 @@ import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy,
 import { Portal } from '@/lib/usePortal';
 import toast from 'react-hot-toast';
 
-const CACHE_KEY = 'lumina_customers_data';
-const CACHE_DURATION = 5 * 60 * 1000; 
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_customers_v2';
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit (Data customer jarang berubah drastis)
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState([]);
@@ -17,11 +18,13 @@ export default function CustomersPage() {
 
     useEffect(() => { fetchData(); }, []);
 
+    // 1. Fetch Data (Optimized with LocalStorage)
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // A. Cek Cache LocalStorage
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { data, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -32,13 +35,18 @@ export default function CustomersPage() {
                 }
             }
 
+            // B. Fetch Firebase (Limit 100)
             const q = query(collection(db, "customers"), orderBy("name", "asc"), limit(100));
             const snap = await getDocs(q);
             const data = [];
             snap.forEach(d => data.push({id: d.id, ...d.data()}));
             
             setCustomers(data);
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+            
+            // C. Simpan Cache LocalStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+            }
 
         } catch (e) { 
             console.error(e); 
@@ -49,40 +57,69 @@ export default function CustomersPage() {
     };
 
     const scanFromSales = async () => {
-        if(!confirm("Scan 500 transaksi terakhir?")) return;
+        if(!confirm("Scan 500 transaksi terakhir untuk pelanggan baru?")) return;
         setScanning(true);
         const scanPromise = new Promise(async (resolve, reject) => {
             try {
+                // Query Heavy: 500 Reads (Hanya dijalankan manual oleh user)
                 const qSales = query(collection(db, "sales_orders"), orderBy("order_date", "desc"), limit(500));
                 const snapSales = await getDocs(qSales);
                 const newCandidates = {};
                 
+                // Process Data in Memory
                 snapSales.forEach(doc => {
                     const s = doc.data();
                     const name = s.customer_name || '';
-                    const phone = s.customer_phone || '';
-                    if (phone.length > 9 && !phone.includes('*') && !name.includes('*')) {
-                        if (!newCandidates[phone]) {
-                            newCandidates[phone] = { name, phone, address: s.shipping_address || '', type: 'end_customer' };
+                    const phone = s.customer_phone || ''; // Pastikan field ini ada di sales order atau sesuaikan logic
+                    
+                    // Basic validation untuk nomor hp valid dan bukan tamu (*)
+                    if (name && !name.toLowerCase().includes('guest') && !name.includes('*')) {
+                        // Gunakan Nama sebagai key unik jika phone tidak ada, atau phone jika ada
+                        const key = phone.length > 5 ? phone : name.toLowerCase();
+                        
+                        if (!newCandidates[key]) {
+                            newCandidates[key] = { 
+                                name, 
+                                phone, 
+                                address: s.shipping_address || '', 
+                                type: 'end_customer' 
+                            };
                         }
                     }
                 });
 
+                // Filter Duplikat dari State (Client Side)
+                // Note: Ini hanya membandingkan dengan 100 customer yang terload. 
+                // Idealnya cek ke DB, tapi demi hemat cost, kita filter based on cache dulu.
+                const existingNames = new Set(customers.map(c => c.name.toLowerCase()));
                 const existingPhones = new Set(customers.map(c => c.phone));
-                const finalToAdd = Object.values(newCandidates).filter(c => !existingPhones.has(c.phone));
+
+                const finalToAdd = Object.values(newCandidates).filter(c => {
+                    const hasPhone = c.phone && existingPhones.has(c.phone);
+                    const hasName = existingNames.has(c.name.toLowerCase());
+                    return !hasPhone && !hasName;
+                });
 
                 if (finalToAdd.length === 0) {
-                    resolve("Tidak ditemukan data baru.");
+                    resolve("Tidak ditemukan pelanggan baru yang belum tersimpan.");
                 } else {
+                    // Batch Write (Max 500 operations)
                     const batch = writeBatch(db);
-                    finalToAdd.forEach(c => {
+                    // Limit batch to 400 to be safe
+                    const batchList = finalToAdd.slice(0, 400);
+                    
+                    batchList.forEach(c => {
                         const ref = doc(collection(db, "customers"));
                         batch.set(ref, { ...c, created_at: serverTimestamp(), source: 'auto_scan' });
                     });
+                    
                     await batch.commit();
-                    sessionStorage.removeItem(CACHE_KEY);
+                    
+                    // Invalidate Cache
+                    if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
                     fetchData(true);
-                    resolve(`Berhasil menyimpan ${finalToAdd.length} pelanggan baru!`);
+                    
+                    resolve(`Berhasil menyimpan ${batchList.length} pelanggan baru!`);
                 }
             } catch (e) { 
                 reject(e); 
@@ -92,7 +129,7 @@ export default function CustomersPage() {
         });
 
         toast.promise(scanPromise, {
-            loading: 'Scanning...',
+            loading: 'Scanning sales history...',
             success: (msg) => msg,
             error: (err) => `Gagal: ${err.message}`,
         });
@@ -114,13 +151,16 @@ export default function CustomersPage() {
                     address: formData.address,
                     updated_at: serverTimestamp()
                 };
-                if (formData.id) await updateDoc(doc(db, "customers", formData.id), payload);
-                else { 
+                
+                if (formData.id) {
+                    await updateDoc(doc(db, "customers", formData.id), payload);
+                } else { 
                     payload.created_at = serverTimestamp(); 
                     await addDoc(collection(db, "customers"), payload); 
                 }
                 
-                sessionStorage.removeItem(CACHE_KEY);
+                // Refresh Cache
+                if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
                 setModalOpen(false); 
                 fetchData(true);
                 resolve();
@@ -138,7 +178,7 @@ export default function CustomersPage() {
         if(confirm("Hapus pelanggan?")) { 
             try {
                 await deleteDoc(doc(db, "customers", id)); 
-                sessionStorage.removeItem(CACHE_KEY);
+                if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
                 fetchData(true);
                 toast.success("Pelanggan dihapus");
             } catch(e) {

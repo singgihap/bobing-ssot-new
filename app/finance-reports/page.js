@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, getAggregateFromServer, sum } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_PREFIX = 'lumina_report_';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_PREFIX = 'lumina_report_v2_';
+const CACHE_DURATION = 15 * 60 * 1000; // 15 Menit
 
 export default function ReportPLPage() {
     const [data, setData] = useState({ revenue: 0, cogs: 0, expenses: 0, details: {} });
@@ -16,7 +17,11 @@ export default function ReportPLPage() {
         end: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0] 
     });
 
-    // Generate Report (Smart Caching)
+    useEffect(() => { 
+        generateReport(); 
+    }, []); // Load awal
+
+    // Generate Report (Smart Caching & Aggregation)
     const generateReport = async (forceRefresh = false) => {
         setLoading(true);
         
@@ -24,9 +29,9 @@ export default function ReportPLPage() {
         const cacheKey = `${CACHE_PREFIX}${range.start}_${range.end}`;
 
         try {
-            // 2. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(cacheKey);
+            // 2. Cek Cache LocalStorage
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(cacheKey);
                 if (cached) {
                     const { data: cachedData, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -41,22 +46,25 @@ export default function ReportPLPage() {
             const start = new Date(range.start); start.setHours(0,0,0,0);
             const end = new Date(range.end); end.setHours(23,59,59,999);
 
-            // A. Sales (Revenue & COGS)
+            // A. Sales (Revenue & COGS) - MENGGUNAKAN AGGREGATION (Biaya: 1 Read)
+            // Menggantikan pengambilan ribuan dokumen sales_orders
+            const salesColl = collection(db, "sales_orders");
             const qSales = query(
-                collection(db, "sales_orders"), 
+                salesColl, 
                 where("order_date", ">=", start), 
                 where("order_date", "<=", end)
             );
-            const snapSales = await getDocs(qSales);
-            
-            let rev = 0, cogs = 0;
-            snapSales.forEach(d => { 
-                const s = d.data(); 
-                rev += (s.net_amount || 0); 
-                cogs += (s.total_cost || 0); 
+
+            const salesSnapshot = await getAggregateFromServer(qSales, {
+                totalRevenue: sum('net_amount'),
+                totalCogs: sum('total_cost')
             });
 
-            // B. Expenses (Cash Out)
+            const rev = salesSnapshot.data().totalRevenue || 0;
+            const cogs = salesSnapshot.data().totalCogs || 0;
+
+            // B. Expenses (Cash Out) - Masih perlu fetch docs untuk breakdown kategori
+            // Biasanya jumlah transaksi expense jauh lebih sedikit daripada sales
             const qExp = query(
                 collection(db, "cash_transactions"), 
                 where("date", ">=", start), 
@@ -82,22 +90,21 @@ export default function ReportPLPage() {
             const reportData = { revenue: rev, cogs: cogs, expenses: expTotal, details: expDet };
             setData(reportData);
 
-            // 4. Simpan Cache
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                data: reportData,
-                timestamp: Date.now()
-            }));
+            // 4. Simpan Cache ke LocalStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    data: reportData,
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch(e) { 
             console.error(e); 
+            toast.error("Gagal membuat laporan");
         } finally { 
             setLoading(false); 
         }
     };
-
-    useEffect(() => { 
-        generateReport(); 
-    }, []); // Load awal
 
     const gross = data.revenue - data.cogs;
     const net = gross - data.expenses;
@@ -111,7 +118,7 @@ export default function ReportPLPage() {
                 <h2 className="text-xl md:text-3xl font-bold text-lumina-text font-display">Profit & Loss</h2>
                 <p className="text-sm text-lumina-muted font-light">Financial performance summary.</p>
             </div>
-            {/* Filter & Refresh Button, tidak diubah */}
+            {/* Filter & Refresh Button */}
             <div className="flex items-center gap-2 bg-lumina-surface p-1 rounded-lg border border-lumina-border shadow-lg">
                 <input type="date" className="text-sm bg-transparent text-lumina-text border-none focus:ring-0 outline-none px-2" value={range.start} onChange={e=>setRange({...range, start:e.target.value})} />
                 <span className="text-lumina-muted">-</span>

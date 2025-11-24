@@ -1,19 +1,20 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, doc, runTransaction, query, orderBy, where, serverTimestamp, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, runTransaction, query, orderBy, where, limit, serverTimestamp } from 'firebase/firestore';
 import { sortBySize } from '@/lib/utils';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_inventory_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE ---
+const CACHE_KEY = 'lumina_inventory_v2'; // Key baru untuk versi optimized
+const CACHE_DURATION = 15 * 60 * 1000; // 15 Menit (Data stok inventory tidak perlu realtime detik-an untuk list view)
 
 export default function InventoryPage() {
     // --- STATE ---
     const [products, setProducts] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
-    const [snapshots, setSnapshots] = useState({});
+    const [snapshots, setSnapshots] = useState({}); // Map: variantId_warehouseId -> qty
     const [loading, setLoading] = useState(true);
     
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,25 +23,42 @@ export default function InventoryPage() {
     // Modals State
     const [modalAdjOpen, setModalAdjOpen] = useState(false);
     const [modalCardOpen, setModalCardOpen] = useState(false);
-    const [modalDetailOpen, setModalDetailOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null); 
     
     // Selected Data for Modals
     const [adjData, setAdjData] = useState({});
     const [cardData, setCardData] = useState([]);
-    const [modalGroup, setModalGroup] = useState('color');
 
     useEffect(() => { 
         fetchData(); 
     }, []);
 
-    // --- FETCH DATA (Optimized) ---
+    // Helper untuk chunking query "IN" (Firestore limit 30 per batch)
+    const fetchInBatches = async (collectionName, fieldName, values) => {
+        const results = [];
+        const chunks = [];
+        const chunkSize = 30; // Aman di bawah limit 30 Firestore
+
+        for (let i = 0; i < values.length; i += chunkSize) {
+            chunks.push(values.slice(i, i + chunkSize));
+        }
+
+        await Promise.all(chunks.map(async (chunk) => {
+            if (chunk.length === 0) return;
+            const q = query(collection(db, collectionName), where(fieldName, 'in', chunk));
+            const snap = await getDocs(q);
+            snap.forEach(d => results.push({ id: d.id, ...d.data() }));
+        }));
+
+        return results;
+    };
+
+    // --- FETCH DATA (Highly Optimized) ---
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // 1. Cek Cache LocalStorage (Bukan Session)
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { products, warehouses, snapshots, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -53,36 +71,55 @@ export default function InventoryPage() {
                 }
             }
 
-            // 2. Fetch Firebase (Jika cache expired / force)
-            const [snapWh, snapProd, snapVar, snapShot] = await Promise.all([
+            // 2. Fetch Data Ringan (Warehouses & Products Limit)
+            const [snapWh, snapProd] = await Promise.all([
                 getDocs(query(collection(db, "warehouses"), orderBy("created_at", "asc"))),
-                getDocs(query(collection(db, "products"), limit(100))), // Safety limit
-                getDocs(query(collection(db, "product_variants"), orderBy("sku", "asc"))), // Perlu semua variant untuk mapping
-                getDocs(collection(db, "stock_snapshots")) // Perlu semua snapshot untuk total stock
+                getDocs(query(collection(db, "products"), orderBy("name", "asc"), limit(50))) // Limit 50: Hemat Biaya
             ]);
 
             const whList = []; 
             snapWh.forEach(d => whList.push({id: d.id, ...d.data()}));
             setWarehouses(whList);
 
-            const shots = {}; 
-            snapShot.forEach(d => shots[d.id] = d.data().qty || 0);
-            setSnapshots(shots);
-
-            const vars = []; 
-            snapVar.forEach(d => vars.push({id: d.id, ...d.data()}));
-            
             const prodMap = {};
+            const productIds = [];
             snapProd.forEach(d => {
                 const p = d.data();
                 prodMap[d.id] = { id: d.id, ...p, variants: [], totalStock: 0 };
+                productIds.push(d.id);
             });
+
+            // 3. Targeted Fetching (Hanya data terkait produk yang diambil)
+            let vars = [];
+            let shots = {};
+
+            if (productIds.length > 0) {
+                // Hanya ambil variants milik 50 produk ini
+                vars = await fetchInBatches("product_variants", "product_id", productIds);
+                
+                const variantIds = vars.map(v => v.id);
+                
+                if (variantIds.length > 0) {
+                    // Hanya ambil snapshots milik variants ini
+                    const snapshotList = await fetchInBatches("stock_snapshots", "variant_id", variantIds);
+                    snapshotList.forEach(s => {
+                        shots[`${s.variant_id}_${s.warehouse_id}`] = s.qty || 0; // Mapping ID manual jika perlu, atau pakai ID dokumen
+                        shots[s.id] = s.qty || 0; // Fallback access
+                    });
+                }
+            }
+            
+            setSnapshots(shots);
 
             // Mapping Logic
             vars.forEach(v => {
                 if (prodMap[v.product_id]) {
                     let total = 0;
-                    whList.forEach(w => total += (shots[`${v.id}_${w.id}`] || 0));
+                    whList.forEach(w => {
+                        // Coba akses pakai ID komposit standar
+                        const key = `${v.id}_${w.id}`;
+                        total += (shots[key] || 0);
+                    });
                     prodMap[v.product_id].variants.push(v);
                     prodMap[v.product_id].totalStock += total;
                 }
@@ -91,22 +128,26 @@ export default function InventoryPage() {
             const sorted = Object.values(prodMap).sort((a,b) => b.totalStock - a.totalStock);
             setProducts(sorted);
 
-            // 3. Simpan Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                products: sorted,
-                warehouses: whList,
-                snapshots: shots,
-                timestamp: Date.now()
-            }));
+            // 4. Simpan Cache
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    products: sorted,
+                    warehouses: whList,
+                    snapshots: shots,
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch (e) { 
-            console.error(e); 
+            console.error("Inventory Fetch Error:", e); 
+            toast.error("Gagal memuat stok");
         } finally { 
             setLoading(false); 
         }
     };
 
-    // --- LOGIC ---
+    // --- SEARCH LOGIC (Client Side Filter for Cached Data) ---
+    // Note: Untuk dataset besar (>1000), sebaiknya buat fungsi search khusus ke server
     const filteredProducts = products.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
         p.base_sku.toLowerCase().includes(searchTerm.toLowerCase())
@@ -117,11 +158,6 @@ export default function InventoryPage() {
     };
 
     // --- ACTIONS ---
-    const openDetail = (prod) => {
-        setSelectedProduct(prod);
-        setModalDetailOpen(true);
-    };
-
     const openOpname = (v, prodName) => {
         setAdjData({ 
             variantId: v.id, sku: v.sku, productName: prodName, 
@@ -140,37 +176,53 @@ export default function InventoryPage() {
     const submitOpname = async (e) => {
         e.preventDefault();
         const diff = parseInt(adjData.realQty) - adjData.currentQty;
-        if (isNaN(diff) || diff === 0) return alert("Tidak ada perubahan.");
+        if (isNaN(diff) || diff === 0) return toast.error("Tidak ada perubahan.");
 
+        const toastId = toast.loading("Mengupdate stok...");
         try {
             await runTransaction(db, async (t) => {
+                // 1. Catat Movement
                 const mRef = doc(collection(db, "stock_movements"));
                 t.set(mRef, { 
                     variant_id: adjData.variantId, warehouse_id: adjData.warehouseId, type: 'adjustment', 
                     qty: diff, ref_id: mRef.id, ref_type: 'opname', date: serverTimestamp(), 
-                    notes: adjData.note, created_by: auth.currentUser?.email 
+                    notes: adjData.note, created_by: auth.currentUser?.email || 'system'
                 });
-                const sRef = doc(db, "stock_snapshots", `${adjData.variantId}_${adjData.warehouseId}`);
+
+                // 2. Update Snapshot (Pakai ID Composite variantId_warehouseId)
+                const snapshotId = `${adjData.variantId}_${adjData.warehouseId}`;
+                const sRef = doc(db, "stock_snapshots", snapshotId);
                 const sDoc = await t.get(sRef);
-                if(sDoc.exists()) t.update(sRef, { qty: parseInt(adjData.realQty) });
-                else t.set(sRef, { id: sRef.id, variant_id: adjData.variantId, warehouse_id: adjData.warehouseId, qty: parseInt(adjData.realQty) });
+                
+                if(sDoc.exists()) {
+                    t.update(sRef, { qty: parseInt(adjData.realQty) });
+                } else {
+                    t.set(sRef, { 
+                        id: snapshotId, 
+                        variant_id: adjData.variantId, 
+                        warehouse_id: adjData.warehouseId, 
+                        qty: parseInt(adjData.realQty) 
+                    });
+                }
             });
             
-            alert("Stok berhasil diupdate!");
+            toast.success("Stok berhasil diupdate!", { id: toastId });
             
-            // Clear Cache & Refresh
-            sessionStorage.removeItem(CACHE_KEY);
+            // Invalidate Cache & Refresh
+            if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
             setModalAdjOpen(false);
             fetchData(true);
 
         } catch (e) { 
-            alert(e.message); 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId });
         }
     };
 
     const openCard = async (vId, sku) => {
         setModalCardOpen(true); setCardData(null);
         try {
+            // Query history tetap on-demand (tidak di-cache agresif karena realtime)
             const q = query(collection(db, "stock_movements"), where("variant_id", "==", vId), orderBy("date", "desc"), limit(20));
             const snap = await getDocs(q);
             setCardData(snap.docs.map(d => ({id: d.id, ...d.data()})));
@@ -189,7 +241,7 @@ export default function InventoryPage() {
                     Monitor stok fisik & virtual secara real-time.
                     </p>
                 </div>
-                {/* Search input - tidak diubah */}
+                {/* Search input */}
                 <div className="w-full md:w-80 bg-lumina-surface p-1.5 rounded-xl border border-lumina-border shadow-lg flex items-center focus-within:ring-1 focus-within:ring-lumina-gold transition-all">
                     <div className="pl-3 text-lumina-muted">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -220,7 +272,7 @@ export default function InventoryPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6" className="px-6 py-12 text-center text-lumina-muted animate-pulse">Calculating Stock...</td></tr>
+                                <tr><td colSpan="6" className="px-6 py-12 text-center text-lumina-muted animate-pulse">Loading Inventory Data...</td></tr>
                             ) : filteredProducts.length === 0 ? (
                                 <tr><td colSpan="6" className="px-6 py-12 text-center text-lumina-muted">No products found.</td></tr>
                             ) : (
@@ -336,7 +388,7 @@ export default function InventoryPage() {
              {/* --- MOBILE VIEW (CARDS) --- */}
              <div className="md:hidden grid grid-cols-1 gap-4">
                 {loading ? (
-                    <div className="text-center py-10 text-lumina-muted animate-pulse">Calculating Stock...</div>
+                    <div className="text-center py-10 text-lumina-muted animate-pulse">Loading Inventory...</div>
                 ) : filteredProducts.length === 0 ? (
                      <div className="text-center py-10 text-lumina-muted">No products found.</div>
                 ) : (
@@ -360,7 +412,7 @@ export default function InventoryPage() {
                                              <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-base px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
                                              <span className={`text-sm font-bold font-mono ${p.totalStock === 0 ? 'text-rose-500' : (isLowStock ? 'text-amber-500' : 'text-emerald-400')}`}>
                                                 {p.totalStock} <span className="text-[10px] text-lumina-muted font-normal">qty</span>
-                                            </span>
+                                             </span>
                                         </div>
                                         <h3 className="text-sm font-bold text-white mt-1 truncate">{p.name}</h3>
                                         <div className="flex items-center justify-between mt-1">
@@ -373,34 +425,34 @@ export default function InventoryPage() {
                                 {/* Expanded Content (Variants) */}
                                 {isExpanded && (
                                     <div className="mt-4 border-t border-lumina-border pt-3 space-y-4 animate-fade-in">
-                                        {p.variants.sort(sortBySize).map(v => (
-                                            <div key={v.id} className="bg-lumina-base/50 rounded-lg p-3 border border-lumina-border/50">
-                                                <div className="flex justify-between items-center mb-2">
-                                                     <div>
-                                                        <div className="text-xs font-mono text-lumina-gold">{v.sku}</div>
-                                                        <div className="text-[10px] text-white">{v.color} / {v.size}</div>
-                                                     </div>
-                                                     <div className="flex gap-2">
-                                                         <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-lumina-gold text-lumina-muted hover:text-lumina-gold">Opname</button>
-                                                         <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-white text-lumina-muted hover:text-white">History</button>
-                                                     </div>
+                                            {p.variants.sort(sortBySize).map(v => (
+                                                <div key={v.id} className="bg-lumina-base/50 rounded-lg p-3 border border-lumina-border/50">
+                                                    <div className="flex justify-between items-center mb-2">
+                                                         <div>
+                                                            <div className="text-xs font-mono text-lumina-gold">{v.sku}</div>
+                                                            <div className="text-[10px] text-white">{v.color} / {v.size}</div>
+                                                         </div>
+                                                         <div className="flex gap-2">
+                                                             <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-lumina-gold text-lumina-muted hover:text-lumina-gold">Opname</button>
+                                                             <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-white text-lumina-muted hover:text-white">History</button>
+                                                         </div>
+                                                    </div>
+                                                    
+                                                    {/* Warehouse Breakdown (Mobile Grid) */}
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {warehouses.map(w => {
+                                                            const qty = snapshots[`${v.id}_${w.id}`] || 0;
+                                                            if(w.type === 'virtual_supplier' && qty === 0) return null; 
+                                                            return (
+                                                                <div key={w.id} className="flex justify-between items-center text-[10px] bg-lumina-base px-2 py-1 rounded border border-lumina-border/30">
+                                                                    <span className={`truncate max-w-[80px] ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-lumina-muted'}`}>{w.name}</span>
+                                                                    <span className={`font-mono font-bold ${qty > 0 ? 'text-white' : 'text-lumina-muted/30'}`}>{qty}</span>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
                                                 </div>
-                                                
-                                                {/* Warehouse Breakdown (Mobile Grid) */}
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    {warehouses.map(w => {
-                                                        const qty = snapshots[`${v.id}_${w.id}`] || 0;
-                                                        if(w.type === 'virtual_supplier' && qty === 0) return null; 
-                                                        return (
-                                                            <div key={w.id} className="flex justify-between items-center text-[10px] bg-lumina-base px-2 py-1 rounded border border-lumina-border/30">
-                                                                <span className={`truncate max-w-[80px] ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-lumina-muted'}`}>{w.name}</span>
-                                                                <span className={`font-mono font-bold ${qty > 0 ? 'text-white' : 'text-lumina-muted/30'}`}>{qty}</span>
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))}
                                     </div>
                                 )}
                              </div>
@@ -450,7 +502,7 @@ export default function InventoryPage() {
                                     <textarea required className="input-luxury" rows="2" value={adjData.note} onChange={e => setAdjData({...adjData, note: e.target.value})} placeholder="E.g. Broken goods, Found item..."></textarea>
                                 </div>
                                 
-                                {/* FOOTER (Inside form so it scrolls with content on very small screens, or you can move it out) */}
+                                {/* FOOTER */}
                                 <div className="flex justify-end gap-3 pt-2 border-t border-lumina-border mt-4">
                                     <button type="button" onClick={() => setModalAdjOpen(false)} className="btn-ghost-dark">Cancel</button>
                                     <button type="submit" className="btn-gold">Save Adjustment</button>

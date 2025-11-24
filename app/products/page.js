@@ -8,9 +8,10 @@ import imageCompression from 'browser-image-compression';
 import { Portal } from '@/lib/usePortal';
 import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_products_page_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY_MAIN = 'lumina_products_data_v2'; // Produk, Brand, Kategori
+const CACHE_KEY_VARIANTS = 'lumina_products_variants_v2'; // Cache untuk varian per produk
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit (Master data jarang berubah)
 
 export default function ProductsPage() {
     const [products, setProducts] = useState([]);
@@ -31,14 +32,22 @@ export default function ProductsPage() {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => { 
+        // Load initial variant cache from storage if exists
+        if (typeof window !== 'undefined') {
+            const cachedVars = localStorage.getItem(CACHE_KEY_VARIANTS);
+            if (cachedVars) {
+                try { setVariantsCache(JSON.parse(cachedVars)); } catch(e) {}
+            }
+        }
         fetchData(); 
     }, []);
 
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // 1. Cek Cache LocalStorage
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY_MAIN);
                 if (cached) {
                     const { brands, categories, products, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -51,10 +60,11 @@ export default function ProductsPage() {
                 }
             }
 
+            // 2. Fetch Data (Parallel)
             const [snapBrands, snapCats, snapProds] = await Promise.all([
                 getDocs(query(collection(db, "brands"), orderBy("name", "asc"))),
                 getDocs(query(collection(db, "categories"), orderBy("name", "asc"))),
-                getDocs(query(collection(db, "products"), limit(100)))
+                getDocs(query(collection(db, "products"), limit(100))) // Batasi 100 untuk hemat reads awal
             ]);
 
             const bs = []; snapBrands.forEach(d => bs.push({id:d.id, ...d.data()}));
@@ -72,12 +82,15 @@ export default function ProductsPage() {
             setCategories(cs);
             setProducts(sortedProducts);
 
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                brands: bs,
-                categories: cs,
-                products: sortedProducts,
-                timestamp: Date.now()
-            }));
+            // 3. Simpan Cache
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY_MAIN, JSON.stringify({
+                    brands: bs,
+                    categories: cs,
+                    products: sortedProducts,
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch(e) {
             console.error(e);
@@ -91,14 +104,28 @@ export default function ProductsPage() {
         if(expandedProductId===id) { setExpandedProductId(null); return; }
         setExpandedProductId(id);
         
+        // Cek cache state (yang sudah di-load dari localStorage)
         if(!variantsCache[id]) {
             setLoadingVariants(true);
-            const q = query(collection(db, "product_variants"), where("product_id", "==", id));
-            const s = await getDocs(q); 
-            const v=[]; 
-            s.forEach(d=>v.push({id:d.id, ...d.data()}));
-            setVariantsCache(prev=>({...prev, [id]:v}));
-            setLoadingVariants(false);
+            try {
+                const q = query(collection(db, "product_variants"), where("product_id", "==", id));
+                const s = await getDocs(q); 
+                const v=[]; 
+                s.forEach(d=>v.push({id:d.id, ...d.data()}));
+                
+                // Update state dan localStorage
+                const newCache = {...variantsCache, [id]:v};
+                setVariantsCache(newCache);
+                
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(CACHE_KEY_VARIANTS, JSON.stringify(newCache));
+                }
+            } catch (e) {
+                console.error("Failed to load variants", e);
+                toast.error("Gagal memuat varian");
+            } finally {
+                setLoadingVariants(false);
+            }
         }
     };
 
@@ -139,7 +166,9 @@ export default function ProductsPage() {
                     await addDoc(collection(db,"products"), pl); 
                 }
                 
-                sessionStorage.removeItem(CACHE_KEY);
+                // Invalidate Main Cache
+                if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY_MAIN);
+                
                 setModalOpen(false); 
                 fetchData(true); 
                 resolve();
@@ -158,7 +187,7 @@ export default function ProductsPage() {
     const deleteProduct = async (id) => { 
         if(confirm("Hapus?")) { 
             await deleteDoc(doc(db,"products",id)); 
-            sessionStorage.removeItem(CACHE_KEY);
+            if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY_MAIN);
             fetchData(true); 
             toast.success("Produk dihapus");
         } 

@@ -6,12 +6,15 @@ import { db, auth } from '@/lib/firebase';
 import { collection, getDocs, doc, runTransaction, query, orderBy, limit, serverTimestamp, where } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 
-// --- KONFIGURASI CACHE ---
-const CACHE_ACC = 'lumina_cash_accounts';
-const CACHE_TX = 'lumina_cash_transactions';
-const CACHE_CAT = 'lumina_cash_categories';
-const CACHE_TIME = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY_DATA = 'lumina_cash_data_v2'; // Accounts & Transactions
+const CACHE_KEY_CATS = 'lumina_cash_categories_v2';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+
+// Cache Key External untuk di-reuse
+const CACHE_KEY_POS = 'lumina_pos_master_v2'; 
 
 export default function CashFlowPage() {
     const [accounts, setAccounts] = useState([]);
@@ -33,17 +36,27 @@ export default function CashFlowPage() {
         date: '', account_id: '', category: '', amount: '', description: '' 
     });
 
+    // Helper: Invalidate Cache Relevan
+    const invalidateRelatedCaches = () => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(CACHE_KEY_DATA); // Refresh halaman ini
+        localStorage.removeItem('lumina_dash_master_v2'); // Refresh Dashboard (Saldo berubah)
+        localStorage.removeItem('lumina_pos_master_v2'); // Refresh POS (Saldo akun berubah)
+    };
+
     useEffect(() => { 
         fetchData(); 
-        fetchCategories(); // Load categories separate with cache
+        fetchCategories(); 
     }, []);
 
-    // 1. Fetch Categories (Optimized: Cache vs Realtime)
+    // 1. Fetch Categories (Optimized)
     const fetchCategories = async () => {
-        const cached = sessionStorage.getItem(CACHE_CAT);
+        if (typeof window === 'undefined') return;
+        
+        const cached = localStorage.getItem(CACHE_KEY_CATS);
         if (cached) {
             const { data, ts } = JSON.parse(cached);
-            if (Date.now() - ts < CACHE_TIME) {
+            if (Date.now() - ts < 30 * 60 * 1000) { // 30 menit untuk kategori (jarang berubah)
                 setCategories(data);
                 return;
             }
@@ -60,7 +73,7 @@ export default function CashFlowPage() {
                 }
             });
             setCategories(cats);
-            sessionStorage.setItem(CACHE_CAT, JSON.stringify({ data: cats, ts: Date.now() }));
+            localStorage.setItem(CACHE_KEY_CATS, JSON.stringify({ data: cats, ts: Date.now() }));
         } catch(e) { console.error(e); }
     };
 
@@ -68,48 +81,75 @@ export default function CashFlowPage() {
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // --- ACCOUNTS ---
             let accList = [];
-            if (!forceRefresh) {
-                const cAcc = sessionStorage.getItem(CACHE_ACC);
-                if(cAcc) {
-                    const { data, ts } = JSON.parse(cAcc);
-                    if(Date.now() - ts < CACHE_TIME) accList = data;
-                }
-            }
-            
-            if (accList.length === 0) {
-                const accSnap = await getDocs(query(collection(db, "cash_accounts"), orderBy("created_at")));
-                accSnap.forEach(d => accList.push({id: d.id, ...d.data()}));
-                sessionStorage.setItem(CACHE_ACC, JSON.stringify({ data: accList, ts: Date.now() }));
-            }
-            setAccounts(accList);
-
-            // --- TRANSACTIONS ---
             let transList = [];
-            if (!forceRefresh) {
-                const cTx = sessionStorage.getItem(CACHE_TX);
-                if(cTx) {
-                    const { data, ts } = JSON.parse(cTx);
-                    if(Date.now() - ts < CACHE_TIME) transList = data;
+            let loadedFromCache = false;
+
+            // A. Cek Cache LocalStorage
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY_DATA);
+                if (cached) {
+                    const { accounts: cAcc, transactions: cTx, ts } = JSON.parse(cached);
+                    if (Date.now() - ts < CACHE_DURATION) {
+                        accList = cAcc;
+                        transList = cTx;
+                        loadedFromCache = true;
+                    }
                 }
             }
 
-            if (transList.length === 0) {
-                // Gunakan Limit 50 untuk hemat reads
-                const transSnap = await getDocs(query(collection(db, "cash_transactions"), orderBy("date", "desc"), limit(50)));
-                transSnap.forEach(d => {
-                    const t = d.data();
-                    // Serialize Date agar aman masuk JSON Storage
-                    transList.push({
-                        id: d.id, 
-                        ...t, 
-                        date: t.date?.toDate ? t.date.toDate().toISOString() : t.date
+            // B. Reuse Cache POS untuk Accounts (Jika cache halaman ini expired/kosong)
+            if (!loadedFromCache && accList.length === 0 && typeof window !== 'undefined') {
+                const cachedPos = localStorage.getItem(CACHE_KEY_POS);
+                if (cachedPos) {
+                    try {
+                        const parsed = JSON.parse(cachedPos);
+                        if (parsed.data?.acc && Date.now() - parsed.ts < 60 * 60 * 1000) {
+                            accList = parsed.data.acc; // Hemat Reads!
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            // C. Fetch Firebase jika belum lengkap
+            const promises = [];
+            if (accList.length === 0) promises.push(getDocs(query(collection(db, "cash_accounts"), orderBy("created_at"))));
+            if (!loadedFromCache) promises.push(getDocs(query(collection(db, "cash_transactions"), orderBy("date", "desc"), limit(50))));
+
+            if (promises.length > 0) {
+                const results = await Promise.all(promises);
+                let idx = 0;
+
+                if (accList.length === 0) {
+                    const accSnap = results[idx++];
+                    accList = [];
+                    accSnap.forEach(d => accList.push({id: d.id, ...d.data()}));
+                }
+
+                if (!loadedFromCache) {
+                    const transSnap = results[idx];
+                    transList = [];
+                    transSnap.forEach(d => {
+                        const t = d.data();
+                        transList.push({
+                            id: d.id, 
+                            ...t, 
+                            date: t.date?.toDate ? t.date.toDate().toISOString() : t.date
+                        });
                     });
-                });
-                sessionStorage.setItem(CACHE_TX, JSON.stringify({ data: transList, ts: Date.now() }));
+                }
+
+                // Simpan Cache Baru
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(CACHE_KEY_DATA, JSON.stringify({ 
+                        accounts: accList, 
+                        transactions: transList, 
+                        ts: Date.now() 
+                    }));
+                }
             }
             
+            setAccounts(accList);
             setTransactions(transList);
 
             // Hitung Summary Client-Side
@@ -122,20 +162,15 @@ export default function CashFlowPage() {
 
         } catch(e) { 
             console.error(e); 
+            toast.error("Gagal memuat data kas");
         } finally { 
             setLoading(false); 
         }
     };
 
-    // Fungsi Helper: Reset Cache saat ada update data
-    const clearCacheAndRefresh = () => {
-        sessionStorage.removeItem(CACHE_ACC); // Saldo berubah
-        sessionStorage.removeItem(CACHE_TX);  // List berubah
-        fetchData(true);
-    };
-
     const submitTransaction = async (e) => {
         e.preventDefault();
+        const toastId = toast.loading("Menyimpan...");
         try {
             const amt = parseInt(formData.amount);
             await runTransaction(db, async (t) => {
@@ -155,15 +190,23 @@ export default function CashFlowPage() {
                     : (accDoc.data().balance||0) - amt;
                 t.update(accRef, { balance: newBal });
             });
+            
             setModalExpOpen(false); 
             setFormData({ type: 'out', account_id: '', category: '', amount: '', description: '', date: '' });
-            clearCacheAndRefresh(); // Refresh data
-        } catch(e) { alert(e.message); }
+            
+            invalidateRelatedCaches();
+            toast.success("Transaksi disimpan!", { id: toastId });
+            fetchData(true); 
+        } catch(e) { 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId }); 
+        }
     };
 
     const submitTransfer = async (e) => {
         e.preventDefault();
-        if(tfData.from === tfData.to) return alert("Akun sama!");
+        if(tfData.from === tfData.to) return toast.error("Akun asal dan tujuan tidak boleh sama!");
+        const toastId = toast.loading("Transferring...");
         try {
             const amt = parseInt(tfData.amount);
             await runTransaction(db, async (t) => {
@@ -181,10 +224,17 @@ export default function CashFlowPage() {
                 const logRefIn = doc(collection(db, "cash_transactions"));
                 t.set(logRefIn, { type: 'transfer', amount: amt, date: serverTimestamp(), description: `From ${fromDoc.data().name}: ${tfData.note}`, account_id: tfData.to, ref_type: 'transfer_in' });
             });
+            
             setModalTfOpen(false); 
             setTfData({ from: '', to: '', amount: '', note: '' });
-            clearCacheAndRefresh();
-        } catch(e) { alert(e.message); }
+            
+            invalidateRelatedCaches();
+            toast.success("Transfer Berhasil!", { id: toastId });
+            fetchData(true);
+        } catch(e) { 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId }); 
+        }
     };
 
     // --- HELPER DATA PROCESSING ---
@@ -245,6 +295,7 @@ export default function CashFlowPage() {
 
     const submitEditTransaction = async (e) => {
         e.preventDefault();
+        const toastId = toast.loading("Updating...");
         try {
             const newAmount = parseInt(editFormData.amount);
             const oldAmount = editingTransaction.amount;
@@ -286,12 +337,19 @@ export default function CashFlowPage() {
             setModalEditOpen(false);
             setEditingTransaction(null);
             setEditFormData({ date: '', account_id: '', category: '', amount: '', description: '' });
-            clearCacheAndRefresh();
-        } catch(e) { alert('Error: ' + e.message); }
+            
+            invalidateRelatedCaches();
+            toast.success("Update Berhasil!", { id: toastId });
+            fetchData(true);
+        } catch(e) { 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId }); 
+        }
     };
 
     const handleDeleteTransaction = async () => {
         if(!confirm('Yakin ingin menghapus transaksi ini?')) return;
+        const toastId = toast.loading("Menghapus...");
         try {
             await runTransaction(db, async (t) => {
                 const transRef = doc(db, "cash_transactions", editingTransaction.id);
@@ -306,10 +364,17 @@ export default function CashFlowPage() {
                     : currentBalance + editingTransaction.amount;
                 t.update(accRef, { balance: newBalance });
             });
+            
             setModalEditOpen(false);
             setEditingTransaction(null);
-            clearCacheAndRefresh();
-        } catch(e) { alert('Error: ' + e.message); }
+            
+            invalidateRelatedCaches();
+            toast.success("Dihapus!", { id: toastId });
+            fetchData(true);
+        } catch(e) { 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId }); 
+        }
     };
 
     return (

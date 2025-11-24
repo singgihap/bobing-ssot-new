@@ -1,25 +1,26 @@
-// app/dashboard/page.js
 "use client";
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, getAggregateFromServer, sum } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, BarElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
 
-// --- KONFIGURASI CACHE ---
-const CACHE_MASTER_KEY = 'lumina_dash_master'; // Untuk Produk, Stok, Akun (Berat)
-const CACHE_SALES_PREFIX = 'lumina_dash_sales_'; // Untuk Transaksi (Dynamic)
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+// Menggunakan localStorage agar cache persist antar sesi/tab
+const CACHE_MASTER_KEY = 'lumina_dash_master_v2'; 
+const CACHE_SALES_PREFIX = 'lumina_dash_sales_v2_'; 
+const CACHE_DURATION_MASTER = 15 * 60 * 1000; // 15 Menit untuk Master Data (Hemat Reads)
+const CACHE_DURATION_SALES = 5 * 60 * 1000;   // 5 Menit untuk Sales (Realtime but cached)
 
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [filterRange, setFilterRange] = useState('this_month');
     
     // Data States
-    const [masterData, setMasterData] = useState(null); // Disimpan di state agar tidak fetch ulang saat ganti tanggal
+    const [masterData, setMasterData] = useState(null);
     
     // UI States
     const [kpi, setKpi] = useState({ gross: 0, net: 0, profit: 0, margin: 0, cash: 0, inventoryAsset: 0, txCount: 0 });
@@ -29,25 +30,33 @@ export default function Dashboard() {
     const [lowStockItems, setLowStockItems] = useState([]);
     const [recentSales, setRecentSales] = useState([]);
 
-    // 1. Fetch Master Data (Hanya sekali atau ambil dari cache)
+    // 1. Fetch Master Data (Optimized)
     const fetchMasterData = async () => {
-        // Cek Cache Browser
-        const cached = sessionStorage.getItem(CACHE_MASTER_KEY);
-        if (cached) {
-            const { data, ts } = JSON.parse(cached);
-            if (Date.now() - ts < CACHE_DURATION) return data;
+        // Cek Cache LocalStorage (Persist walau tab ditutup)
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(CACHE_MASTER_KEY);
+            if (cached) {
+                const { data, ts } = JSON.parse(cached);
+                if (Date.now() - ts < CACHE_DURATION_MASTER) return data;
+            }
         }
 
-        // Fetch Firebase (Parallel)
-        const [snapCash, snapStock, snapVar, snapProd] = await Promise.all([
-            getDocs(collection(db, "cash_accounts")),
+        // COST OPTIMIZATION: Gunakan Aggregation Query untuk Cash Balance
+        // Biaya: 1 Read (berapapun jumlah dokumennya)
+        const cashAggPromise = getAggregateFromServer(collection(db, "cash_accounts"), {
+            totalBalance: sum('balance')
+        });
+
+        // Fetch Data Lain (Tetap diambil karena butuh detail untuk inventory value)
+        const [snapCashAgg, snapStock, snapVar, snapProd] = await Promise.all([
+            cashAggPromise,
             getDocs(collection(db, "stock_snapshots")),
             getDocs(collection(db, "product_variants")),
             getDocs(collection(db, "products"))
         ]);
 
-        // Process Data untuk disimpan (Serialize)
-        const cashBalance = snapCash.docs.reduce((acc, doc) => acc + (doc.data().balance || 0), 0);
+        // Process Data
+        const cashBalance = snapCashAgg.data().totalBalance || 0;
         
         const products = [];
         snapProd.forEach(d => products.push({ id: d.id, name: d.data().name }));
@@ -56,29 +65,32 @@ export default function Dashboard() {
         snapVar.forEach(d => variants.push({ id: d.id, ...d.data() }));
         
         const stocks = [];
-        snapStock.forEach(d => stocks.push({ ...d.data() })); // data() sudah include variant_id & qty
+        snapStock.forEach(d => stocks.push({ ...d.data() }));
 
         const result = { cashBalance, products, variants, stocks };
         
-        // Simpan Cache
-        sessionStorage.setItem(CACHE_MASTER_KEY, JSON.stringify({ data: result, ts: Date.now() }));
+        // Simpan Cache ke LocalStorage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(CACHE_MASTER_KEY, JSON.stringify({ data: result, ts: Date.now() }));
+        }
         return result;
     };
 
-    // 2. Fetch Sales Data (Berdasarkan Range)
+    // 2. Fetch Sales Data (Optimized Cache)
     const fetchSalesData = async (range) => {
         const cacheKey = `${CACHE_SALES_PREFIX}${range}`;
         
-        // Cek Cache
-        const cached = sessionStorage.getItem(cacheKey);
-        if (cached) {
-            const { data, ts } = JSON.parse(cached);
-            if (Date.now() - ts < CACHE_DURATION) {
-                // Convert string date kembali ke object date untuk processing
-                return data.map(d => ({
-                    ...d,
-                    order_date: new Date(d.order_date) // Fix date serialization
-                }));
+        // Cek Cache LocalStorage
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                const { data, ts } = JSON.parse(cached);
+                if (Date.now() - ts < CACHE_DURATION_SALES) {
+                    return data.map(d => ({
+                        ...d,
+                        order_date: new Date(d.order_date)
+                    }));
+                }
             }
         }
 
@@ -111,12 +123,14 @@ export default function Dashboard() {
             sales.push({
                 id: d.id,
                 ...data,
-                order_date: data.order_date.toDate() // Convert Timestamp ke JS Date
+                order_date: data.order_date.toDate()
             });
         });
 
-        // Simpan Cache (Date di-convert ke string otomatis oleh JSON.stringify)
-        sessionStorage.setItem(cacheKey, JSON.stringify({ data: sales, ts: Date.now() }));
+        // Simpan Cache LocalStorage
+        if (typeof window !== 'undefined') {
+            localStorage.setItem(cacheKey, JSON.stringify({ data: sales, ts: Date.now() }));
+        }
         
         return sales;
     };
@@ -126,32 +140,29 @@ export default function Dashboard() {
         const loadDashboard = async () => {
             setLoading(true);
             try {
-                // A. Load Master Data (jika belum ada di state)
                 let currentMaster = masterData;
                 if (!currentMaster) {
                     currentMaster = await fetchMasterData();
                     setMasterData(currentMaster);
                 }
 
-                // B. Load Sales Data (sesuai filter)
                 const sales = await fetchSalesData(filterRange);
-
-                // C. Calculate Logic
                 processDashboard(sales, currentMaster);
 
             } catch (e) {
-                console.error(e);
+                console.error("Dashboard Error:", e);
             } finally {
                 setLoading(false);
             }
         };
 
         loadDashboard();
-    }, [filterRange]); // Dependency: hanya jalan ulang jika filterRange berubah
+    }, [filterRange]);
 
-    // 4. Calculation Logic (Pure Function style)
+    // 4. Calculation Logic (Tetap Sama, hanya memastikan safety check)
     const processDashboard = (sales, master) => {
-        // --- SALES METRICS ---
+        if (!master) return;
+
         let totalGross = 0, totalNet = 0, totalCost = 0;
         const days = {};
         const channels = {};
@@ -188,11 +199,10 @@ export default function Dashboard() {
             });
         });
 
-        // --- INVENTORY METRICS ---
+        // Inventory Logic
         let totalInvValue = 0;
         const lowStocks = [];
         
-        // Mapping helper
         const varMap = {}; 
         master.variants.forEach(v => varMap[v.id] = v);
         
@@ -204,7 +214,6 @@ export default function Dashboard() {
             if(s.qty > 0) stockAgg[s.variant_id] = (stockAgg[s.variant_id] || 0) + s.qty; 
         });
 
-        // Calculate Inventory Value & Low Stock
         Object.keys(varMap).forEach(vid => {
             const v = varMap[vid];
             const qty = stockAgg[vid] || 0;
@@ -224,7 +233,6 @@ export default function Dashboard() {
         const profit = totalNet - totalCost;
         const margin = totalGross > 0 ? (profit / totalGross) * 100 : 0;
 
-        // SET STATES
         setKpi({ 
             gross: totalGross, 
             net: totalNet, 
@@ -276,27 +284,18 @@ export default function Dashboard() {
         <div className="space-y-8 fade-in pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
-            <div>
-                <h2 className="text-xl md:text-3xl font-display font-bold text-lumina-text tracking-tight">
-                Executive Dashboard
-                </h2>
-                <p className="text-sm text-lumina-muted mt-1 font-light">
-                Real-time business intelligence & analytics.
-                </p>
+                <div>
+                    <h2 className="text-xl md:text-3xl font-display font-bold text-lumina-text tracking-tight">Executive Dashboard</h2>
+                    <p className="text-sm text-lumina-muted mt-1 font-light">Real-time business intelligence & analytics.</p>
+                </div>
+                <div className="bg-lumina-surface p-1 rounded-lg border border-lumina-border shadow-lg">
+                    <select value={filterRange} onChange={(e) => setFilterRange(e.target.value)} className="text-sm bg-transparent text-lumina-text font-medium cursor-pointer py-1.5 pl-3 pr-8 outline-none">
+                        <option value="today" className="bg-lumina-base">Hari Ini</option>
+                        <option value="this_month" className="bg-lumina-base">Bulan Ini</option>
+                        <option value="last_month" className="bg-lumina-base">Bulan Lalu</option>
+                    </select>
+                </div>
             </div>
-            <div className="bg-lumina-surface p-1 rounded-lg border border-lumina-border shadow-lg">
-                <select
-                value={filterRange}
-                onChange={(e) => setFilterRange(e.target.value)}
-                className="text-sm bg-transparent text-lumina-text font-medium cursor-pointer py-1.5 pl-3 pr-8 outline-none"
-                >
-                <option value="today" className="bg-lumina-base">Hari Ini</option>
-                <option value="this_month" className="bg-lumina-base">Bulan Ini</option>
-                <option value="last_month" className="bg-lumina-base">Bulan Lalu</option>
-                </select>
-            </div>
-            </div>
-
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

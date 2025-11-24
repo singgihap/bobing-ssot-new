@@ -3,10 +3,17 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, limit } from 'firebase/firestore';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_warehouses_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_warehouses_v2';
+const CACHE_DURATION = 60 * 60 * 1000; // 60 Menit
+
+// External Caches untuk Reuse
+const CACHE_KEY_INVENTORY = 'lumina_inventory_v2';
+const CACHE_KEY_SUPPLIERS = 'lumina_suppliers_v2';
+const CACHE_KEY_PURCHASES = 'lumina_purchases_master_v2';
+const CACHE_KEY_POS = 'lumina_pos_master_v2';
 
 export default function WarehousesPage() {
     const [warehouses, setWarehouses] = useState([]);
@@ -19,12 +26,24 @@ export default function WarehousesPage() {
         fetchData(); 
     }, []);
 
+    // Helper: Invalidate Related Caches
+    const invalidateRelatedCaches = () => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(CACHE_KEY); // Self
+        localStorage.removeItem(CACHE_KEY_INVENTORY); // List gudang di inventory
+        localStorage.removeItem(CACHE_KEY_POS); // List gudang di POS
+        localStorage.removeItem(CACHE_KEY_PURCHASES); // List gudang di PO
+    };
+
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            let whData = null;
+            let suppData = null;
+
+            // 1. Cek Cache Sendiri
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { warehouses: cWh, suppliers: cSupp, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
@@ -36,30 +55,86 @@ export default function WarehousesPage() {
                 }
             }
 
-            // 2. Fetch Firebase
-            const [snapSupp, snapWh] = await Promise.all([
-                getDocs(query(collection(db, "suppliers"), orderBy("name"), limit(100))),
-                getDocs(query(collection(db, "warehouses"), orderBy("created_at"), limit(50)))
-            ]);
-            
-            const suppData = []; 
-            snapSupp.forEach(d => suppData.push({id: d.id, ...d.data()}));
-            
-            const whData = []; 
-            snapWh.forEach(d => whData.push({id: d.id, ...d.data()}));
+            // 2. Cek Cache External untuk WAREHOUSES (Hemat Read)
+            if (typeof window !== 'undefined') {
+                // Coba dari Inventory
+                const invCache = localStorage.getItem(CACHE_KEY_INVENTORY);
+                if (invCache) {
+                    try {
+                        const p = JSON.parse(invCache);
+                        if (p.warehouses && p.warehouses.length > 0) whData = p.warehouses;
+                    } catch(e) {}
+                }
+                // Jika gagal, coba dari POS
+                if (!whData) {
+                    const posCache = localStorage.getItem(CACHE_KEY_POS);
+                    if(posCache) {
+                        try {
+                            const p = JSON.parse(posCache);
+                            if(p.data?.wh) whData = p.data.wh;
+                        } catch(e) {}
+                    }
+                }
+            }
 
-            setSuppliers(suppData);
-            setWarehouses(whData);
+            // 3. Cek Cache External untuk SUPPLIERS (Hemat Read)
+            if (typeof window !== 'undefined') {
+                // Coba dari Suppliers Page
+                const suppCache = localStorage.getItem(CACHE_KEY_SUPPLIERS);
+                if(suppCache) {
+                    try {
+                        const p = JSON.parse(suppCache);
+                        if(p.data && p.data.length > 0) suppData = p.data;
+                    } catch(e) {}
+                }
+                // Coba dari Purchases Page (Master PO punya supplier & warehouse)
+                const purchCache = localStorage.getItem(CACHE_KEY_PURCHASES);
+                if(purchCache) {
+                    try {
+                        const p = JSON.parse(purchCache);
+                        if(!whData && p.warehouses) whData = p.warehouses;
+                        if(!suppData && p.suppliers) suppData = p.suppliers;
+                    } catch(e) {}
+                }
+            }
 
-            // 3. Simpan Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                warehouses: whData,
-                suppliers: suppData,
-                timestamp: Date.now()
-            }));
+            // 4. Fetch Data yang Masih Kurang
+            const promises = [];
+            if (!whData) promises.push(getDocs(query(collection(db, "warehouses"), orderBy("created_at"), limit(50))));
+            if (!suppData) promises.push(getDocs(query(collection(db, "suppliers"), orderBy("name"), limit(100))));
+
+            if (promises.length > 0) {
+                const results = await Promise.all(promises);
+                let idx = 0;
+                
+                if (!whData) {
+                    const snap = results[idx++];
+                    whData = [];
+                    snap.forEach(d => whData.push({id: d.id, ...d.data()}));
+                }
+                
+                if (!suppData) {
+                    const snap = results[idx];
+                    suppData = [];
+                    snap.forEach(d => suppData.push({id: d.id, ...d.data()}));
+                }
+            }
+
+            setSuppliers(suppData || []);
+            setWarehouses(whData || []);
+
+            // 5. Simpan ke Cache LocalStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    warehouses: whData,
+                    suppliers: suppData,
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch (e) { 
             console.error(e); 
+            toast.error("Gagal memuat data gudang");
         } finally { 
             setLoading(false); 
         }
@@ -72,44 +147,47 @@ export default function WarehousesPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const payload = {
-                name: formData.name,
-                type: formData.type,
-                address: formData.address,
-                supplier_id: formData.type === 'virtual_supplier' ? formData.supplier_id : null,
-                updated_at: serverTimestamp()
-            };
-            
-            if (formData.id) {
-                await updateDoc(doc(db, "warehouses", formData.id), payload);
-            } else { 
-                payload.created_at = serverTimestamp(); 
-                await addDoc(collection(db, "warehouses"), payload); 
-            }
-            
-            // Reset Cache
-            sessionStorage.removeItem(CACHE_KEY);
-            // Juga reset cache halaman lain yang menggunakan data gudang
-            sessionStorage.removeItem('lumina_inventory_data');
-            sessionStorage.removeItem('lumina_pos_master_data');
-            sessionStorage.removeItem('lumina_purchases_master');
+        const savePromise = new Promise(async (resolve, reject) => {
+            try {
+                const payload = {
+                    name: formData.name,
+                    type: formData.type,
+                    address: formData.address,
+                    supplier_id: formData.type === 'virtual_supplier' ? formData.supplier_id : null,
+                    updated_at: serverTimestamp()
+                };
+                
+                if (formData.id) {
+                    await updateDoc(doc(db, "warehouses", formData.id), payload);
+                } else { 
+                    payload.created_at = serverTimestamp(); 
+                    await addDoc(collection(db, "warehouses"), payload); 
+                }
+                
+                invalidateRelatedCaches();
+                setModalOpen(false); 
+                fetchData(true);
+                resolve();
+            } catch (err) { reject(err); }
+        });
 
-            setModalOpen(false); 
-            fetchData(true);
-
-        } catch (err) { alert(err.message); }
+        toast.promise(savePromise, {
+            loading: 'Menyimpan...',
+            success: 'Gudang berhasil disimpan',
+            error: (err) => `Gagal: ${err.message}`
+        });
     };
 
     const deleteWh = async (id) => {
         if(confirm("Hapus gudang?")) { 
-            await deleteDoc(doc(db, "warehouses", id)); 
-            
-            // Reset Cache
-            sessionStorage.removeItem(CACHE_KEY);
-            sessionStorage.removeItem('lumina_inventory_data');
-            
-            fetchData(true); 
+            try {
+                await deleteDoc(doc(db, "warehouses", id)); 
+                invalidateRelatedCaches();
+                fetchData(true);
+                toast.success("Gudang dihapus");
+            } catch (e) {
+                toast.error("Gagal menghapus");
+            }
         }
     };
 

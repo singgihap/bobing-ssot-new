@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_sales_history';
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_sales_history_v2'; // Cache di localStorage agar awet
 const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
 
 export default function TransactionsHistoryPage() {
@@ -24,13 +25,13 @@ export default function TransactionsHistoryPage() {
     const fetchOrders = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            // 1. Cek Cache LocalStorage (Persist walau tab ditutup)
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
                     const { data, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
-                        // Revive dates
+                        // Revive dates (JSON string -> Date Object)
                         const revived = data.map(o => ({ ...o, order_date: new Date(o.order_date) }));
                         setOrders(revived);
                         setLoading(false);
@@ -39,7 +40,7 @@ export default function TransactionsHistoryPage() {
                 }
             }
 
-            // 2. Fetch Firebase (Limit 100 agar ringan)
+            // 2. Fetch Firebase (Limit 100 agar ringan & hemat)
             const q = query(
                 collection(db, "sales_orders"), 
                 orderBy("order_date", "desc"), 
@@ -59,14 +60,17 @@ export default function TransactionsHistoryPage() {
             
             setOrders(ordersList);
             
-            // 3. Simpan Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                data: ordersList, // Date otomatis stringify
-                timestamp: Date.now()
-            }));
+            // 3. Simpan Cache ke LocalStorage
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data: ordersList, 
+                    timestamp: Date.now()
+                }));
+            }
 
         } catch(e) {
             console.error('Error fetching orders:', e);
+            toast.error("Gagal memuat riwayat transaksi");
         } finally {
             setLoading(false);
         }
@@ -79,7 +83,7 @@ export default function TransactionsHistoryPage() {
         const matchSearch = !searchQuery || 
             order.order_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.items_summary?.toLowerCase().includes(searchQuery.toLowerCase());
+            (order.items_summary || '').toLowerCase().includes(searchQuery.toLowerCase());
         
         let matchDate = true;
         if(dateRange.from) {

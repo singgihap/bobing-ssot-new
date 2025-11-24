@@ -4,9 +4,10 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, serverTimestamp, query, where } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_import_master';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// Konfigurasi Cache (Reuse dari halaman lain)
+const CACHE_KEY_PRODUCTS = 'lumina_products_data_v2';
+const CACHE_KEY_BRANDS = 'lumina_brands_v2';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 Jam (Cukup lama karena import jarang dilakukan)
 
 export default function ImportProductsPage() {
     const [logs, setLogs] = useState([]);
@@ -16,44 +17,92 @@ export default function ImportProductsPage() {
 
     // Fungsi membersihkan cache halaman lain agar data baru muncul
     const invalidateAppCaches = () => {
+        if (typeof window === 'undefined') return;
         const keysToRemove = [
-            'lumina_products_page_data',
-            'lumina_brands_data',
-            'lumina_inventory_data',
-            CACHE_KEY // Clear cache master import sendiri
+            CACHE_KEY_PRODUCTS,       // List Produk berubah
+            CACHE_KEY_BRANDS,         // List Brand berubah
+            'lumina_inventory_v2',    // Data Inventory berubah (produk baru muncul)
+            'lumina_variants_v2',     // Master SKU berubah
+            'lumina_pos_master_v2',   // POS perlu reload produk baru
+            'lumina_purchases_master_v2' // PO perlu produk baru
         ];
-        keysToRemove.forEach(k => sessionStorage.removeItem(k));
+        keysToRemove.forEach(k => localStorage.removeItem(k));
         console.log("App caches invalidated.");
     };
 
     const getMasterData = async () => {
-        // 1. Cek Cache
-        const cached = sessionStorage.getItem(CACHE_KEY);
-        if (cached) {
-            const { brandsMap, prodMap, timestamp } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_DURATION) {
-                addLog("Menggunakan data master dari Cache...", "info");
-                return { brandsMap, prodMap };
+        let brandsMap = {};
+        let prodMap = {};
+        let needFetchBrands = true;
+        let needFetchProds = true;
+
+        addLog("Memeriksa cache lokal...", "info");
+
+        // 1. Cek Cache LocalStorage (Zero Cost)
+        if (typeof window !== 'undefined') {
+            // Cek Cache Brands
+            const rawBrands = localStorage.getItem(CACHE_KEY_BRANDS);
+            if (rawBrands) {
+                try {
+                    const { data, timestamp } = JSON.parse(rawBrands);
+                    if (Date.now() - timestamp < CACHE_DURATION) {
+                        data.forEach(b => brandsMap[b.name.toLowerCase()] = b.id);
+                        needFetchBrands = false;
+                        addLog(`Loaded ${data.length} brands from cache.`, "success");
+                    }
+                } catch(e) {}
+            }
+
+            // Cek Cache Products
+            const rawProds = localStorage.getItem(CACHE_KEY_PRODUCTS);
+            if (rawProds) {
+                try {
+                    const { products, brands, timestamp } = JSON.parse(rawProds);
+                    if (Date.now() - timestamp < CACHE_DURATION) {
+                        // Jika cache brands masih kosong, ambil dari cache products juga
+                        if (needFetchBrands && brands) {
+                            brands.forEach(b => brandsMap[b.name.toLowerCase()] = b.id);
+                            needFetchBrands = false;
+                            addLog(`Loaded ${brands.length} brands from product cache.`, "success");
+                        }
+                        
+                        if (products) {
+                            products.forEach(p => {
+                                if (p.base_sku) prodMap[p.base_sku.toUpperCase()] = p.id;
+                            });
+                            needFetchProds = false;
+                            addLog(`Loaded ${products.length} products from cache.`, "success");
+                        }
+                    }
+                } catch(e) {}
             }
         }
 
-        // 2. Fetch Firebase (Tanpa Limit demi Integritas Data Duplikat)
-        addLog("Mengambil data master terbaru dari server...", "info");
-        
-        const brandsSnap = await getDocs(collection(db, "brands"));
-        const brandsMap = {}; 
-        brandsSnap.forEach(d => brandsMap[d.data().name.toLowerCase()] = d.id);
+        // 2. Fetch Firebase (Hanya jika cache tidak ada)
+        const promises = [];
+        if (needFetchBrands) promises.push(getDocs(collection(db, "brands")));
+        if (needFetchProds) promises.push(getDocs(collection(db, "products")));
 
-        const prodsSnap = await getDocs(collection(db, "products"));
-        const prodMap = {}; 
-        prodsSnap.forEach(d => prodMap[d.data().base_sku.toUpperCase()] = d.id);
+        if (promises.length > 0) {
+            addLog("Mengambil data master terbaru dari server...", "warning");
+            const results = await Promise.all(promises);
+            let idx = 0;
 
-        // 3. Simpan Cache
-        sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-            brandsMap, 
-            prodMap,
-            timestamp: Date.now()
-        }));
+            if (needFetchBrands) {
+                const brandsSnap = results[idx++];
+                brandsSnap.forEach(d => brandsMap[d.data().name.toLowerCase()] = d.id);
+                addLog(`Fetched ${brandsSnap.size} brands from server.`, "info");
+            }
+
+            if (needFetchProds) {
+                const prodsSnap = results[idx];
+                prodsSnap.forEach(d => {
+                    const sku = d.data().base_sku;
+                    if(sku) prodMap[sku.toUpperCase()] = d.id;
+                });
+                addLog(`Fetched ${prodsSnap.size} products from server.`, "info");
+            }
+        }
 
         return { brandsMap, prodMap };
     };
@@ -119,7 +168,7 @@ export default function ImportProductsPage() {
                         const size = String(row['size']||'ALL').toUpperCase().replace(/\s+/g, '-');
                         const sku = `${baseSku}-${color}-${size}`;
                         
-                        // Cek Variant Existing (Real-time check wajib untuk variant spesifik)
+                        // Cek Variant Existing (Real-time check wajib untuk variant spesifik demi integritas)
                         const qVar = query(collection(db, "product_variants"), where("sku", "==", sku));
                         const sVar = await getDocs(qVar);
                         
@@ -143,7 +192,7 @@ export default function ImportProductsPage() {
                 // Jika ada data baru, hapus cache aplikasi agar data muncul di halaman lain
                 if (success > 0 || newBrandsCount > 0 || newProdsCount > 0) {
                     invalidateAppCaches();
-                    addLog("Cache aplikasi diperbarui.", "warning");
+                    addLog("Cache aplikasi dibersihkan agar data baru muncul.", "warning");
                 }
                 
                 setProcessing(false);

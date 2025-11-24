@@ -3,13 +3,18 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
+import toast from 'react-hot-toast';
+
+// Konfigurasi Cache (Optimized)
+const CACHE_KEY = 'lumina_settings_v2';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 Jam (Data setting sangat jarang berubah)
 
 export default function SettingsPage() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('store');
     const [loading, setLoading] = useState(false);
 
-    // State untuk Data Settings
+    // State untuk Data Settings (Default Values)
     const [storeProfile, setStoreProfile] = useState({
         name: 'Bobing Store',
         address: 'Jl. Raya No. 123, Jakarta',
@@ -24,17 +29,45 @@ export default function SettingsPage() {
         autoPrint: true
     });
 
-    // Load Settings dari Firebase
+    // Load Settings (Optimized)
     useEffect(() => {
         const fetchSettings = async () => {
+            // 1. Cek Cache LocalStorage (Hemat Biaya)
+            if (typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    try {
+                        const { storeProfile: cStore, posConfig: cPos, timestamp } = JSON.parse(cached);
+                        if (Date.now() - timestamp < CACHE_DURATION) {
+                            if(cStore) setStoreProfile(cStore);
+                            if(cPos) setPosConfig(cPos);
+                            return; // Skip Read ke Firestore
+                        }
+                    } catch(e) {}
+                }
+            }
+
+            // 2. Fetch Firestore (Hanya jika cache expired/kosong)
             try {
                 const docRef = doc(db, "settings", "general");
                 const docSnap = await getDoc(docRef);
                 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    if(data.storeProfile) setStoreProfile(data.storeProfile);
-                    if(data.posConfig) setPosConfig(data.posConfig);
+                    const newStore = data.storeProfile || storeProfile;
+                    const newPos = data.posConfig || posConfig;
+
+                    setStoreProfile(newStore);
+                    setPosConfig(newPos);
+
+                    // Update Cache
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem(CACHE_KEY, JSON.stringify({
+                            storeProfile: newStore,
+                            posConfig: newPos,
+                            timestamp: Date.now()
+                        }));
+                    }
                 }
             } catch (e) {
                 console.error("Gagal memuat pengaturan:", e);
@@ -45,6 +78,7 @@ export default function SettingsPage() {
 
     const handleSave = async () => {
         setLoading(true);
+        const toastId = toast.loading("Menyimpan pengaturan...");
         try {
             // Simpan ke Firestore (Merge true agar tidak menimpa field lain jika ada)
             await setDoc(doc(db, "settings", "general"), { 
@@ -54,12 +88,19 @@ export default function SettingsPage() {
                 updated_by: user?.email
             }, { merge: true });
 
-            // Update Cache Lokal (Optional: jika ingin data settings tersedia instan di halaman lain)
-            localStorage.setItem('lumina_settings', JSON.stringify({ storeProfile, posConfig }));
+            // Update Cache Lokal Langsung (Optimistic Update)
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ 
+                    storeProfile, 
+                    posConfig,
+                    timestamp: Date.now() 
+                }));
+            }
 
-            alert("Pengaturan berhasil disimpan!");
+            toast.success("Pengaturan berhasil disimpan!", { id: toastId });
         } catch (e) {
-            alert("Gagal menyimpan: " + e.message);
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId });
         } finally {
             setLoading(false);
         }

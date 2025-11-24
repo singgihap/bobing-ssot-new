@@ -3,10 +3,12 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, limit } from 'firebase/firestore';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_suppliers_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY = 'lumina_suppliers_v2';
+const CACHE_KEY_PURCHASES = 'lumina_purchases_master_v2'; // Reuse cache dari Purchases Page
+const CACHE_DURATION = 60 * 60 * 1000; // 60 Menit (Data Supplier jarang berubah)
 
 export default function SuppliersPage() {
     const [suppliers, setSuppliers] = useState([]);
@@ -21,40 +23,59 @@ export default function SuppliersPage() {
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_KEY);
+            let data = null;
+
+            // 1. Cek Cache LocalStorage (Prioritas 1: Cache Sendiri)
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    if (Date.now() - timestamp < CACHE_DURATION) {
-                        setSuppliers(data);
-                        setLoading(false);
-                        return;
+                    const parsed = JSON.parse(cached);
+                    if (Date.now() - parsed.timestamp < CACHE_DURATION) {
+                        data = parsed.data;
                     }
                 }
             }
 
-            // 2. Fetch Firebase
-            const q = query(
-                collection(db, "suppliers"), 
-                orderBy("name", "asc"),
-                limit(100) // Safety limit
-            );
-            
-            const snap = await getDocs(q);
-            const data = [];
-            snap.forEach(d => data.push({id: d.id, ...d.data()}));
-            
-            setSuppliers(data);
+            // 2. Cek Cache Purchases (Prioritas 2: Reuse dari halaman Purchases - Hemat Biaya)
+            if (!data && !forceRefresh && typeof window !== 'undefined') {
+                const cachedPurch = localStorage.getItem(CACHE_KEY_PURCHASES);
+                if (cachedPurch) {
+                    try {
+                        const parsed = JSON.parse(cachedPurch);
+                        // Struktur cache purchases: { warehouses: [], suppliers: [], ... }
+                        if (parsed.suppliers && parsed.suppliers.length > 0 && (Date.now() - parsed.ts < CACHE_DURATION)) {
+                            data = parsed.suppliers;
+                        }
+                    } catch(e) {}
+                }
+            }
 
-            // 3. Simpan Cache
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                data: data,
-                timestamp: Date.now()
-            }));
+            // 3. Jika Cache Kosong, Fetch Firebase
+            if (!data) {
+                const q = query(
+                    collection(db, "suppliers"), 
+                    orderBy("name", "asc"),
+                    limit(100) // Safety limit
+                );
+                
+                const snap = await getDocs(q);
+                data = [];
+                snap.forEach(d => data.push({id: d.id, ...d.data()}));
+                
+                // Simpan Cache ke LocalStorage
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        data: data,
+                        timestamp: Date.now()
+                    }));
+                }
+            }
+
+            setSuppliers(data || []);
 
         } catch (e) { 
             console.error(e); 
+            toast.error("Gagal memuat data supplier");
         } finally { 
             setLoading(false); 
         }
@@ -67,37 +88,65 @@ export default function SuppliersPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            const payload = {
-                name: formData.name,
-                phone: formData.phone,
-                address: formData.address,
-                notes: formData.notes,
-                updated_at: serverTimestamp()
-            };
-            
-            if (formData.id) {
-                await updateDoc(doc(db, "suppliers", formData.id), payload);
-            } else { 
-                payload.created_at = serverTimestamp(); 
-                await addDoc(collection(db, "suppliers"), payload); 
-            }
-            
-            // Reset Cache
-            sessionStorage.removeItem(CACHE_KEY);
-            
-            setModalOpen(false); 
-            fetchData(true);
-        } catch (e) { alert("Gagal: " + e.message); }
+        
+        const savePromise = new Promise(async (resolve, reject) => {
+            try {
+                const payload = {
+                    name: formData.name,
+                    phone: formData.phone,
+                    address: formData.address,
+                    notes: formData.notes,
+                    updated_at: serverTimestamp()
+                };
+                
+                if (formData.id) {
+                    await updateDoc(doc(db, "suppliers", formData.id), payload);
+                } else { 
+                    payload.created_at = serverTimestamp(); 
+                    await addDoc(collection(db, "suppliers"), payload); 
+                }
+                
+                // Invalidate Caches (Hapus cache sendiri DAN cache purchases agar sinkron)
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem(CACHE_KEY);
+                    localStorage.removeItem(CACHE_KEY_PURCHASES);
+                }
+                
+                setModalOpen(false); 
+                fetchData(true);
+                resolve();
+            } catch (e) { reject(e); }
+        });
+
+        toast.promise(savePromise, {
+            loading: 'Menyimpan...',
+            success: 'Data berhasil disimpan',
+            error: (err) => `Gagal: ${err.message}`
+        });
     };
 
     const deleteItem = async (id) => {
         if(confirm("Hapus supplier ini?")) { 
-            await deleteDoc(doc(db, "suppliers", id)); 
-            
-            // Reset Cache
-            sessionStorage.removeItem(CACHE_KEY);
-            fetchData(true); 
+            const deletePromise = new Promise(async (resolve, reject) => {
+                try {
+                    await deleteDoc(doc(db, "suppliers", id)); 
+                    
+                    // Reset Cache
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem(CACHE_KEY);
+                        localStorage.removeItem(CACHE_KEY_PURCHASES);
+                    }
+
+                    fetchData(true); 
+                    resolve();
+                } catch(e) { reject(e); }
+            });
+
+            toast.promise(deletePromise, {
+                loading: 'Menghapus...',
+                success: 'Supplier dihapus',
+                error: (err) => `Gagal: ${err.message}`
+            });
         }
     };
 

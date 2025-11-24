@@ -5,9 +5,11 @@ import { collection, getDocs, doc, writeBatch, serverTimestamp, query, orderBy, 
 import { useAuth } from '@/context/AuthContext';
 import * as XLSX from 'xlsx';
 
-// Konfigurasi Cache
-const CACHE_VARIANTS = 'lumina_import_variants_cache';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// Konfigurasi Cache Keys (Reuse dari halaman lain)
+const CACHE_KEY_VARIANTS = 'lumina_variants_v2';
+const CACHE_KEY_INVENTORY = 'lumina_inventory_v2';
+const CACHE_KEY_PURCHASES_MASTER = 'lumina_purchases_master_v2';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 Jam (Reuse data master)
 
 export default function ImportPurchasesPage() {
     const { user } = useAuth();
@@ -18,6 +20,37 @@ export default function ImportPurchasesPage() {
 
     useEffect(() => {
         const fetchWh = async () => {
+            if (typeof window === 'undefined') return;
+
+            // 1. Coba Reuse Cache Warehouse dari Inventory/Purchases Page
+            let whData = null;
+            const cacheInv = localStorage.getItem(CACHE_KEY_INVENTORY);
+            const cachePurch = localStorage.getItem(CACHE_KEY_PURCHASES_MASTER);
+
+            if (cacheInv) {
+                try {
+                    const parsed = JSON.parse(cacheInv);
+                    if (parsed.warehouses && parsed.warehouses.length > 0) whData = parsed.warehouses;
+                } catch (e) {}
+            }
+
+            if (!whData && cachePurch) {
+                try {
+                    const parsed = JSON.parse(cachePurch);
+                    if (parsed.warehouses && parsed.warehouses.length > 0) whData = parsed.warehouses;
+                } catch (e) {}
+            }
+
+            // Filter hanya gudang fisik
+            if (whData) {
+                const physicalWh = whData.filter(d => d.type === 'physical' || !d.type);
+                if (physicalWh.length > 0) {
+                    setWarehouses(physicalWh);
+                    return; // Stop, hemat reads
+                }
+            }
+
+            // 2. Fallback Fetch jika cache kosong
             const q = query(collection(db, "warehouses"), orderBy("created_at"));
             const snap = await getDocs(q);
             const data = [];
@@ -31,37 +64,55 @@ export default function ImportPurchasesPage() {
 
     // Fungsi Invalidate Cache agar data di halaman lain update
     const invalidateCaches = () => {
-        sessionStorage.removeItem('lumina_inventory_data'); // Stok berubah
-        sessionStorage.removeItem('lumina_balance_data');   // Hutang berubah
-        sessionStorage.removeItem('lumina_purchases_history'); // History berubah
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem('lumina_inventory_v2');       // Stok berubah
+        localStorage.removeItem('lumina_balance_v2');         // Nilai Aset/Hutang berubah
+        localStorage.removeItem('lumina_purchases_history_v2'); // History PO berubah
+        localStorage.removeItem('lumina_dash_master_v2');     // Dashboard Stock/Cash berubah
+        localStorage.removeItem('lumina_pos_snapshots_v2');   // POS Stock berubah
         console.log("Cache invalidation complete.");
     };
 
     const getMasterVariants = async () => {
-        // 1. Cek Cache
-        const cached = sessionStorage.getItem(CACHE_VARIANTS);
-        if (cached) {
-            const { varMap, timestamp } = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_DURATION) {
-                addLog("Menggunakan data varian dari Cache...", "info");
-                return varMap;
+        let varMap = {};
+        let loadedFromCache = false;
+
+        // 1. Cek Cache LocalStorage (Reuse dari Variants Page)
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem(CACHE_KEY_VARIANTS);
+            if (cached) {
+                try {
+                    const { data, timestamp } = JSON.parse(cached);
+                    // Gunakan cache jika ada, meskipun agak lama (karena ini untuk mapping SKU static)
+                    if (Date.now() - timestamp < CACHE_DURATION) {
+                        data.forEach(v => {
+                            if(v.sku) varMap[v.sku.toUpperCase().trim()] = v;
+                        });
+                        addLog(`Loaded ${Object.keys(varMap).length} variants from cache.`, "success");
+                        loadedFromCache = true;
+                    }
+                } catch(e) {}
             }
         }
 
-        // 2. Fetch Firebase
-        addLog("Mengambil data master varian terbaru...", "info");
-        const varSnap = await getDocs(collection(db, "product_variants"));
-        const varMap = {};
-        varSnap.forEach(d => {
-            const v = d.data();
-            if(v.sku) varMap[v.sku.toUpperCase().trim()] = { id: d.id, ...v };
-        });
-
-        // 3. Simpan Cache
-        sessionStorage.setItem(CACHE_VARIANTS, JSON.stringify({
-            varMap,
-            timestamp: Date.now()
-        }));
+        // 2. Fetch Firebase (Hanya jika cache tidak ada)
+        if (!loadedFromCache) {
+            addLog("Mengambil data master varian terbaru dari server...", "warning");
+            const varSnap = await getDocs(collection(db, "product_variants"));
+            varSnap.forEach(d => {
+                const v = d.data();
+                if(v.sku) varMap[v.sku.toUpperCase().trim()] = { id: d.id, ...v };
+            });
+            
+            // Simpan Cache untuk penggunaan di masa depan
+            if (typeof window !== 'undefined') {
+                const variantsArray = Object.values(varMap);
+                localStorage.setItem(CACHE_KEY_VARIANTS, JSON.stringify({
+                    data: variantsArray,
+                    timestamp: Date.now()
+                }));
+            }
+        }
 
         return varMap;
     };
@@ -146,7 +197,6 @@ export default function ImportPurchasesPage() {
                         });
                         opCount++;
 
-                        // FIXED: Menggunakan for...of agar bisa await di dalam loop
                         for (const item of validItems) {
                             // B. Create PO Item (1 Op)
                             const itemRef = doc(collection(db, `purchase_orders/${poRef.id}/items`));
@@ -162,8 +212,8 @@ export default function ImportPurchasesPage() {
                             });
                             opCount++;
 
-                            // D. Update/Set Stock Snapshot (1 Op) - FIX PENTING!
-                            // Menggunakan increment agar atomic dan tidak perlu read dulu
+                            // D. Update/Set Stock Snapshot (1 Op)
+                            // Menggunakan increment agar atomic dan tidak perlu read dulu (0 Read Cost)
                             const snapRef = doc(db, "stock_snapshots", `${item.variant_id}_${selectedWh}`);
                             batch.set(snapRef, { 
                                 id: `${item.variant_id}_${selectedWh}`,
@@ -245,7 +295,7 @@ export default function ImportPurchasesPage() {
                     {logs.length === 0 ? (
                         <span className="text-lumina-muted/50 animate-pulse">Waiting for input...</span>
                     ) : logs.map((l, i) => (
-                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-500':(l.type==='success'?'text-emerald-400':'text-lumina-muted')}`}>
+                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-lumina-muted')}`}>
                             <span className="opacity-50 select-none">{'>'}</span>
                             <span>{l.msg}</span>
                         </div>

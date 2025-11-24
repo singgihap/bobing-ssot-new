@@ -6,11 +6,17 @@ import { useAuth } from '@/context/AuthContext';
 import { formatRupiah } from '@/lib/utils';
 import Link from 'next/link';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 
-// Konfigurasi Cache
-const CACHE_MASTER = 'lumina_purchases_master';
-const CACHE_HISTORY = 'lumina_purchases_history';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// --- KONFIGURASI CACHE (OPTIMIZED) ---
+const CACHE_KEY_HISTORY = 'lumina_purchases_history_v2';
+const CACHE_KEY_MASTER = 'lumina_purchases_master_v2'; // Suppliers & Warehouses
+const CACHE_DURATION_MASTER = 30 * 60 * 1000; // 30 Menit
+const CACHE_DURATION_HISTORY = 5 * 60 * 1000; // 5 Menit
+
+// Cache Keys dari halaman lain untuk di-reuse
+const CACHE_KEY_PRODUCTS = 'lumina_products_data_v2';
+const CACHE_KEY_VARIANTS = 'lumina_variants_v2';
 
 export default function PurchasesPage() {
     const { user } = useAuth();
@@ -32,25 +38,35 @@ export default function PurchasesPage() {
     const [inputItem, setInputItem] = useState({ variant_id: '', qty: '', cost: '' });
     const [poItems, setPoItems] = useState([]);
 
+    // Helper: Invalidate Cache Relevan
+    const invalidateRelatedCaches = () => {
+        if (typeof window === 'undefined') return;
+        localStorage.removeItem(CACHE_KEY_HISTORY); // Refresh list PO
+        localStorage.removeItem('lumina_inventory_v2'); // Refresh Inventory (Stok nambah)
+        localStorage.removeItem('lumina_pos_snapshots_v2'); // Refresh POS Stock
+        localStorage.removeItem('lumina_dash_master_v2'); // Refresh Dashboard (Cash/Asset)
+    };
+
     useEffect(() => { 
         fetchHistory(); 
         fetchMasterData(); 
     }, []);
 
-    // 1. Fetch History (Optimized)
+    // 1. Fetch History (Optimized with LocalStorage & Limit)
     const fetchHistory = async (forceRefresh = false) => {
+        setLoading(true);
         try {
-            if (!forceRefresh) {
-                const cached = sessionStorage.getItem(CACHE_HISTORY);
+            if (!forceRefresh && typeof window !== 'undefined') {
+                const cached = localStorage.getItem(CACHE_KEY_HISTORY);
                 if (cached) {
                     const { data, ts } = JSON.parse(cached);
-                    if (Date.now() - ts < CACHE_DURATION) {
-                        // Revive dates from JSON string
+                    if (Date.now() - ts < CACHE_DURATION_HISTORY) {
                         const revived = data.map(d => ({
                             ...d,
                             order_date: new Date(d.order_date)
                         }));
                         setHistory(revived);
+                        setLoading(false);
                         return;
                     }
                 }
@@ -64,62 +80,125 @@ export default function PurchasesPage() {
                 data.push({
                     id: d.id, 
                     ...docData,
-                    order_date: docData.order_date.toDate() // Convert for UI
+                    order_date: docData.order_date.toDate()
                 });
             });
             
             setHistory(data);
 
-            // Save normalized data to cache
-            sessionStorage.setItem(CACHE_HISTORY, JSON.stringify({
-                data: data, // Date object will be stringified automatically
-                ts: Date.now()
-            }));
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(CACHE_KEY_HISTORY, JSON.stringify({
+                    data: data,
+                    ts: Date.now()
+                }));
+            }
 
-        } catch (e) { console.error(e); } finally { setLoading(false); }
+        } catch (e) { 
+            console.error(e);
+            toast.error("Gagal memuat riwayat PO");
+        } finally { 
+            setLoading(false); 
+        }
     };
 
-    // 2. Fetch Master Data (Optimized)
+    // 2. Fetch Master Data (Smart Reuse Strategy)
     const fetchMasterData = async () => {
-        const cached = sessionStorage.getItem(CACHE_MASTER);
-        if (cached) {
-            const { warehouses, suppliers, products, variants, ts } = JSON.parse(cached);
-            if (Date.now() - ts < CACHE_DURATION) {
-                setWarehouses(warehouses);
-                setSuppliers(suppliers);
-                setProducts(products);
-                setVariants(variants);
-                return;
-            }
-        }
-
         try {
-            const [sWh, sSupp, sProd, sVar] = await Promise.all([
-                getDocs(query(collection(db, "warehouses"), orderBy("created_at"))),
-                getDocs(query(collection(db, "suppliers"), orderBy("name"))),
-                getDocs(collection(db, "products")), // Ambil semua untuk mapping
-                getDocs(query(collection(db, "product_variants"), orderBy("sku")))
-            ]);
+            if (typeof window === 'undefined') return;
 
-            const wh = []; sWh.forEach(d => { if(d.data().type==='physical' || !d.data().type) wh.push({id:d.id, ...d.data()}) });
-            const sup = []; sSupp.forEach(d => sup.push({id:d.id, ...d.data()}));
-            const prod = []; sProd.forEach(d => prod.push({id:d.id, ...d.data()}));
-            const vr = []; sVar.forEach(d => vr.push({id:d.id, ...d.data()}));
+            // A. Load Suppliers & Warehouses (Own Cache)
+            let whList = [], suppList = [];
+            let needFetchMaster = true;
 
-            setWarehouses(wh);
-            setSuppliers(sup);
-            setProducts(prod);
-            setVariants(vr);
+            const cachedMaster = localStorage.getItem(CACHE_KEY_MASTER);
+            if (cachedMaster) {
+                const parsed = JSON.parse(cachedMaster);
+                if (Date.now() - parsed.ts < CACHE_DURATION_MASTER) {
+                    whList = parsed.warehouses;
+                    suppList = parsed.suppliers;
+                    needFetchMaster = false;
+                }
+            }
 
-            sessionStorage.setItem(CACHE_MASTER, JSON.stringify({
-                warehouses: wh, suppliers: sup, products: prod, variants: vr, ts: Date.now()
-            }));
-        } catch(e) { console.error(e); }
+            // B. Load Products & Variants (Reuse External Cache)
+            let prodList = [], varList = [];
+            let needFetchProd = true;
+            let needFetchVar = true;
+
+            const rawProd = localStorage.getItem(CACHE_KEY_PRODUCTS);
+            const rawVar = localStorage.getItem(CACHE_KEY_VARIANTS);
+
+            if (rawProd) {
+                const parsed = JSON.parse(rawProd);
+                // Support struktur { products: [] } atau []
+                const pData = Array.isArray(parsed) ? parsed : (parsed.products || []);
+                if (pData.length > 0) {
+                    prodList = pData;
+                    needFetchProd = false;
+                }
+            }
+
+            if (rawVar) {
+                const parsed = JSON.parse(rawVar);
+                const vData = parsed.data || []; // Asumsi struktur { data: [], ts: ... }
+                if (vData.length > 0) {
+                    varList = vData;
+                    needFetchVar = false;
+                }
+            }
+
+            // C. Fetch yang kurang saja
+            const promises = [];
+            if (needFetchMaster) {
+                promises.push(getDocs(query(collection(db, "warehouses"), orderBy("created_at"))));
+                promises.push(getDocs(query(collection(db, "suppliers"), orderBy("name"))));
+            }
+            if (needFetchProd) promises.push(getDocs(collection(db, "products")));
+            if (needFetchVar) promises.push(getDocs(query(collection(db, "product_variants"), orderBy("sku"))));
+
+            if (promises.length > 0) {
+                const results = await Promise.all(promises);
+                let idx = 0;
+
+                if (needFetchMaster) {
+                    const sWh = results[idx++];
+                    const sSupp = results[idx++];
+                    whList = []; sWh.forEach(d => { if(d.data().type==='physical' || !d.data().type) whList.push({id:d.id, ...d.data()}) });
+                    suppList = []; sSupp.forEach(d => suppList.push({id:d.id, ...d.data()}));
+                    
+                    // Simpan Cache Master Sendiri
+                    localStorage.setItem(CACHE_KEY_MASTER, JSON.stringify({ warehouses: whList, suppliers: suppList, ts: Date.now() }));
+                }
+
+                if (needFetchProd) {
+                    const sProd = results[idx++];
+                    prodList = []; sProd.forEach(d => prodList.push({id:d.id, ...d.data()}));
+                    // Opsional: Simpan ke cache products v2 jika kosong (side effect positif)
+                    localStorage.setItem(CACHE_KEY_PRODUCTS, JSON.stringify({ products: prodList, timestamp: Date.now() }));
+                }
+
+                if (needFetchVar) {
+                    const sVar = results[idx++];
+                    varList = []; sVar.forEach(d => varList.push({id:d.id, ...d.data()}));
+                    // Opsional: Simpan ke cache variants v2
+                    localStorage.setItem(CACHE_KEY_VARIANTS, JSON.stringify({ data: varList, timestamp: Date.now() }));
+                }
+            }
+
+            setWarehouses(whList);
+            setSuppliers(suppList);
+            setProducts(prodList);
+            setVariants(varList);
+
+        } catch(e) { 
+            console.error(e); 
+            toast.error("Gagal memuat data master");
+        }
     };
 
     const addItem = () => {
         const { variant_id, qty, cost } = inputItem;
-        if(!variant_id || !qty || !cost) return alert("Lengkapi data");
+        if(!variant_id || !qty || !cost) return toast.error("Lengkapi data item");
         const v = variants.find(x => x.id === variant_id);
         const p = products.find(x => x.id === v.product_id);
         setCart([...cart, { variant_id, sku: v.sku, name: p?.name, spec: `${v.color}/${v.size}`, qty: parseInt(qty), unit_cost: parseInt(cost) }]);
@@ -128,7 +207,9 @@ export default function PurchasesPage() {
 
     const submitPO = async (e) => {
         e.preventDefault();
-        if(cart.length === 0) return alert("Keranjang kosong");
+        if(cart.length === 0) return toast.error("Keranjang kosong");
+        
+        const toastId = toast.loading("Memproses PO...");
         try {
             const totalAmount = cart.reduce((a,b) => a + (b.qty * b.unit_cost), 0);
             const totalQty = cart.reduce((a,b) => a + b.qty, 0);
@@ -136,49 +217,79 @@ export default function PurchasesPage() {
             
             await runTransaction(db, async (t) => {
                 const poRef = doc(collection(db, "purchase_orders"));
-                t.set(poRef, { supplier_name: supplierName, warehouse_id: formData.warehouse_id, order_date: new Date(formData.date), status: 'received_full', total_amount: totalAmount, total_qty: totalQty, payment_status: formData.isPaid ? 'paid' : 'unpaid', created_at: serverTimestamp(), created_by: user?.email });
+                t.set(poRef, { 
+                    supplier_name: supplierName, warehouse_id: formData.warehouse_id, 
+                    order_date: new Date(formData.date), status: 'received_full', 
+                    total_amount: totalAmount, total_qty: totalQty, 
+                    payment_status: formData.isPaid ? 'paid' : 'unpaid', 
+                    created_at: serverTimestamp(), created_by: user?.email 
+                });
                 
                 for(const i of cart) {
-                    t.set(doc(collection(db, `purchase_orders/${poRef.id}/items`)), { variant_id: i.variant_id, qty: i.qty, unit_cost: i.unit_cost, subtotal: i.qty*i.unit_cost });
-                    t.set(doc(collection(db, "stock_movements")), { variant_id: i.variant_id, warehouse_id: formData.warehouse_id, type: 'purchase_in', qty: i.qty, unit_cost: i.unit_cost, ref_id: poRef.id, ref_type: 'purchase_order', date: serverTimestamp(), notes: `PO ${supplierName}` });
+                    // PO Items
+                    t.set(doc(collection(db, `purchase_orders/${poRef.id}/items`)), { 
+                        variant_id: i.variant_id, qty: i.qty, unit_cost: i.unit_cost, subtotal: i.qty*i.unit_cost 
+                    });
                     
-                    const sRef = doc(db, "stock_snapshots", `${i.variant_id}_${formData.warehouse_id}`); 
+                    // Stock Movement
+                    t.set(doc(collection(db, "stock_movements")), { 
+                        variant_id: i.variant_id, warehouse_id: formData.warehouse_id, type: 'purchase_in', 
+                        qty: i.qty, unit_cost: i.unit_cost, ref_id: poRef.id, ref_type: 'purchase_order', 
+                        date: serverTimestamp(), notes: `PO ${supplierName}` 
+                    });
+                    
+                    // Update Snapshot (Composite ID)
+                    const snapshotId = `${i.variant_id}_${formData.warehouse_id}`;
+                    const sRef = doc(db, "stock_snapshots", snapshotId); 
                     const sDoc = await t.get(sRef);
-                    if(sDoc.exists()) t.update(sRef, { qty: (sDoc.data().qty||0) + i.qty }); 
-                    else t.set(sRef, { id: sRef.id, variant_id: i.variant_id, warehouse_id: formData.warehouse_id, qty: i.qty });
+                    
+                    if(sDoc.exists()) {
+                        t.update(sRef, { qty: (sDoc.data().qty||0) + i.qty });
+                    } else {
+                        t.set(sRef, { id: snapshotId, variant_id: i.variant_id, warehouse_id: formData.warehouse_id, qty: i.qty });
+                    }
                 }
                 
                 if(formData.isPaid) {
                     const cashRef = doc(collection(db, "cash_transactions"));
-                    t.set(cashRef, { type: 'out', amount: totalAmount, date: serverTimestamp(), ref_type: 'purchase_order', ref_id: poRef.id, category: 'pembelian', description: `Bayar PO ${supplierName}` });
+                    t.set(cashRef, { 
+                        type: 'out', amount: totalAmount, date: serverTimestamp(), 
+                        ref_type: 'purchase_order', ref_id: poRef.id, 
+                        category: 'pembelian', description: `Bayar PO ${supplierName}` 
+                    });
                 }
             });
 
-            // INVALIDASI CACHE
-            sessionStorage.removeItem(CACHE_HISTORY); // Clear PO History
-            sessionStorage.removeItem('lumina_inventory_data'); // Clear Inventory karena stok berubah
-            sessionStorage.removeItem('lumina_balance_data'); // Clear Neraca karena aset/hutang berubah
+            invalidateRelatedCaches();
             
-            alert("Sukses!"); 
+            toast.success("PO Berhasil Disimpan!", { id: toastId });
             setModalOpen(false); 
             fetchHistory(true); // Force refresh list
+            setCart([]);
             
-        } catch(e) { alert(e.message); }
+        } catch(e) { 
+            console.error(e);
+            toast.error(`Gagal: ${e.message}`, { id: toastId }); 
+        }
     };
 
     const openDetail = async (po) => {
         setSelectedPO(po); 
         setDetailOpen(true);
-        // Detail item tidak perlu di-cache karena jarang dibuka berulang-ulang
-        const itemsSnap = await getDocs(collection(db, `purchase_orders/${po.id}/items`));
-        const items = []; 
-        itemsSnap.forEach(d => { 
-            const i = d.data(); 
-            const v = variants.find(x => x.id === i.variant_id); 
-            const p = v ? products.find(x => x.id === v.product_id) : null; 
-            items.push({ ...i, name: p?.name, sku: v?.sku }); 
-        });
-        setPoItems(items);
+        setPoItems([]); // Reset prev
+        try {
+            const itemsSnap = await getDocs(collection(db, `purchase_orders/${po.id}/items`));
+            const items = []; 
+            itemsSnap.forEach(d => { 
+                const i = d.data(); 
+                const v = variants.find(x => x.id === i.variant_id); 
+                const p = v ? products.find(x => x.id === v.product_id) : null; 
+                items.push({ ...i, name: p?.name, sku: v?.sku }); 
+            });
+            setPoItems(items);
+        } catch(e) {
+            toast.error("Gagal memuat detail");
+        }
     };
 
     return (
@@ -214,7 +325,7 @@ export default function PurchasesPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" className="p-8 text-center text-lumina-muted">Loading...</td></tr>
+                                <tr><td colSpan="5" className="p-8 text-center text-lumina-muted animate-pulse">Loading History...</td></tr>
                             ) : history.map(h => (
                                 <tr key={h.id}>
                                     <td className="pl-6 font-mono text-xs text-lumina-muted">{new Date(h.order_date).toLocaleDateString()}</td>

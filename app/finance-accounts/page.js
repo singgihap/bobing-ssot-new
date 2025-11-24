@@ -6,9 +6,9 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, serverTimestamp, updateDoc, limit } from 'firebase/firestore';
 import { Portal } from '@/lib/usePortal';
 
-// Konfigurasi Cache
-const CACHE_KEY = 'lumina_finance_accounts';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+// Konfigurasi Cache (Optimized)
+const CACHE_KEY = 'lumina_finance_accounts_v2';
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit (Master data jarang berubah)
 
 export default function FinanceAccountsPage() {
   const [accounts, setAccounts] = useState([]);
@@ -35,12 +35,21 @@ export default function FinanceAccountsPage() {
     fetchAccounts();
   }, []);
 
+  // Helper: Invalidate Related Caches
+  const invalidateCaches = () => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(CACHE_KEY); // Self
+    localStorage.removeItem('lumina_cash_categories_v2'); // Dropdown Kategori di Cash Flow
+    localStorage.removeItem('lumina_pos_master_v2'); // Pilihan Akun Pembayaran di POS
+    localStorage.removeItem('lumina_cash_data_v2'); // List Akun di Cash Flow
+  };
+
   const fetchAccounts = async (forceRefresh = false) => {
     setLoading(true);
     try {
-      // 1. Cek Cache
-      if (!forceRefresh) {
-        const cached = sessionStorage.getItem(CACHE_KEY);
+      // 1. Cek Cache LocalStorage
+      if (!forceRefresh && typeof window !== 'undefined') {
+        const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < CACHE_DURATION) {
@@ -55,7 +64,7 @@ export default function FinanceAccountsPage() {
       const q = query(
         collection(db, 'chart_of_accounts'),
         orderBy('code', 'asc'),
-        limit(200) // Safety limit untuk COA
+        limit(200) // Safety limit
       );
       const snapshot = await getDocs(q);
       const data = snapshot.docs.map(doc => ({
@@ -65,11 +74,13 @@ export default function FinanceAccountsPage() {
       
       setAccounts(data);
 
-      // 3. Simpan Cache
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-        data: data,
-        timestamp: Date.now()
-      }));
+      // 3. Simpan Cache LocalStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: data,
+            timestamp: Date.now()
+        }));
+      }
 
     } catch (error) {
       console.error('Error fetching accounts:', error);
@@ -78,12 +89,12 @@ export default function FinanceAccountsPage() {
     }
   };
 
-  // ✅ Helper function: Check if status is Active
+  // Helper function: Check if status is Active
   const isActive = (status) => {
     return status === 'Aktif' || status === 'Active';
   };
 
-  // ✅ TOGGLE STATUS FUNCTION - Update status field (string)
+  // TOGGLE STATUS FUNCTION
   const toggleStatus = async (id, currentStatus) => {
     try {
       const accountRef = doc(db, 'chart_of_accounts', id);
@@ -95,8 +106,7 @@ export default function FinanceAccountsPage() {
         updated_at: serverTimestamp(),
       });
       
-      // Reset cache & refresh
-      sessionStorage.removeItem(CACHE_KEY);
+      invalidateCaches();
       fetchAccounts(true);
       
     } catch (error) {
@@ -144,15 +154,13 @@ export default function FinanceAccountsPage() {
         code: formData.code,
         name: formData.name,
         category: formData.category,
-        status: 'Aktif', // ✅ Default: Aktif
+        status: 'Aktif', // Default: Aktif
         createdAt: serverTimestamp(),
         updated_at: serverTimestamp(),
       });
 
       setModalOpen(false);
-      
-      // Reset cache & refresh
-      sessionStorage.removeItem(CACHE_KEY);
+      invalidateCaches();
       fetchAccounts(true);
       
       alert('Akun berhasil ditambahkan!');
@@ -169,8 +177,7 @@ export default function FinanceAccountsPage() {
       try {
         await deleteDoc(doc(db, 'chart_of_accounts', id));
         
-        // Reset cache & refresh
-        sessionStorage.removeItem(CACHE_KEY);
+        invalidateCaches();
         fetchAccounts(true);
         
         alert('Akun berhasil dihapus!');
@@ -231,7 +238,7 @@ export default function FinanceAccountsPage() {
                       <span className="badge-luxury badge-neutral">{account.category}</span>
                     </td>
                     
-                    {/* ✅ TOGGLE STATUS BUTTON */}
+                    {/* TOGGLE STATUS BUTTON */}
                     <td className="text-center py-3">
                       <button
                         onClick={() => toggleStatus(account.id, account.status)}
@@ -266,13 +273,13 @@ export default function FinanceAccountsPage() {
       {/* MODAL */}
       <Portal>
         {modalOpen && (
-          <div className="fixed inset-0 z- flex items-center justify-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
               onClick={() => setModalOpen(false)}
             />
 
-            <div className="relative z- bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
+            <div className="relative z-50 bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
               
               <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0">
                 <h3 className="text-lg font-bold text-white">Add New Account</h3>
