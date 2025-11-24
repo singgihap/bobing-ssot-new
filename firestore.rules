@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Fungsi Helper
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // 1. Master Data (Produk, Varian, Brand, Kategori)
+    // Publik boleh baca (untuk keperluan POS/Katalog), tapi hanya Admin yg boleh tulis
+    match /products/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    match /product_variants/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    match /brands/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    match /categories/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    match /warehouses/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    
+    // 2. Transaksi & Keuangan (Sangat Sensitif - PROTECTED)
+    // Hanya user login yang boleh akses
+    match /sales_orders/{docId} { allow read, write: if isAuthenticated(); }
+    match /sales_orders/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
+    
+    match /purchase_orders/{docId} { allow read, write: if isAuthenticated(); }
+    match /purchase_orders/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
+    
+    match /cash_transactions/{docId} { allow read, write: if isAuthenticated(); }
+    match /cash_accounts/{docId} { allow read, write: if isAuthenticated(); }
+    
+    // 3. Inventory & Stats
+    match /stock_movements/{docId} { allow read, write: if isAuthenticated(); }
+    match /stock_snapshots/{docId} { allow read, write: if isAuthenticated(); }
+    
+    // Dokumen Agregasi (PENTING UNTUK COST OPTIMIZATION)
+    // Client hanya boleh BACA. Penulisan hanya boleh dilakukan oleh Cloud Function (Server).
+    match /stats_inventory/{docId} { 
+      allow read: if isAuthenticated(); 
+      allow write: if false; 
+    }
+    
+    // 4. Lain-lain
+    match /settings/{docId} { allow read: if true; allow write: if isAuthenticated(); }
+    match /customers/{docId} { allow read, write: if isAuthenticated(); }
+    match /suppliers/{docId} { allow read, write: if isAuthenticated(); }
+    match /supplier_sessions/{docId} { allow read, write: if isAuthenticated(); }
+    match /supplier_sessions/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
+  }
+}
