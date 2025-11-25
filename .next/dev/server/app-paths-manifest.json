@@ -1,16 +1,4 @@
 {
   "/dashboard/page": "app/dashboard/page.js",
-  "/finance-reports/page": "app/finance-reports/page.js",
-  "/finance/page": "app/finance/page.js",
-  "/inventory/page": "app/inventory/page.js",
-  "/master/page": "app/master/page.js",
-  "/operations/page": "app/operations/page.js",
-  "/page": "app/page.js",
-  "/partners/page": "app/partners/page.js",
-  "/products/page": "app/products/page.js",
-  "/sales-import/page": "app/sales-import/page.js",
-  "/sales-manual/page": "app/sales-manual/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/supplier-sessions/page": "app/supplier-sessions/page.js",
-  "/variants/page": "app/variants/page.js"
+  "/page": "app/page.js"
 }
