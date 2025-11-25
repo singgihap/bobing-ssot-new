@@ -68,8 +68,9 @@ export default function TabsLayout({ tabs, defaultPath, pageTitle, pageSubtitle 
             onClick={() => handleTabClick(tab.path)}
             className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-colors duration-200
               ${currentTab === tab.path 
-                ? 'text-white border-b-2 border-lumina-gold' 
-                : 'text-lumina-muted hover:text-white/80 border-b-2 border-transparent'
+                ? 'text-lumina-text border-b-2 border-lumina-gold' // PERBAIKAN 1: text-white -> text-lumina-text
+                // PERBAIKAN 2: hover:text-white/80 -> hover:text-lumina-text
+                : 'text-lumina-muted hover:text-lumina-text border-b-2 border-transparent' 
               }`}
           >
             {tab.icon}
@@ -79,7 +80,6 @@ export default function TabsLayout({ tabs, defaultPath, pageTitle, pageSubtitle 
       </div>
       
       <div className='mt-8'>
-        {/* PERBAIKAN UTAMA: HANYA RENDER KOMPONEN */}
         <Component />
       </div>
     </>

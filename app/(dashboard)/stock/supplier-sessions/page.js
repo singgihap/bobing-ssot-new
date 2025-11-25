@@ -219,7 +219,7 @@ export default function VirtualStockPage() {
     return (
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
              {/* Header */}
-             <div className="sticky top-0 z-30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-lumina-base -mx-4 px-4 md:-mx-8 md:px-8 py-4 border-b border-lumina-border/50 shadow-md">
+             <div className="sticky top-0 z-30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-lumina-surface -mx-4 px-4 md:-mx-8 md:px-8 py-4 border-b border-lumina-border/50 shadow-md">
                 <div>
                     <h2 className="text-xl md:text-3xl font-display font-bold text-lumina-text tracking-tight">Virtual Stock Map</h2>
                     <p className="text-sm text-lumina-muted mt-1 font-light hidden md:block">Drag & Drop cards to organize supplier products.</p>
@@ -244,7 +244,7 @@ export default function VirtualStockPage() {
                             <div ref={gridRef} className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                 {visibleProducts.map(p => (
                                     <div key={p.id} className="card-luxury p-5 cursor-grab active:cursor-grabbing hover:border-lumina-gold/50 transition-all relative group" onClick={() => openModal(p)}>
-                                        <span className="text-[10px] font-bold bg-lumina-base text-lumina-gold px-2 py-1 rounded uppercase tracking-wide border border-lumina-border">{p.base_sku}</span>
+                                        <span className="text-[10px] font-bold bg-lumina-surface text-lumina-gold px-2 py-1 rounded uppercase tracking-wide border border-lumina-border">{p.base_sku}</span>
                                         <h3 className="text-sm font-bold text-lumina-text mt-3 mb-4 line-clamp-2 leading-relaxed group-hover:text-lumina-gold transition-colors">{p.name}</h3>
                                         <div className="flex justify-between items-end border-t border-lumina-border pt-3">
                                             <span className="text-xs text-lumina-muted">{p.variants.length} Items</span>
@@ -261,7 +261,7 @@ export default function VirtualStockPage() {
                                     return (
                                         <div key={p.id} onClick={() => openModal(p)} className="card-luxury p-4 active:scale-[0.98] transition-transform cursor-pointer">
                                             <div className="flex gap-4 items-start">
-                                                <div className="w-16 h-16 rounded-lg bg-lumina-base border border-lumina-border flex-shrink-0 overflow-hidden">
+                                                <div className="w-16 h-16 rounded-lg bg-lumina-surface border border-lumina-border flex-shrink-0 overflow-hidden">
                                                     {p.image_url ? (
                                                         <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
                                                     ) : (
@@ -270,12 +270,12 @@ export default function VirtualStockPage() {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
-                                                        <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-base px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
+                                                        <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
                                                         <span className={`text-sm font-bold font-mono ${p.totalStock > 0 ? 'text-emerald-400' : 'text-lumina-muted/50'}`}>
                                                             {p.totalStock} <span className="text-[10px] font-normal">qty</span>
                                                         </span>
                                                     </div>
-                                                    <h3 className="text-sm font-bold text-white mt-1 truncate">{p.name}</h3>
+                                                    <h3 className="text-sm font-bold text-lumina-text mt-1 truncate">{p.name}</h3>
                                                     <div className="flex items-center justify-between mt-1">
                                                         <span className="text-[10px] text-lumina-muted">{p.variants.length} Varian</span>
                                                         <span className="badge-luxury badge-neutral text-[9px]">{p.category}</span>
@@ -294,30 +294,30 @@ export default function VirtualStockPage() {
             {/* Update Stock Modal */}
             <Portal>
             {modalOpen && currentModalProd && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col ring-1 ring-lumina-gold/20">
                         
                         {/* MODAL HEADER COMPACT */}
                         <div className="p-4 border-b border-lumina-border bg-lumina-surface rounded-t-2xl flex flex-col gap-3 shrink-0">
                             <div className="flex justify-between items-start gap-4">
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-lg font-bold text-white font-mono tracking-wide">{currentModalProd.base_sku}</h3>
+                                    <h3 className="text-lg font-bold text-lumina-text font-mono tracking-wide">{currentModalProd.base_sku}</h3>
                                     <p className="text-sm text-lumina-muted truncate mt-0.5">{currentModalProd.name}</p>
                                 </div>
                                 
                                 <div className="flex flex-col items-end gap-2">
-                                    <button onClick={() => setModalOpen(false)} className="text-xl text-lumina-muted hover:text-white transition-colors px-2 -mr-2">&times;</button>
+                                    <button onClick={() => setModalOpen(false)} className="text-xl text-lumina-muted hover:text-lumina-text transition-colors px-2 -mr-2">&times;</button>
                                     {/* Grouping Controls */}
-                                    <div className="flex items-center bg-lumina-base/50 rounded-lg border border-lumina-border/30 p-0.5">
+                                    <div className="flex items-center bg-lumina-surface/50 rounded-lg border border-lumina-border/30 p-0.5">
                                         <button 
                                             onClick={() => setGroupBy('size')} 
-                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='size' ? 'bg-lumina-gold text-black' : 'text-lumina-muted hover:text-white'}`}
+                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='size' ? 'bg-lumina-gold text-black' : 'text-lumina-muted hover:text-lumina-text'}`}
                                         >
                                             Size
                                         </button>
                                         <button 
                                             onClick={() => setGroupBy('color')} 
-                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='color' ? 'bg-lumina-gold text-black' : 'text-lumina-muted hover:text-white'}`}
+                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='color' ? 'bg-lumina-gold text-black' : 'text-lumina-muted hover:text-lumina-text'}`}
                                         >
                                             Color
                                         </button>
@@ -327,7 +327,7 @@ export default function VirtualStockPage() {
                         </div>
                         
                         {/* MODAL BODY (SCROLLABLE) */}
-                        <div className="flex-1 overflow-y-auto p-0 bg-lumina-base custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-0 bg-lumina-surface custom-scrollbar">
                             {(() => {
                                 const groups = getGroupedVariants(currentModalProd.variants);
                                 const sortedKeys = Object.keys(groups).sort((a,b) => {
@@ -363,7 +363,7 @@ export default function VirtualStockPage() {
                                                             <div key={v.id} className={`p-4 flex flex-col gap-3 transition-colors border-b border-lumina-border/10 last:border-0 ${isUpdated ? 'bg-lumina-gold/5' : ''}`}>
                                                                 <div className="flex justify-between items-center">
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-sm font-bold text-white">
+                                                                        <span className="text-sm font-bold text-lumina-text">
                                                                             {groupBy === 'size' ? v.color : v.size} 
                                                                             <span className="text-lumina-muted font-normal ml-1 text-xs">/ {groupBy === 'size' ? v.size : v.color}</span>
                                                                         </span>
@@ -371,7 +371,7 @@ export default function VirtualStockPage() {
                                                                     </div>
                                                                     <div className="text-right">
                                                                         <span className="text-[10px] text-lumina-muted block uppercase">System</span>
-                                                                        <span className="font-mono text-sm font-bold text-white">{sysQty}</span>
+                                                                        <span className="font-mono text-sm font-bold text-lumina-text">{sysQty}</span>
                                                                     </div>
                                                                 </div>
                                                                 
@@ -382,7 +382,7 @@ export default function VirtualStockPage() {
                                                                         className={`flex-1 text-center bg-lumina-surface border rounded-lg py-2 font-bold text-lg focus:ring-2 outline-none transition-all ${
                                                                             isUpdated 
                                                                             ? 'border-lumina-gold text-lumina-gold ring-lumina-gold/30' 
-                                                                            : 'border-lumina-border text-white ring-transparent focus:border-lumina-gold'
+                                                                            : 'border-lumina-border text-lumina-text ring-transparent focus:border-lumina-gold'
                                                                         }`} 
                                                                         placeholder={sysQty}
                                                                         value={modalUpdates[v.id] || ''}

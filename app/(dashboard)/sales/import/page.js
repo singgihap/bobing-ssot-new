@@ -282,7 +282,7 @@ export default function ImportSalesPage() {
                     </div>
                 </div>
 
-                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-base/50 hover:bg-lumina-base transition-colors cursor-pointer relative group">
+                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-surface/50 hover:bg-lumina-surface transition-colors cursor-pointer relative group">
                     <input type="file" accept=".xlsx, .csv" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className="pointer-events-none relative z-0">
                         <div className="w-12 h-12 bg-lumina-highlight rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">

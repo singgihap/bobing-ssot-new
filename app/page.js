@@ -27,7 +27,7 @@ export default function RootPage() {
     : "Redirecting to Login...";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-lumina-base relative overflow-hidden font-sans">
+    <div className="flex min-h-screen items-center justify-center bg-lumina-surface relative overflow-hidden font-sans">
       
       {/* Background Ambient Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-lumina-gold/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -44,7 +44,7 @@ export default function RootPage() {
         </div>
 
         {/* Status Messages */}
-        <h2 className="text-lg font-medium text-white tracking-wide animate-pulse">
+        <h2 className="text-lg font-medium text-lumina-text tracking-wide animate-pulse">
           {redirectMessage}
         </h2>
         <p className="text-xs text-lumina-muted mt-2 font-mono opacity-70">

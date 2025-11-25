@@ -4,12 +4,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-// Menggunakan Path Alias (@/) untuk import Context dan Utils
 import { useAuth } from '@/context/AuthContext';
 import { Portal } from '@/lib/usePortal';
-// Import Nav Data dan Icon
 import { navData, footerNav } from '@/lib/navData';
 import { NavIcon, D_MONEY } from '@/components/DashboardIcons'; 
+// Import text-lumina-text dan text-lumina-gold dari theme Anda
+const TEXT_ACTIVE = 'text-lumina-text'; // Dark text for light background
+const BG_HOVER = 'bg-lumina-highlight'; // Light gray highlight
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -18,7 +19,6 @@ export default function MobileNav() {
 
   if (!user || pathname === '/login') return null;
 
-  // Fungsi cek aktif (mendukung nested routes)
   const isActive = (path) => pathname === path || pathname.startsWith(path + '/');
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -29,23 +29,24 @@ export default function MobileNav() {
       href={href}
       onClick={onClick}
       className={`flex items-center p-3 rounded-xl transition-all duration-200 
-        ${isActive(href) ? 'bg-lumina-base text-white shadow-lg' : 'hover:bg-lumina-base/5'}
+        ${isActive(href) 
+            ? `${BG_HOVER} ${TEXT_ACTIVE} shadow-lg` // PERUBAHAN 1: Active state menggunakan highlight dan dark text
+            : `hover:${BG_HOVER} text-lumina-muted` // PERUBAHAN 2: Hover menggunakan highlight
+        }
       `}
     >
       {/* Menggunakan NavIcon untuk SVG */}
       <div className='w-6 h-6 shrink-0 mr-4'>
-          {/* Ikon di Mobile Nav menggunakan ukuran yang lebih besar (w-6 h-6) */}
           <NavIcon d={iconD} active={isActive(href)} size="w-6 h-6" />
       </div>
 
       <div>
-        <p className={`text-sm font-semibold ${isActive(href) ? 'text-white' : 'text-lumina-muted'}`}>{label}</p>
+        <p className={`text-sm font-semibold ${isActive(href) ? TEXT_ACTIVE : 'text-lumina-muted'}`}>{label}</p>
         <p className="text-xs text-lumina-muted/70">{description}</p>
       </div>
     </Link>
   );
   
-  // Ambil D-Path untuk tombol di bottom bar (D_DASH dan D_POS berada di navData[0].items)
   const D_DASH = navData[0].items.find(item => item.label === "Dashboard")?.iconD; 
   const D_POS = navData[0].items.find(item => item.label === "Point of Sales")?.iconD;
 
@@ -56,29 +57,29 @@ export default function MobileNav() {
         
         <Link href="/dashboard" className="flex flex-col items-center justify-center">
           <NavIcon d={D_DASH} active={isActive('/dashboard')} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive('/dashboard') ? 'text-white font-bold' : 'text-lumina-muted'}`}>Home</span>
+          {/* PERUBAHAN 3: Active text color */}
+          <span className={`text-[10px] ${isActive('/dashboard') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Home</span>
         </Link>
         
         <Link href="/sales/manual" className="flex flex-col items-center justify-center">
           <NavIcon d={D_POS} active={isActive('/sales/manual')} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive('/sales/manual') ? 'text-white font-bold' : 'text-lumina-muted'}`}>POS</span>
+          <span className={`text-[10px] ${isActive('/sales/manual') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>POS</span>
         </Link>
         
         <button onClick={toggleMenu} className="flex flex-col items-center justify-center focus:outline-none">
-          {/* Icon Menu */}
           <NavIcon d="M4 6h16M4 12h16M4 18h16" active={isMenuOpen} size="w-6 h-6" />
-          <span className={`text-[10px] ${isMenuOpen ? 'text-white font-bold' : 'text-lumina-muted'}`}>Menu</span>
+          <span className={`text-[10px] ${isMenuOpen ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Menu</span>
         </button>
 
         <Link href="/finance" className="flex flex-col items-center justify-center">
           <NavIcon d={D_MONEY} active={isActive('/finance')} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive('/finance') ? 'text-white font-bold' : 'text-lumina-muted'}`}>Finance</span>
+          <span className={`text-[10px] ${isActive('/finance') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Finance</span>
         </Link>
 
         {/* Menggunakan data dari footerNav */}
         <Link href={footerNav.href} className="flex flex-col items-center justify-center">
           <NavIcon d={footerNav.iconD} active={isActive(footerNav.href)} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive(footerNav.href) ? 'text-white font-bold' : 'text-lumina-muted'}`}>Settings</span>
+          <span className={`text-[10px] ${isActive(footerNav.href) ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Settings</span>
         </Link>
       </div>
 
@@ -88,9 +89,11 @@ export default function MobileNav() {
             className="fixed inset-0 bg-black/60 z-40 md:hidden" 
             onClick={toggleMenu}
           ></div>
-          <div className="fixed top-0 right-0 w-full max-w-xs h-full bg-[#181A1F] border-l border-lumina-border p-6 z-50 overflow-y-auto">
+          {/* PERUBAHAN 4: Ganti bg-[#181A1F] menjadi light mode surface */}
+          <div className="fixed top-0 right-0 w-full max-w-xs h-full bg-lumina-surface border-l border-lumina-border p-6 z-50 overflow-y-auto">
             
-            <h2 className="text-xl font-bold text-white mb-6">Navigation</h2>
+            {/* PERUBAHAN 5: Ganti text-white menjadi dark text */}
+            <h2 className="text-xl font-bold text-lumina-text mb-6">Navigation</h2>
             
             {/* RENDER DYNAMIC DARI navData */}
             {navData.map((category) => (
@@ -106,7 +109,6 @@ export default function MobileNav() {
                               <DrawerItem 
                                 href={item.href} 
                                 label={item.label} 
-                                // Gunakan deskripsi dari navData atau fallback
                                 description={item.description || `Ringkasan ${item.label}`}
                                 iconD={item.iconD}
                                 onClick={toggleMenu}
@@ -123,7 +125,7 @@ export default function MobileNav() {
                                          className={`block text-xs py-1.5 rounded-md transition-colors 
                                                      ${isActive(subItem.href) 
                                                         ? 'text-lumina-gold font-semibold' 
-                                                        : 'text-lumina-muted hover:text-white'
+                                                        : 'text-lumina-muted hover:text-lumina-text' // PERUBAHAN 6: Ganti hover:text-white
                                                      }`}
                                       >
                                          — {subItem.label}

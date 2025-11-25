@@ -142,7 +142,7 @@ export default function ReportPLPage() {
                     <h3 className="text-xs font-bold text-lumina-muted uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Revenue</h3>
                     <div className="flex justify-between items-center">
                         <span className="font-medium text-lumina-text">Net Sales</span>
-                        <span className="font-bold text-xl text-white font-display">{formatRupiah(data.revenue)}</span>
+                        <span className="font-bold text-xl text-lumina-text font-display">{formatRupiah(data.revenue)}</span>
                     </div>
                 </div>
 
@@ -158,7 +158,7 @@ export default function ReportPLPage() {
                 {/* GROSS PROFIT */}
                 <div className="bg-lumina-highlight/40 p-5 rounded-xl border border-lumina-border flex justify-between items-center">
                     <span className="font-bold text-lumina-gold text-sm uppercase tracking-widest">Gross Profit</span>
-                    <span className="font-extrabold text-2xl text-white font-display">{formatRupiah(gross)}</span>
+                    <span className="font-extrabold text-2xl text-lumina-text font-display">{formatRupiah(gross)}</span>
                 </div>
 
                 {/* EXPENSES */}

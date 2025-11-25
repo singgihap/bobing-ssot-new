@@ -1,3 +1,4 @@
+// components/PageHeader.js
 "use client";
 
 export default function PageHeader({ title, subtitle, children }) {
@@ -5,7 +6,8 @@ export default function PageHeader({ title, subtitle, children }) {
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-lumina-border/50 pb-6">
       {/* Bagian Kiri: Judul & Subjudul */}
       <div className="w-full md:w-auto">
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight leading-tight">
+        {/* PERBAIKAN: Ganti text-white menjadi text-lumina-text */}
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-lumina-text tracking-tight leading-tight">
           {title}
         </h2>
         {subtitle && (
@@ -16,7 +18,6 @@ export default function PageHeader({ title, subtitle, children }) {
       </div>
 
       {/* Bagian Kanan: Tombol Aksi / Filter */}
-      {/* Di mobile, tombol akan memanjang penuh (w-full) agar mudah ditekan */}
       {children && (
         <div className="w-full md:w-auto flex flex-wrap items-center gap-3">
           {children}

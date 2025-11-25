@@ -9,7 +9,7 @@ export default function DashboardLayout({ children }) {
   // Catatan: Jika Anda memiliki logika AuthGuard di sini, pertahankan.
   
   return (
-    <div className="flex h-screen overflow-hidden bg-lumina-base">
+    <div className="flex h-screen overflow-hidden bg-lumina-surface">
       {/* Desktop Sidebar */}
       <Sidebar /> 
       

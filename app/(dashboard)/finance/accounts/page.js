@@ -274,17 +274,17 @@ export default function FinanceAccountsPage() {
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-lumina-surface/80 backdrop-blur-sm z-40"
               onClick={() => setModalOpen(false)}
             />
 
             <div className="relative z-50 bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
               
               <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0">
-                <h3 className="text-lg font-bold text-white">Add New Account</h3>
+                <h3 className="text-lg font-bold text-lumina-text">Add New Account</h3>
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="text-lumina-muted hover:text-white transition-colors p-1"
+                  className="text-lumina-muted hover:text-lumina-text transition-colors p-1"
                   aria-label="Close modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,13 +293,13 @@ export default function FinanceAccountsPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-base custom-scrollbar">
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-surface custom-scrollbar">
                 <div>
                   <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Account Code</label>
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white font-mono uppercase focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text font-mono uppercase focus:border-lumina-gold outline-none"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                     placeholder="e.g., 1101"
@@ -312,7 +312,7 @@ export default function FinanceAccountsPage() {
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text focus:border-lumina-gold outline-none"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Utang Gaji"
@@ -323,7 +323,7 @@ export default function FinanceAccountsPage() {
                   <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Category</label>
                   <select
                     required
-                    className="w-full px-3 py-2 bg-lumina-base border border-lumina-border rounded-lg text-white focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text focus:border-lumina-gold outline-none"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     disabled={uploading}
@@ -340,7 +340,7 @@ export default function FinanceAccountsPage() {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-6 py-2 bg-lumina-base text-white rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
+                  className="px-6 py-2 bg-lumina-surface text-lumina-text rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
                   disabled={uploading}
                 >
                   Cancel

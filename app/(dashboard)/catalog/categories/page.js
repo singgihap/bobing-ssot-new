@@ -108,9 +108,9 @@ export default function CategoriesPage() {
                                 <tr><td colSpan="2" className="text-center py-4 text-lumina-muted">Loading...</td></tr>
                             ) : data.map(c => (
                                 <tr key={c.id}>
-                                    <td className="pl-6 text-white font-medium">{c.name}</td>
+                                    <td className="pl-6 text-lumina-text font-medium">{c.name}</td>
                                     <td className="text-right pr-6 flex justify-end gap-3 py-3">
-                                        <button onClick={()=>{setFormData({...c}); setModalOpen(true)}} className="text-xs font-bold text-lumina-muted hover:text-white transition-colors">Edit</button>
+                                        <button onClick={()=>{setFormData({...c}); setModalOpen(true)}} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">Edit</button>
                                         <button onClick={()=>handleDelete(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
                                     </td>
                                 </tr>
@@ -122,9 +122,9 @@ export default function CategoriesPage() {
 
             <Portal>
                 {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 fade-in">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 p-4 fade-in">
                         <div className="bg-lumina-surface border border-lumina-border rounded-2xl p-6 w-full max-w-sm shadow-2xl ring-1 ring-lumina-gold/20">
-                            <h3 className="text-lg font-bold text-white mb-4">{formData.id ? 'Edit Category' : 'New Category'}</h3>
+                            <h3 className="text-lg font-bold text-lumina-text mb-4">{formData.id ? 'Edit Category' : 'New Category'}</h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <input 
                                     className="input-luxury" 

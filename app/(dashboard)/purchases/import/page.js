@@ -264,7 +264,7 @@ export default function ImportPurchasesPage() {
                     {/* Step 1: Warehouse */}
                     <div className="space-y-2">
                         <label className="block text-xs font-bold text-lumina-gold uppercase tracking-wider mb-1">1. Target Warehouse</label>
-                        <select className="input-luxury bg-lumina-base" value={selectedWh} onChange={e => setSelectedWh(e.target.value)}>
+                        <select className="input-luxury bg-lumina-surface" value={selectedWh} onChange={e => setSelectedWh(e.target.value)}>
                             <option value="">-- Select Warehouse --</option>
                             {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                         </select>
@@ -274,7 +274,7 @@ export default function ImportPurchasesPage() {
                     {/* Step 2: Upload */}
                     <div className="space-y-2">
                         <label className="block text-xs font-bold text-lumina-gold uppercase tracking-wider mb-1">2. Upload File</label>
-                        <div className="border-2 border-dashed border-lumina-border rounded-xl p-6 text-center bg-lumina-base/50 hover:bg-lumina-base hover:border-lumina-gold/50 transition-all cursor-pointer relative group h-32 flex flex-col items-center justify-center">
+                        <div className="border-2 border-dashed border-lumina-border rounded-xl p-6 text-center bg-lumina-surface/50 hover:bg-lumina-surface hover:border-lumina-gold/50 transition-all cursor-pointer relative group h-32 flex flex-col items-center justify-center">
                             <input type="file" accept=".csv, .xlsx" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                             <svg className="w-8 h-8 text-lumina-muted group-hover:text-lumina-gold transition-colors mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                             <p className="text-xs font-medium text-lumina-text">Click to upload .xlsx / .csv</p>

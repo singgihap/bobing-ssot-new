@@ -109,7 +109,7 @@ export default function BrandsPage() {
                                 <tr><td colSpan="3" className="text-center py-4 text-lumina-muted">Loading...</td></tr>
                             ) : brands.map(b => (
                                 <tr key={b.id}>
-                                    <td className="pl-6 text-white font-medium">{b.name}</td>
+                                    <td className="pl-6 text-lumina-text font-medium">{b.name}</td>
                                     <td><span className="badge-luxury badge-neutral">{b.type}</span></td>
                                     <td className="text-right pr-6">
                                         <button onClick={()=>{setFormData({...b}); setModalOpen(true)}} className="text-xs text-lumina-gold">Edit</button>
@@ -123,9 +123,9 @@ export default function BrandsPage() {
 
             <Portal>
                 {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 fade-in">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 p-4 fade-in">
                         <div className="bg-lumina-surface border border-lumina-border rounded-2xl p-6 w-full max-w-sm">
-                            <h3 className="text-lg font-bold text-white mb-4">Brand Form</h3>
+                            <h3 className="text-lg font-bold text-lumina-text mb-4">Brand Form</h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <input className="input-luxury" placeholder="Brand Name" value={formData.name} onChange={e=>setFormData({...formData,name:e.target.value})} />
                                 <select className="input-luxury" value={formData.type} onChange={e=>setFormData({...formData,type:e.target.value})}>

@@ -210,7 +210,7 @@ export default function BalanceSheetPage() {
                     <div className="card-luxury p-6 bg-gradient-to-br from-lumina-surface to-lumina-highlight text-center relative overflow-hidden border-none shadow-2xl">
                         <div className="relative z-10">
                             <p className="text-xs text-lumina-muted uppercase tracking-widest mb-2 font-bold">Owners Equity</p>
-                            <h3 className={`text-3xl font-display font-extrabold tracking-tight ${equity >= 0 ? 'text-white' : 'text-rose-400'}`}>
+                            <h3 className={`text-3xl font-display font-extrabold tracking-tight ${equity >= 0 ? 'text-lumina-text' : 'text-rose-400'}`}>
                                 {loading ? '...' : formatRupiah(equity)}
                             </h3>
                             <p className="text-[10px] text-lumina-muted mt-2 opacity-70">Assets - Liabilities</p>

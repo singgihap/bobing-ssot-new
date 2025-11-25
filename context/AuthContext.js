@@ -2,7 +2,8 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../lib/firebase";
+// Menggunakan Path Alias agar lebih kuat (opsional, tapi disarankan)
+import { auth } from "@/lib/firebase"; 
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext({});
@@ -30,21 +31,22 @@ export const AuthContextProvider = ({ children }) => {
   // TAMPILAN LOADING MEWAH (Lumina Theme)
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0B0C10]">
+      // PERUBAHAN 1: Ubah background gelap menjadi warna terang (bg-lumina-base)
+      <div className="flex min-h-screen items-center justify-center bg-lumina-base"> 
         <div className="text-center relative">
-           {/* Spinner Emas */}
-           <div className="w-16 h-16 relative mx-auto mb-4">
-             <div className="absolute inset-0 rounded-full border-4 border-[#12141C]"></div>
-             <div className="absolute inset-0 rounded-full border-t-4 border-[#D4AF37] animate-spin shadow-[0_0_15px_rgba(212,175,55,0.5)]"></div>
-           </div>
-           
-           {/* Teks */}
-           <h2 className="text-lg font-bold text-white tracking-widest font-display animate-pulse">
-             LUMINA
-           </h2>
-           <p className="text-[10px] text-[#94A3B8] mt-2 font-mono uppercase tracking-wider">
-             Initializing System...
-           </p>
+          {/* Spinner Emas */}
+          <div className="w-16 h-16 relative mx-auto mb-4">
+            {/* PERUBAHAN 2: Ubah border gelap menjadi border-lumina-surface (warna terang) */}
+            <div className="absolute inset-0 rounded-full border-4 border-lumina-surface"></div> 
+            <div className="absolute inset-0 rounded-full border-t-4 border-lumina-gold animate-spin shadow-[0_0_15px_rgba(212,175,55,0.5)]"></div>
+          </div>
+          
+          {/* Teks */}
+          {/* PERUBAHAN 3: Ubah teks putih menjadi teks lumina-text (gelap) */}
+          <h2 className="text-lg font-bold text-lumina-text tracking-widest font-display animate-pulse"> 
+            Bobing Enterprise
+          </h2>
+            <p className="text-xs text-lumina-muted mt-1">Authenticating...</p>
         </div>
       </div>
     );

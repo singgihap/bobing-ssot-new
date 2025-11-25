@@ -198,7 +198,7 @@ export default function ProductsPage() {
     return (
         <div className="space-y-6 fade-in pb-20">
             {/* Header Solid & Sticky */}
-            <div className="flex flex-col md:flex-row justify-between items-center sticky top-0 z-20 bg-lumina-base py-4 px-4 md:px-8 border-b border-lumina-border/50 shadow-md md:static">
+            <div className="flex flex-col md:flex-row justify-between items-center sticky top-0 z-20 bg-lumina-surface py-4 px-4 md:px-8 border-b border-lumina-border/50 shadow-md md:static">
             <div className="flex flex-col w-full md:w-auto">
                 <h2 className="text-xl md:text-3xl font-bold text-lumina-text flex-shrink-0">
                 Product Models
@@ -246,7 +246,7 @@ export default function ProductsPage() {
                                         className={`group cursor-pointer transition-all duration-200 ${isExpanded ? 'bg-lumina-highlight/30 border-l-4 border-l-lumina-gold' : 'hover:bg-lumina-highlight/20 border-l-4 border-l-transparent'}`}
                                     >
                                         <td className="pl-6 py-4">
-                                            <div className="w-12 h-12 rounded-lg bg-lumina-base border border-lumina-border flex items-center justify-center overflow-hidden shadow-inner">
+                                            <div className="w-12 h-12 rounded-lg bg-lumina-surface border border-lumina-border flex items-center justify-center overflow-hidden shadow-inner">
                                                 {p.image_url ? (
                                                     <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
                                                 ) : (
@@ -259,7 +259,7 @@ export default function ProductsPage() {
                                             <div className="text-xs text-lumina-muted mt-1">{p.category}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="font-mono text-sm text-lumina-muted group-hover:text-white transition-colors">{p.base_sku}</span>
+                                            <span className="font-mono text-sm text-lumina-muted group-hover:text-lumina-text transition-colors">{p.base_sku}</span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="badge-luxury badge-neutral">{p.brand_name}</span>
@@ -269,7 +269,7 @@ export default function ProductsPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right pr-8" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => openModal(p)} className="text-[10px] uppercase font-bold text-lumina-muted hover:text-white border border-lumina-border hover:border-white rounded px-2 py-1 transition-colors">EDIT</button>
+                                                <button onClick={() => openModal(p)} className="text-[10px] uppercase font-bold text-lumina-muted hover:text-lumina-text border border-lumina-border hover:border-white rounded px-2 py-1 transition-colors">EDIT</button>
                                                 <button onClick={() => deleteProduct(p.id)} className="text-[10px] uppercase font-bold text-rose-500 hover:text-rose-400 border border-rose-500/30 hover:border-rose-400 rounded px-2 py-1 transition-colors">DEL</button>
                                             </div>
                                         </td>
@@ -284,7 +284,7 @@ export default function ProductsPage() {
                                         <tr className="bg-[#0F1115] shadow-inner border-b border-lumina-border">
                                             <td colSpan="7" className="p-0">
                                                 <div className="p-6 fade-in">
-                                                    <div className="border border-lumina-border rounded-lg overflow-hidden w-full bg-lumina-base">
+                                                    <div className="border border-lumina-border rounded-lg overflow-hidden w-full bg-lumina-surface">
                                                         <table className="w-full text-sm text-left">
                                                             <thead className="bg-lumina-surface text-[10px] text-lumina-muted uppercase tracking-wider font-semibold border-b border-lumina-border">
                                                                 <tr>
@@ -303,7 +303,7 @@ export default function ProductsPage() {
                                                                         <td className="px-4 py-3 font-mono text-lumina-gold text-xs font-bold">{v.sku}</td>
                                                                         <td className="px-4 py-3 text-lumina-text">{v.color}</td>
                                                                         <td className="px-4 py-3 text-lumina-text">{v.size}</td>
-                                                                        <td className="px-4 py-3 text-right font-mono font-medium text-white">{formatRupiah(v.price)}</td>
+                                                                        <td className="px-4 py-3 text-right font-mono font-medium text-lumina-text">{formatRupiah(v.price)}</td>
                                                                         <td className="px-4 py-3 text-right font-mono text-lumina-muted">{formatRupiah(v.cost)}</td>
                                                                     </tr>
                                                                 ))}
@@ -329,15 +329,15 @@ export default function ProductsPage() {
                 {loading ? <div className="text-center py-10">Loading...</div> : filtered.map(p => (
                     <div key={p.id} onClick={()=>toggleVariants(p.id)} className="card-luxury p-4 active:scale-[0.98] transition-transform">
                          <div className="flex gap-4 items-center">
-                            <div className="w-16 h-16 rounded-lg bg-lumina-base border border-lumina-border flex-shrink-0 overflow-hidden">
+                            <div className="w-16 h-16 rounded-lg bg-lumina-surface border border-lumina-border flex-shrink-0 overflow-hidden">
                                 {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover"/> : <div className="w-full h-full flex items-center justify-center text-xs text-lumina-muted">IMG</div>}
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-start">
-                                    <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-base px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
+                                    <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
                                     <span className={`text-[10px] px-1.5 rounded border ${p.status==='active'?'border-emerald-500/30 text-emerald-400':'border-rose-500/30 text-rose-400'}`}>{p.status}</span>
                                 </div>
-                                <h3 className="text-sm font-bold text-white mt-1 truncate">{p.name}</h3>
+                                <h3 className="text-sm font-bold text-lumina-text mt-1 truncate">{p.name}</h3>
                                 <p className="text-xs text-lumina-muted mt-0.5">{p.brand_name} • {p.category}</p>
                             </div>
                          </div>
@@ -355,7 +355,7 @@ export default function ProductsPage() {
 
                          {/* Mobile Variants Expand */}
                          {expandedProductId===p.id && (
-                             <div className="mt-3 bg-lumina-base rounded-lg border border-lumina-border p-2 animate-fade-in">
+                             <div className="mt-3 bg-lumina-surface rounded-lg border border-lumina-border p-2 animate-fade-in">
                                  <div className="text-[10px] text-lumina-muted mb-2 uppercase tracking-wider font-bold">Varian Tersedia</div>
                                  <div className="space-y-2">
                                      {(variantsCache[p.id]||[]).sort(sortBySize).map(v=>(
@@ -378,16 +378,16 @@ export default function ProductsPage() {
             {/* Modal (Same for Mobile & Desktop) */}
             <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-white">{formData.id ? "Edit" : "Baru"}</h3>
+                            <h3 className="text-lg font-bold text-lumina-text">{formData.id ? "Edit" : "Baru"}</h3>
                             <button onClick={() => setModalOpen(false)} className="text-2xl text-lumina-muted">×</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
                             {/* Existing Form Content */}
                             <div className="flex items-center gap-4 p-4 bg-lumina-surface rounded-lg border border-dashed border-lumina-border">
-                                <div className="w-20 h-20 rounded-lg bg-lumina-base flex items-center justify-center overflow-hidden border border-lumina-border relative">
+                                <div className="w-20 h-20 rounded-lg bg-lumina-surface flex items-center justify-center overflow-hidden border border-lumina-border relative">
                                     {previewUrl ? <img src={previewUrl} className="w-full h-full object-cover" /> : <span className="text-xs">IMG</span>}
                                     <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0" disabled={uploading}/>
                                 </div>

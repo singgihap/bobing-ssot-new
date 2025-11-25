@@ -419,7 +419,7 @@ export default function CashFlowPage() {
                     <div key={acc.id} className="card-luxury p-6 flex flex-col justify-between relative overflow-hidden group hover:border-lumina-gold/50 transition-all">
                         <div className="relative z-10">
                             <p className="text-[10px] font-bold text-lumina-muted uppercase tracking-wider mb-1">{acc.name}</p>
-                            <h3 className="text-2xl font-display font-bold text-white tracking-tight">{formatRupiah(acc.balance)}</h3>
+                            <h3 className="text-2xl font-display font-bold text-lumina-text tracking-tight">{formatRupiah(acc.balance)}</h3>
                         </div>
                         <div className="mt-4 flex items-center gap-2 text-xs text-lumina-muted relative z-10">
                             <span className="bg-lumina-highlight px-2 py-0.5 rounded font-mono text-lumina-gold">{acc.code}</span>
@@ -476,7 +476,7 @@ export default function CashFlowPage() {
                                                 <tr onClick={() => toggleDateExpand(group.date)} className="bg-gray-800/40 hover:bg-gray-800/60 cursor-pointer border-t-2 border-lumina-gold/40 transition-colors group/header">
                                                     <td className="pl-6 text-center"><span className={`inline-block transition-transform duration-300 text-lumina-gold ${expandedDates[group.date] ? 'rotate-180' : ''}`}>▼</span></td>
                                                     <td className="pl-2 py-3"><span className="font-semibold text-lumina-gold text-sm">{group.date}</span></td>
-                                                    <td colSpan="2"><span className="text-xs text-white bg-orange-600/40 px-3 py-1 rounded border border-orange-500/50">Total Settlement • {group.items.length} invoice</span></td>
+                                                    <td colSpan="2"><span className="text-xs text-lumina-text bg-orange-600/40 px-3 py-1 rounded border border-orange-500/50">Total Settlement • {group.items.length} invoice</span></td>
                                                     <td className="text-lumina-muted text-sm">Settlement sales date {group.date}</td>
                                                     <td className={`text-right pr-6 font-mono font-bold ${isInc ? 'text-emerald-400' : 'text-lumina-text'}`}>{isInc ? '+' : ''}{formatRupiah(groupTotal)}</td>
                                                 </tr>
@@ -507,11 +507,11 @@ export default function CashFlowPage() {
             {/* MODALS (Edit, Expense, Transfer) code remains similar but using cleaned functions */}
             <Portal>
             {modalEditOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-md w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-white">Edit Transaction</h3>
-                            <button onClick={() => setModalEditOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-lumina-text">Edit Transaction</h3>
+                            <button onClick={() => setModalEditOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <form onSubmit={submitEditTransaction} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -543,11 +543,11 @@ export default function CashFlowPage() {
 
             <Portal>
             {modalExpOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-md w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-white">Record Transaction</h3>
-                            <button onClick={() => setModalExpOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-lumina-text">Record Transaction</h3>
+                            <button onClick={() => setModalExpOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <form onSubmit={submitTransaction} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -580,11 +580,11 @@ export default function CashFlowPage() {
             
             <Portal>
             {modalTfOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-md w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-white">Transfer Funds</h3>
-                            <button onClick={() => setModalTfOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-lumina-text">Transfer Funds</h3>
+                            <button onClick={() => setModalTfOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <form onSubmit={submitTransfer} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
@@ -603,7 +603,7 @@ export default function CashFlowPage() {
                                     </select>
                                 </div>
                             </div>
-                            <input type="number" required className="input-luxury font-bold text-lg text-white" placeholder="Amount (Rp)" value={tfData.amount} onChange={e=>setTfData({...tfData, amount:e.target.value})} />
+                            <input type="number" required className="input-luxury font-bold text-lg text-lumina-text" placeholder="Amount (Rp)" value={tfData.amount} onChange={e=>setTfData({...tfData, amount:e.target.value})} />
                             <input className="input-luxury" placeholder="Notes..." value={tfData.note} onChange={e=>setTfData({...tfData, note:e.target.value})} />
                             <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">
                                 <button type="button" onClick={()=>setModalTfOpen(false)} className="btn-ghost-dark">Cancel</button>

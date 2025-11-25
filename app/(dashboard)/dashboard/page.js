@@ -251,7 +251,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start relative z-10">
                 <div>
                     <p className="text-[10px] font-bold text-lumina-muted uppercase tracking-widest mb-1">{title}</p>
-                    <h3 className="text-2xl font-display font-bold text-white tracking-tight">
+                    <h3 className="text-2xl font-display font-bold text-lumina-text tracking-tight">
                         {loading ? <Skeleton className="h-8 w-32" /> : value}
                     </h3>
                     <p className="text-xs text-lumina-muted mt-2 font-medium">{sub}</p>
@@ -278,9 +278,9 @@ export default function Dashboard() {
                         onChange={(e) => setFilterRange(e.target.value)} 
                         className="w-full md:w-auto text-sm bg-transparent text-lumina-text font-medium cursor-pointer py-2 px-4 outline-none appearance-none text-center"
                     >
-                        <option value="today" className="bg-lumina-base">Hari Ini</option>
-                        <option value="this_month" className="bg-lumina-base">Bulan Ini</option>
-                        <option value="last_month" className="bg-lumina-base">Bulan Lalu</option>
+                        <option value="today" className="bg-lumina-surface">Hari Ini</option>
+                        <option value="this_month" className="bg-lumina-surface">Bulan Ini</option>
+                        <option value="last_month" className="bg-lumina-surface">Bulan Lalu</option>
                     </select>
                 </div>
             </PageHeader>
@@ -296,13 +296,13 @@ export default function Dashboard() {
             {/* Charts Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 card-luxury p-6">
-                    <h3 className="font-bold text-white mb-6">Performance Trend</h3>
+                    <h3 className="font-bold text-lumina-text mb-6">Performance Trend</h3>
                     <div className="h-72 w-full relative">
                         {chartTrendData ? <Line data={chartTrendData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94A3B8' } } }, scales: { y: { grid: { color: '#2A2E3B' }, ticks: { color: '#94A3B8' } }, x: { grid: { display: false }, ticks: { color: '#94A3B8' } } } }} /> : <Skeleton className="h-full w-full" />}
                     </div>
                 </div>
                 <div className="card-luxury p-6 flex flex-col">
-                    <h3 className="font-bold text-white mb-6">Channel Mix</h3>
+                    <h3 className="font-bold text-lumina-text mb-6">Channel Mix</h3>
                     <div className="h-64 w-full relative flex justify-center items-center flex-1">
                          {chartChannelData ? <Doughnut data={chartChannelData} options={{ responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8' } } } }} /> : <Skeleton className="h-48 w-48 rounded-full" />}
                     </div>
@@ -314,14 +314,14 @@ export default function Dashboard() {
                 {/* Top Products */}
                 <div className="card-luxury overflow-hidden">
                     <div className="px-6 py-4 border-b border-lumina-border bg-[#12141C]">
-                        <h3 className="font-bold text-white text-sm uppercase tracking-wider">🔥 Top Products</h3>
+                        <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">🔥 Top Products</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="table-dark w-full">
                             <tbody>
                                 {topProducts.map(([sku, qty], i) => (
                                     <tr key={i} className="hover:bg-lumina-highlight">
-                                        <td className="px-6 py-3 font-medium text-white">{sku}</td>
+                                        <td className="px-6 py-3 font-medium text-lumina-text">{sku}</td>
                                         <td className="px-6 py-3 text-right font-bold text-lumina-gold">{qty}</td>
                                     </tr>
                                 ))}
@@ -340,7 +340,7 @@ export default function Dashboard() {
                         {lowStockItems.map((item, i) => (
                             <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-lumina-highlight transition">
                                 <div>
-                                    <p className="text-sm font-bold text-white">{item.sku}</p>
+                                    <p className="text-sm font-bold text-lumina-text">{item.sku}</p>
                                     <p className="text-xs text-lumina-muted truncate w-32">{item.name}</p>
                                 </div>
                                 <div className="text-right">
@@ -355,14 +355,14 @@ export default function Dashboard() {
                 {/* Recent Sales */}
                 <div className="card-luxury overflow-hidden">
                     <div className="px-6 py-4 border-b border-lumina-border bg-[#12141C]">
-                        <h3 className="font-bold text-white text-sm uppercase tracking-wider">⚡ Recent Sales</h3>
+                        <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">⚡ Recent Sales</h3>
                     </div>
                     <div className="divide-y divide-lumina-border max-h-[300px] overflow-y-auto">
                         {recentSales.map((s, i) => (
                             <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-lumina-highlight transition">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="font-bold text-white text-sm">{s.customer}</span>
+                                        <span className="font-bold text-lumina-text text-sm">{s.customer}</span>
                                         <span className="text-[10px] bg-lumina-highlight text-lumina-muted px-1.5 rounded">{s.id}</span>
                                     </div>
                                     <p className="text-[10px] text-lumina-muted">{s.time ? s.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</p>

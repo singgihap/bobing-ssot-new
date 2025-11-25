@@ -25,7 +25,7 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} bg-lumina-base text-lumina-text font-sans`}>
+      <body className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} bg-lumina-surface text-lumina-text font-sans`}>
         {/* AuthContext dan LayoutProvider adalah GLOBAL dan tetap di sini */}
         <AuthContextProvider>
           <LayoutProvider>

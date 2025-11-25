@@ -150,14 +150,14 @@ export default function SettingsPage() {
             className={`w-full flex items-start gap-4 p-4 rounded-xl transition-all duration-300 text-left border ${
                 activeTab === id 
                 ? 'bg-lumina-highlight/80 border-lumina-gold/50 shadow-[0_0_15px_rgba(212,175,55,0.1)]' 
-                : 'bg-transparent border-transparent hover:bg-white/5 hover:border-white/10'
+                : 'bg-transparent border-transparent hover:bg-grey/5 hover:border-grey/10'
             }`}
         >
-            <div className={`p-2 rounded-lg ${activeTab === id ? 'bg-lumina-gold text-black' : 'bg-white/10 text-lumina-muted'}`}>
+            <div className={`p-2 rounded-lg ${activeTab === id ? 'bg-lumina-gold text-black' : 'bg-grey/10 text-lumina-muted'}`}>
                 {icon}
             </div>
             <div>
-                <span className={`block text-sm font-bold ${activeTab === id ? 'text-white' : 'text-lumina-text'}`}>{label}</span>
+                <span className={`block text-sm font-bold ${activeTab === id ? 'text-lumina-text' : 'text-lumina-text'}`}>{label}</span>
                 <span className="text-[10px] text-lumina-muted line-clamp-1">{description}</span>
             </div>
         </button>
@@ -168,7 +168,7 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 border-b border-lumina-border/50 pb-6">
                 <div>
-                    <h2 className="text-3xl font-display font-bold text-white tracking-tight">Settings</h2>
+                    <h2 className="text-3xl font-display font-bold text-lumina-text tracking-tight">Settings</h2>
                     <p className="text-sm text-lumina-muted mt-1 font-light">Manage your store preferences and system configuration.</p>
                 </div>
                 <button onClick={handleSave} className="btn-gold w-full md:w-auto min-w-[140px]" disabled={saving || loading}>
@@ -218,7 +218,7 @@ export default function SettingsPage() {
                         {activeTab === 'store' && (
                             <div className="space-y-8 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Store Identity</h3>
+                                    <h3 className="text-lg font-bold text-lumina-text">Store Identity</h3>
                                     <p className="text-xs text-lumina-muted mt-1">Information that appears on your receipts.</p>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6">
@@ -256,14 +256,14 @@ export default function SettingsPage() {
                         {activeTab === 'pos' && (
                             <div className="space-y-8 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">POS Configuration</h3>
+                                    <h3 className="text-lg font-bold text-lumina-text">POS Configuration</h3>
                                     <p className="text-xs text-lumina-muted mt-1">Tailor the checkout experience.</p>
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between bg-black/20 p-4 rounded-xl border border-lumina-border/30">
+                                    <div className="flex items-center justify-between bg-lumina-surface/20 p-4 rounded-xl border border-lumina-border/30">
                                         <div>
-                                            <div className="text-sm font-bold text-white">Receipt Paper Size</div>
+                                            <div className="text-sm font-bold text-lumina-text">Receipt Paper Size</div>
                                             <div className="text-xs text-lumina-muted mt-0.5">Match your thermal printer width.</div>
                                         </div>
                                         {loading ? <Skeleton className="h-10 w-32" /> : (
@@ -274,17 +274,17 @@ export default function SettingsPage() {
                                         )}
                                     </div>
 
-                                    <div className="flex items-center justify-between bg-black/20 p-4 rounded-xl border border-lumina-border/30">
+                                    <div className="flex items-center justify-between bg-lumina-surface/20 p-4 rounded-xl border border-lumina-border/30">
                                         <div>
-                                            <div className="text-sm font-bold text-white">Enable Tax (PPN)</div>
+                                            <div className="text-sm font-bold text-lumina-text">Enable Tax (PPN)</div>
                                             <div className="text-xs text-lumina-muted mt-0.5">Automatically calculate tax at checkout.</div>
                                         </div>
                                         <div className="flex items-center gap-4">
                                             {loading ? <Skeleton className="h-6 w-12" /> : (
                                                 <>
                                                     {posConfig.enableTax && (
-                                                        <div className="flex items-center bg-lumina-base rounded-lg border border-lumina-border overflow-hidden">
-                                                            <input type="number" className="bg-transparent w-12 py-1 px-2 text-center text-sm text-white outline-none" value={posConfig.taxRate} onChange={e => setPosConfig({...posConfig, taxRate: e.target.value})} />
+                                                        <div className="flex items-center bg-lumina-surface rounded-lg border border-lumina-border overflow-hidden">
+                                                            <input type="number" className="bg-transparent w-12 py-1 px-2 text-center text-sm text-lumina-text outline-none" value={posConfig.taxRate} onChange={e => setPosConfig({...posConfig, taxRate: e.target.value})} />
                                                             <span className="text-xs text-lumina-muted pr-2">%</span>
                                                         </div>
                                                     )}
@@ -297,9 +297,9 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between bg-black/20 p-4 rounded-xl border border-lumina-border/30">
+                                    <div className="flex items-center justify-between bg-lumina-surface/20 p-4 rounded-xl border border-lumina-border/30">
                                         <div>
-                                            <div className="text-sm font-bold text-white">Auto-Print Receipt</div>
+                                            <div className="text-sm font-bold text-lumina-text">Auto-Print Receipt</div>
                                             <div className="text-xs text-lumina-muted mt-0.5">Open print dialog immediately after payment.</div>
                                         </div>
                                         {loading ? <Skeleton className="h-6 w-12" /> : (
@@ -317,7 +317,7 @@ export default function SettingsPage() {
                         {activeTab === 'account' && (
                             <div className="space-y-8 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">Admin Account</h3>
+                                    <h3 className="text-lg font-bold text-lumina-text">Admin Account</h3>
                                     <p className="text-xs text-lumina-muted mt-1">Security settings for current session.</p>
                                 </div>
                                 
@@ -326,7 +326,7 @@ export default function SettingsPage() {
                                         {user?.email?.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-xl font-bold text-white">{user?.email}</p>
+                                        <p className="text-xl font-bold text-lumina-text">{user?.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="badge-luxury badge-success bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Super Admin</span>
                                             <span className="text-xs text-lumina-muted">Last login: Today</span>
@@ -335,14 +335,14 @@ export default function SettingsPage() {
                                 </div>
 
                                 <div className="max-w-md space-y-4 pt-4">
-                                    <h4 className="text-sm font-bold text-white uppercase tracking-wider">Change Password</h4>
+                                    <h4 className="text-sm font-bold text-lumina-text uppercase tracking-wider">Change Password</h4>
                                     <div>
                                         <input type="password" className="input-luxury" placeholder="New Password" />
                                     </div>
                                     <div>
                                         <input type="password" className="input-luxury" placeholder="Confirm New Password" />
                                     </div>
-                                    <button className="btn-ghost-dark w-full border-white/10 hover:bg-white/5">Update Security Credentials</button>
+                                    <button className="btn-ghost-dark w-full border-grey/10 hover:bg-grey/5">Update Security Credentials</button>
                                 </div>
                             </div>
                         )}
@@ -351,7 +351,7 @@ export default function SettingsPage() {
                         {activeTab === 'system' && (
                             <div className="space-y-8 animate-fade-in">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">System Maintenance</h3>
+                                    <h3 className="text-lg font-bold text-lumina-text">System Maintenance</h3>
                                     <p className="text-xs text-lumina-muted mt-1">Manage data integrity and backups.</p>
                                 </div>
                                 
@@ -363,7 +363,7 @@ export default function SettingsPage() {
                                                 Force recalculation of total inventory value and quantity from all stock snapshots. Use this if dashboard numbers seem out of sync.
                                             </p>
                                         </div>
-                                        <button onClick={handleRecalculateInventory} className="px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 hover:text-white text-xs font-bold transition-all">
+                                        <button onClick={handleRecalculateInventory} className="px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 hover:text-lumina-text text-xs font-bold transition-all">
                                             Run Calculation
                                         </button>
                                     </div>
@@ -375,7 +375,7 @@ export default function SettingsPage() {
                                                 Export all transactions, products, and customer data to a local JSON file for safekeeping.
                                             </p>
                                         </div>
-                                        <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 hover:text-white text-xs font-bold transition-all">
+                                        <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 hover:text-lumina-text text-xs font-bold transition-all">
                                             Download Backup
                                         </button>
                                     </div>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                                                 <span className="text-rose-500 font-bold">DANGER ZONE:</span> Permanently delete all transactions and reset stock counts to zero.
                                             </p>
                                         </div>
-                                        <button className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-900/20 text-xs font-bold transition-all">
+                                        <button className="px-4 py-2 rounded-lg bg-rose-600 text-lumina-text hover:bg-rose-700 shadow-lg shadow-rose-900/20 text-xs font-bold transition-all">
                                             Reset All Data
                                         </button>
                                     </div>

@@ -238,7 +238,7 @@ export default function WarehousesPage() {
                             </div>
 
                             <div className="pt-4 border-t border-lumina-border flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => openModal(w)} className="text-xs font-bold text-lumina-muted hover:text-white transition-colors">EDIT</button>
+                                <button onClick={() => openModal(w)} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">EDIT</button>
                                 <button onClick={() => deleteWh(w.id)} className="text-xs font-bold text-lumina-muted hover:text-rose-500 transition-colors">DELETE</button>
                             </div>
                         </div>
@@ -249,13 +249,13 @@ export default function WarehousesPage() {
             {/* Modal */}
             <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
                             <h2 className="text-xl md:text-3xl font-bold text-lumina-text">
                                 {formData.id ? 'Edit Warehouse' : 'New Warehouse'}
                             </h2>
-                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
@@ -270,7 +270,7 @@ export default function WarehousesPage() {
                                 </select>
                             </div>
                             {formData.type === 'virtual_supplier' && (
-                                <div className="bg-lumina-base p-4 rounded-xl border border-lumina-border">
+                                <div className="bg-lumina-surface p-4 rounded-xl border border-lumina-border">
                                     <label className="block text-xs font-bold text-lumina-gold mb-1 uppercase">Link to Supplier</label>
                                     <select className="input-luxury bg-lumina-highlight" value={formData.supplier_id} onChange={e => setFormData({...formData, supplier_id: e.target.value})}>
                                         <option value="">-- Select Supplier --</option>

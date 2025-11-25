@@ -331,7 +331,7 @@ export default function TransactionsHistoryPage() {
                                                                                 SKU: <span className="text-lumina-gold">{item.sku}</span>
                                                                             </p>
                                                                             <p className="text-[10px] text-lumina-muted mt-1">
-                                                                                Quantity: <span className="text-white font-semibold">{item.qty}</span>
+                                                                                Quantity: <span className="text-lumina-text font-semibold">{item.qty}</span>
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">

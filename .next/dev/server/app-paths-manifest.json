@@ -1,12 +1,10 @@
 {
+  "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(dashboard)/catalog/page": "app/(dashboard)/catalog/page.js",
   "/(dashboard)/catalog/products/page": "app/(dashboard)/catalog/products/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
   "/(dashboard)/finance/accounts/page": "app/(dashboard)/finance/accounts/page.js",
   "/(dashboard)/finance/page": "app/(dashboard)/finance/page.js",
-  "/(dashboard)/master/page": "app/(dashboard)/master/page.js",
-  "/(dashboard)/operations/page": "app/(dashboard)/operations/page.js",
-  "/(dashboard)/partners/page": "app/(dashboard)/partners/page.js",
   "/(dashboard)/purchases/page": "app/(dashboard)/purchases/page.js",
   "/(dashboard)/sales/manual/page": "app/(dashboard)/sales/manual/page.js",
   "/(dashboard)/sales/page": "app/(dashboard)/sales/page.js",
@@ -14,6 +12,5 @@
   "/(dashboard)/settings/page": "app/(dashboard)/settings/page.js",
   "/(dashboard)/stock/inventory/page": "app/(dashboard)/stock/inventory/page.js",
   "/(dashboard)/stock/page": "app/(dashboard)/stock/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js"
 }

@@ -8,6 +8,17 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import Link from 'next/link';
 
+// Asumsi getTitle sudah didefinisikan di suatu tempat atau di dalam Topbar.js
+const getTitle = (pathname) => {
+    // Implementasi sederhana untuk mendapatkan judul dari path
+    const path = pathname.split('/').filter(p => p);
+    if (path.length === 0) return "Home";
+    
+    // Menggunakan navData untuk judul penuh sangat disarankan, tapi untuk saat ini, kita ambil dari path
+    const mainPath = path[0]; 
+    return mainPath.charAt(0).toUpperCase() + mainPath.slice(1);
+}
+
 export default function Topbar() {
   const pathname = usePathname();
   const { user } = useAuth();
@@ -41,29 +52,21 @@ export default function Topbar() {
     }
   };
 
-  const getTitle = (path) => {
-    if (path === '/dashboard') return 'Executive Dashboard';
-    if (path.includes('products')) return 'Master Product';
-    if (path.includes('sales')) return 'Point of Sale';
-    if (path.includes('inventory')) return 'Inventory Control';
-    if (path.includes('finance')) return 'Financial Reports';
-    return 'System Overview';
-  };
-
   return (
-    <header className="glass-nav-dark h-14 md:h-16 px-4 md:px-6 flex items-center justify-between z-20 shrink-0 transition-all duration-300">
+    // PERUBAHAN 1: Ganti glass-nav-dark dengan kelas terang yang bersih
+    <header className="sticky top-0 z-10 w-full flex items-center h-14 md:h-16 px-4 md:px-6 flex items-center justify-between z-20 shrink-0 transition-all duration-300 bg-lumina-base border-b border-lumina-border"> 
       
       {/* --- LEFT AREA --- */}
       <div className="flex items-center gap-3 md:gap-4">
         
-        {/* Mobile Logo (Pengganti Hamburger) */}
+        {/* Mobile Logo (Pengganti Hamburger) - OK */}
         <div className="md:hidden flex items-center gap-2">
           <div className="w-7 h-7 bg-gradient-to-br from-lumina-gold to-[#F6C945] rounded flex items-center justify-center text-black shadow-gold-glow">
              <span className="font-display font-bold text-sm">B</span>
           </div>
         </div>
 
-        {/* Desktop Toggle */}
+        {/* Desktop Toggle - OK */}
         <button 
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           className="hidden md:flex p-1.5 text-lumina-muted hover:text-lumina-gold rounded-md hover:bg-lumina-highlight transition-colors border border-transparent hover:border-lumina-border"
@@ -75,6 +78,7 @@ export default function Topbar() {
           )}
         </button>
 
+        {/* Separator - OK */}
         <div className="h-6 w-px bg-lumina-border hidden md:block mx-1"></div>
 
         {/* Title */}
@@ -83,7 +87,8 @@ export default function Topbar() {
                 <span className="text-lumina-gold mr-2">App</span>
                 <span>/ {pathname.split('/')[1] || 'home'}</span>
             </div>
-            <h2 className="text-base md:text-lg font-display font-bold text-white tracking-wide shadow-black drop-shadow-md leading-none truncate max-w-[200px] md:max-w-none">
+            {/* PERUBAHAN 2: Ganti text-white menjadi text-lumina-text dan hapus shadow dark */}
+            <h2 className="text-base md:text-lg font-display font-bold text-lumina-text tracking-wide leading-none truncate max-w-[200px] md:max-w-none">
             {getTitle(pathname)}
             </h2>
         </div>
@@ -92,14 +97,14 @@ export default function Topbar() {
       {/* --- RIGHT AREA --- */}
       <div className="flex items-center gap-2 md:gap-5">
         
-        {/* Search Bar (Desktop Only) */}
-        <div className="hidden md:flex items-center bg-lumina-base border border-lumina-border rounded-lg px-3 py-1.5 w-64 focus-within:border-lumina-gold focus-within:ring-1 focus-within:ring-lumina-gold transition-all shadow-inner">
+        {/* Search Bar - OK */}
+        <div className="hidden md:flex items-center bg-lumina-surface border border-lumina-border rounded-lg px-3 py-1.5 w-64 focus-within:border-lumina-gold focus-within:ring-1 focus-within:ring-lumina-gold transition-all shadow-inner">
           <svg className="w-4 h-4 text-lumina-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           <input type="text" placeholder="Quick search..." className="bg-transparent text-xs outline-none w-full text-lumina-text placeholder-lumina-muted/50 font-mono" />
           <span className="text-[9px] text-lumina-muted border border-lumina-border px-1 rounded bg-lumina-surface">⌘K</span>
         </div>
         
-        {/* Notification Bell (Hide on mobile to save space if needed, or keep) */}
+        {/* Notification Bell - OK */}
         <button className="relative p-2 text-lumina-muted hover:text-lumina-gold transition-colors group hidden md:block">
            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-lumina-base group-hover:animate-ping"></span>
            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-rose-500 rounded-full ring-1 ring-lumina-base"></span>
@@ -115,24 +120,27 @@ export default function Topbar() {
                 className="flex items-center gap-3 cursor-pointer group hover:bg-lumina-highlight/50 p-1.5 rounded-lg transition-all focus:outline-none"
             >
                <div className="text-right hidden sm:block">
-                  <p className="text-xs font-bold text-white group-hover:text-lumina-gold transition-colors">{user?.email?.split('@')[0]}</p>
+                  {/* PERUBAHAN 3: Ganti text-white menjadi text-lumina-text */}
+                  <p className="text-xs font-bold text-lumina-text group-hover:text-lumina-gold transition-colors">{user?.email?.split('@')[0]}</p>
                   <p className="text-[9px] text-lumina-muted uppercase tracking-wider">Admin</p>
-               </div>
-               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-lumina-gold to-amber-600 p-[1px] shadow-gold-glow group-hover:shadow-lg transition-all">
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-lumina-gold to-amber-600 p-[1px] shadow-gold-glow group-hover:shadow-lg transition-all">
                   <div className="w-full h-full rounded-lg bg-lumina-surface flex items-center justify-center">
-                    <span className="text-xs font-bold text-white group-hover:text-lumina-gold transition-colors">{user?.email?.charAt(0).toUpperCase()}</span>
+                    {/* PERUBAHAN 4: Ganti text-white menjadi text-lumina-text */}
+                    <span className="text-xs font-bold text-lumina-text group-hover:text-lumina-gold transition-colors">{user?.email?.charAt(0).toUpperCase()}</span>
                   </div>
-               </div>
+                </div>
             </button>
 
             {/* Dropdown Menu */}
             {isProfileOpen && (
                 <div className="absolute right-0 top-full mt-2 w-48 bg-lumina-surface border border-lumina-border rounded-xl shadow-2xl py-1 animate-fade-in origin-top-right ring-1 ring-black/5 z-50">
                     <div className="px-4 py-2 border-b border-lumina-border mb-1 block sm:hidden">
-                        <p className="text-xs text-white font-bold">{user?.email}</p>
+                        {/* PERUBAHAN 5: Ganti text-white menjadi text-lumina-text */}
+                        <p className="text-xs text-lumina-text font-bold">{user?.email}</p>
                     </div>
                     
-                    <Link href="/settings" className="block px-4 py-2 text-xs text-lumina-text hover:bg-lumina-highlight hover:text-white transition-colors">
+                    <Link href="/settings" className="block px-4 py-2 text-xs text-lumina-text hover:bg-lumina-highlight hover:text-lumina-text transition-colors">
                         Settings
                     </Link>
                     
@@ -140,7 +148,8 @@ export default function Topbar() {
                     
                     <button 
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors font-bold"
+                        // PERUBAHAN 6: Sesuaikan warna logout untuk Light Mode
+                        className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-500/10 hover:text-rose-700 transition-colors font-bold"
                     >
                         Sign Out
                     </button>

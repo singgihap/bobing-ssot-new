@@ -226,7 +226,7 @@ export default function CustomersPage() {
                                     <td className="text-lumina-muted truncate max-w-xs text-xs">{c.address || '-'}</td>
                                     <td className="text-right pr-6">
                                         <div className="flex justify-end gap-3">
-                                            <button onClick={() => openModal(c)} className="text-xs font-bold text-lumina-muted hover:text-white transition-colors">Edit</button>
+                                            <button onClick={() => openModal(c)} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">Edit</button>
                                             <button onClick={() => deleteItem(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
                                         </div>
                                     </td>
@@ -239,11 +239,11 @@ export default function CustomersPage() {
 
             <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-white">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
-                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-lumina-text">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
+                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-2 gap-4">

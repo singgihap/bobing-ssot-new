@@ -215,12 +215,12 @@ export default function VariantsPage() {
                                                 <span className="badge-luxury badge-neutral">{v.size}</span>
                                             </div>
                                         </td>
-                                        <td className="text-right font-bold text-white text-sm font-mono">{formatRupiah(v.price)}</td>
+                                        <td className="text-right font-bold text-lumina-text text-sm font-mono">{formatRupiah(v.price)}</td>
                                         <td className="text-right pr-6">
                                             <button onClick={()=>{setFormData({...v}); 
                                                 const p = products.find(x=>x.id===v.product_id);
                                                 setSelectedBaseSku(p?p.base_sku:'-');
-                                                setModalOpen(true);}} className="text-xs font-bold text-lumina-muted hover:text-white border border-lumina-border hover:border-white px-2 py-1 rounded transition-colors">
+                                                setModalOpen(true);}} className="text-xs font-bold text-lumina-muted hover:text-lumina-text border border-lumina-border hover:border-white px-2 py-1 rounded transition-colors">
                                                 Edit
                                             </button>
                                         </td>
@@ -238,8 +238,8 @@ export default function VariantsPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
                     <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
                         <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl">
-                            <h3 className="text-lg font-bold text-white">{formData.id?'Edit SKU':'New SKU'}</h3>
-                            <button onClick={()=>setModalOpen(false)} className="text-lumina-muted hover:text-white text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-lumina-text">{formData.id?'Edit SKU':'New SKU'}</h3>
+                            <button onClick={()=>setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
                             <div className="bg-lumina-base p-4 rounded-xl border border-lumina-border">

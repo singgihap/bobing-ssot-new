@@ -344,11 +344,11 @@ export default function PurchasesPage() {
             <Portal>
                 {/* Modal PO */}
                 {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4">
                         <div className="card-luxury w-full max-w-4xl p-6 fade-in-up max-h-[90vh] overflow-y-auto flex flex-col">
                             <div className="flex justify-between items-center mb-4">
                                 <h3 className="text-lg font-bold text-lumina-text">New Purchase Order</h3>
-                                <button onClick={() => setModalOpen(false)} className="text-2xl text-lumina-muted hover:text-white">×</button>
+                                <button onClick={() => setModalOpen(false)} className="text-2xl text-lumina-muted hover:text-lumina-text">×</button>
                             </div>
                             
                             <form onSubmit={submitPO} className="space-y-4 flex-1 overflow-y-auto">
@@ -434,7 +434,7 @@ export default function PurchasesPage() {
 
                 {/* Modal Detail */}
                 {detailOpen && selectedPO && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4">
                         <div className="card-luxury w-full max-w-2xl p-6 fade-in-up max-h-[90vh] overflow-y-auto">
                             <div className="flex justify-between mb-4">
                                 <h3 className="text-lg font-bold text-lumina-text">PO Details</h3>
@@ -442,8 +442,8 @@ export default function PurchasesPage() {
                             </div>
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row justify-between text-sm border-b border-lumina-border pb-3 gap-2">
-                                    <span className="text-lumina-muted">Supplier: <strong className="text-white">{selectedPO.supplier_name}</strong></span>
-                                    <span className="text-lumina-muted">Status: <strong className="text-white uppercase">{selectedPO.payment_status}</strong></span>
+                                    <span className="text-lumina-muted">Supplier: <strong className="text-lumina-text">{selectedPO.supplier_name}</strong></span>
+                                    <span className="text-lumina-muted">Status: <strong className="text-lumina-text uppercase">{selectedPO.payment_status}</strong></span>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm text-lumina-text min-w-[300px]">
