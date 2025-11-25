@@ -31,8 +31,8 @@ export const AuthContextProvider = ({ children }) => {
   // TAMPILAN LOADING MEWAH (Lumina Theme)
   if (loading) {
     return (
-      // PERUBAHAN 1: Ubah background gelap menjadi warna terang (bg-lumina-base)
-      <div className="flex min-h-screen items-center justify-center bg-lumina-base"> 
+      // PERUBAHAN 1: Ubah background gelap menjadi warna terang (bg-background)
+      <div className="flex min-h-screen items-center justify-center bg-background"> 
         <div className="text-center relative">
           {/* Spinner Emas */}
           <div className="w-16 h-16 relative mx-auto mb-4">
@@ -43,10 +43,10 @@ export const AuthContextProvider = ({ children }) => {
           
           {/* Teks */}
           {/* PERUBAHAN 3: Ubah teks putih menjadi teks lumina-text (gelap) */}
-          <h2 className="text-lg font-bold text-lumina-text tracking-widest font-display animate-pulse"> 
+          <h2 className="text-lg font-bold text-text-primary tracking-widest font-display animate-pulse"> 
             Bobing Enterprise
           </h2>
-            <p className="text-xs text-lumina-muted mt-1">Authenticating...</p>
+            <p className="text-xs text-text-secondary mt-1">Authenticating...</p>
         </div>
       </div>
     );

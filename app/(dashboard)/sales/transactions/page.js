@@ -105,8 +105,8 @@ export default function TransactionsHistoryPage() {
             {/* Header */}
             <div className="flex justify-between items-start">
                 <div>
-                    <h2 className="text-2xl font-display font-bold text-lumina-text">Transactions History</h2>
-                    <p className="text-sm text-lumina-muted mt-1 font-light">Track all sales orders from imports and manual entries.</p>
+                    <h2 className="text-2xl font-display font-bold text-text-primary">Transactions History</h2>
+                    <p className="text-sm text-text-secondary mt-1 font-light">Track all sales orders from imports and manual entries.</p>
                 </div>
                 <button onClick={fetchOrders} className="btn-gold text-sm">↻ Refresh</button>
             </div>
@@ -114,38 +114,38 @@ export default function TransactionsHistoryPage() {
             {/* Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div className="card-luxury p-6">
-                    <p className="text-xs font-bold text-lumina-muted uppercase tracking-wider mb-2">Total Orders</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Total Orders</p>
                     <h3 className="text-3xl font-display font-bold text-lumina-gold">{metrics.totalOrders}</h3>
-                    <p className="text-xs text-lumina-muted mt-2">orders</p>
+                    <p className="text-xs text-text-secondary mt-2">orders</p>
                 </div>
                 <div className="card-luxury p-6">
-                    <p className="text-xs font-bold text-lumina-muted uppercase tracking-wider mb-2">Revenue</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Revenue</p>
                     <h3 className="text-2xl font-display font-bold text-emerald-400">{formatRupiah(metrics.totalRevenue)}</h3>
-                    <p className="text-xs text-lumina-muted mt-2">gross sales</p>
+                    <p className="text-xs text-text-secondary mt-2">gross sales</p>
                 </div>
                 <div className="card-luxury p-6">
-                    <p className="text-xs font-bold text-lumina-muted uppercase tracking-wider mb-2">Total Cost</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Total Cost</p>
                     <h3 className="text-2xl font-display font-bold text-orange-400">{formatRupiah(metrics.totalCost)}</h3>
-                    <p className="text-xs text-lumina-muted mt-2">total HPP</p>
+                    <p className="text-xs text-text-secondary mt-2">total HPP</p>
                 </div>
                 <div className="card-luxury p-6">
-                    <p className="text-xs font-bold text-lumina-muted uppercase tracking-wider mb-2">Profit</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Profit</p>
                     <h3 className="text-2xl font-display font-bold text-blue-400">{formatRupiah(metrics.totalProfit)}</h3>
-                    <p className="text-xs text-lumina-muted mt-2">{profitMargin}% margin</p>
+                    <p className="text-xs text-text-secondary mt-2">{profitMargin}% margin</p>
                 </div>
                 <div className="card-luxury p-6">
-                    <p className="text-xs font-bold text-lumina-muted uppercase tracking-wider mb-2">Avg Order Value</p>
+                    <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">Avg Order Value</p>
                     <h3 className="text-2xl font-display font-bold text-purple-400">{formatRupiah(metrics.avgOrderValue)}</h3>
-                    <p className="text-xs text-lumina-muted mt-2">per order</p>
+                    <p className="text-xs text-text-secondary mt-2">per order</p>
                 </div>
             </div>
 
             {/* Filters */}
             <div className="card-luxury p-6 space-y-4">
-                <h4 className="font-semibold text-lumina-text">Filters</h4>
+                <h4 className="font-semibold text-text-primary">Filters</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
-                        <label className="text-xs font-bold text-lumina-muted uppercase mb-2 block">Channel</label>
+                        <label className="text-xs font-bold text-text-secondary uppercase mb-2 block">Channel</label>
                         <select 
                             value={filterChannel}
                             onChange={(e) => setFilterChannel(e.target.value)}
@@ -159,7 +159,7 @@ export default function TransactionsHistoryPage() {
                         </select>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-lumina-muted uppercase mb-2 block">Status</label>
+                        <label className="text-xs font-bold text-text-secondary uppercase mb-2 block">Status</label>
                         <select 
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
@@ -173,7 +173,7 @@ export default function TransactionsHistoryPage() {
                         </select>
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-lumina-muted uppercase mb-2 block">From Date</label>
+                        <label className="text-xs font-bold text-text-secondary uppercase mb-2 block">From Date</label>
                         <input 
                             type="date"
                             value={dateRange.from}
@@ -182,7 +182,7 @@ export default function TransactionsHistoryPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-lumina-muted uppercase mb-2 block">To Date</label>
+                        <label className="text-xs font-bold text-text-secondary uppercase mb-2 block">To Date</label>
                         <input 
                             type="date"
                             value={dateRange.to}
@@ -191,7 +191,7 @@ export default function TransactionsHistoryPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-xs font-bold text-lumina-muted uppercase mb-2 block">Search</label>
+                        <label className="text-xs font-bold text-text-secondary uppercase mb-2 block">Search</label>
                         <input 
                             type="text"
                             placeholder="Order # or buyer..."
@@ -205,9 +205,9 @@ export default function TransactionsHistoryPage() {
 
             {/* Transactions Table - UPDATED */}
             <div className="card-luxury overflow-hidden">
-                <div className="px-6 py-4 border-b border-lumina-border bg-lumina-surface/50 flex justify-between items-center">
-                    <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">Sales Orders</h3>
-                    <div className="text-[10px] font-medium text-lumina-muted bg-lumina-highlight px-2 py-1 rounded">
+                <div className="px-6 py-4 border-b border-lumina-border bg-surface/50 flex justify-between items-center">
+                    <h3 className="font-bold text-text-primary text-sm uppercase tracking-wider">Sales Orders</h3>
+                    <div className="text-[10px] font-medium text-text-secondary bg-lumina-highlight px-2 py-1 rounded">
                         {filteredOrders.length} of {orders.length} orders
                     </div>
                 </div>
@@ -231,13 +231,13 @@ export default function TransactionsHistoryPage() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan="11" className="text-center py-8 text-lumina-muted">
+                                    <td colSpan="11" className="text-center py-8 text-text-secondary">
                                         Loading...
                                     </td>
                                 </tr>
                             ) : filteredOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan="11" className="text-center py-8 text-lumina-muted">
+                                    <td colSpan="11" className="text-center py-8 text-text-secondary">
                                         No transactions found
                                     </td>
                                 </tr>
@@ -272,10 +272,10 @@ export default function TransactionsHistoryPage() {
                                                         ▼
                                                     </span>
                                                 </td>
-                                                <td className="font-mono text-[11px] text-lumina-muted">{formatDate(order.order_date)}</td>
+                                                <td className="font-mono text-[11px] text-text-secondary">{formatDate(order.order_date)}</td>
                                                 <td className="font-mono text-[11px] text-lumina-gold font-bold">{order.order_number}</td>
-                                                <td className="text-[11px] text-lumina-text">{order.customer_name}</td>
-                                                <td className="text-[11px] text-lumina-muted group-hover:text-lumina-gold transition-colors">
+                                                <td className="text-[11px] text-text-primary">{order.customer_name}</td>
+                                                <td className="text-[11px] text-text-secondary group-hover:text-lumina-gold transition-colors">
                                                     {items.length} item{items.length > 1 ? 's' : ''}
                                                 </td>
                                                 <td className="text-[11px]">
@@ -327,15 +327,15 @@ export default function TransactionsHistoryPage() {
                                                                         className="bg-gray-800/50 border border-lumina-border/40 rounded p-3 flex justify-between items-center hover:border-lumina-gold/50 transition-colors"
                                                                     >
                                                                         <div className="flex-1">
-                                                                            <p className="text-[11px] font-bold text-lumina-text">
+                                                                            <p className="text-[11px] font-bold text-text-primary">
                                                                                 SKU: <span className="text-lumina-gold">{item.sku}</span>
                                                                             </p>
-                                                                            <p className="text-[10px] text-lumina-muted mt-1">
-                                                                                Quantity: <span className="text-lumina-text font-semibold">{item.qty}</span>
+                                                                            <p className="text-[10px] text-text-secondary mt-1">
+                                                                                Quantity: <span className="text-text-primary font-semibold">{item.qty}</span>
                                                                             </p>
                                                                         </div>
                                                                         <div className="text-right">
-                                                                            <span className="inline-block bg-lumina-gold/20 text-lumina-gold px-3 py-1 rounded text-[10px] font-bold">
+                                                                            <span className="inline-block bg-primary/20 text-lumina-gold px-3 py-1 rounded text-[10px] font-bold">
                                                                                 ×{item.qty}
                                                                             </span>
                                                                         </div>
@@ -346,20 +346,20 @@ export default function TransactionsHistoryPage() {
                                                             {/* Additional Order Details */}
                                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 pt-4 border-t border-lumina-border/30">
                                                                 <div className="bg-gray-800/50 rounded p-2">
-                                                                    <p className="text-[9px] text-lumina-muted uppercase font-bold">Courier</p>
-                                                                    <p className="text-[11px] text-lumina-text mt-1">{order.courier || 'N/A'}</p>
+                                                                    <p className="text-[9px] text-text-secondary uppercase font-bold">Courier</p>
+                                                                    <p className="text-[11px] text-text-primary mt-1">{order.courier || 'N/A'}</p>
                                                                 </div>
                                                                 <div className="bg-gray-800/50 rounded p-2">
-                                                                    <p className="text-[9px] text-lumina-muted uppercase font-bold">Weight</p>
-                                                                    <p className="text-[11px] text-lumina-text mt-1">{order.total_weight_g}g</p>
+                                                                    <p className="text-[9px] text-text-secondary uppercase font-bold">Weight</p>
+                                                                    <p className="text-[11px] text-text-primary mt-1">{order.total_weight_g}g</p>
                                                                 </div>
                                                                 <div className="bg-gray-800/50 rounded p-2">
-                                                                    <p className="text-[9px] text-lumina-muted uppercase font-bold">Payment Status</p>
+                                                                    <p className="text-[9px] text-text-secondary uppercase font-bold">Payment Status</p>
                                                                     <p className="text-[11px] text-emerald-400 mt-1 font-semibold">{order.payment_status}</p>
                                                                 </div>
                                                                 <div className="bg-gray-800/50 rounded p-2">
-                                                                    <p className="text-[9px] text-lumina-muted uppercase font-bold">Tracking</p>
-                                                                    <p className="text-[11px] text-lumina-text mt-1">{order.tracking_number || 'Pending'}</p>
+                                                                    <p className="text-[9px] text-text-secondary uppercase font-bold">Tracking</p>
+                                                                    <p className="text-[11px] text-text-primary mt-1">{order.tracking_number || 'Pending'}</p>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -136,8 +136,8 @@ export default function BalanceSheetPage() {
         <div className="max-w-6xl mx-auto space-y-8 fade-in pb-20">
             <div className="flex justify-between items-center">
             <div>
-                <h2 className="text-xl md:text-3xl font-display font-bold text-lumina-text tracking-tight">Balance Sheet</h2>
-                <p className="text-sm text-lumina-muted mt-1 font-light">Real-time financial position snapshot.</p>
+                <h2 className="text-xl md:text-3xl font-display font-bold text-text-primary tracking-tight">Balance Sheet</h2>
+                <p className="text-sm text-text-secondary mt-1 font-light">Real-time financial position snapshot.</p>
             </div>
             <button onClick={() => calculate(true)} className="btn-ghost-dark text-xs">
                 Refresh Data
@@ -153,37 +153,37 @@ export default function BalanceSheetPage() {
                     </div>
                     <div className="p-6 space-y-6">
                         <div>
-                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Cash & Bank</p>
+                            <p className="text-xs font-bold text-text-secondary uppercase mb-2 tracking-wide">Cash & Bank</p>
                             <div className="space-y-2 pl-3 border-l-2 border-lumina-border">
-                                {loading ? <span className="text-xs text-lumina-muted">Calculating...</span> : assets.listCash.map((c, i) => (
+                                {loading ? <span className="text-xs text-text-secondary">Calculating...</span> : assets.listCash.map((c, i) => (
                                     <div key={i} className="flex justify-between text-sm">
-                                        <span className="text-lumina-text opacity-80">{c.name}</span>
-                                        <span className="font-mono font-medium text-lumina-text">{formatRupiah(c.val)}</span>
+                                        <span className="text-text-primary opacity-80">{c.name}</span>
+                                        <span className="font-mono font-medium text-text-primary">{formatRupiah(c.val)}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-lumina-border font-bold text-lumina-text">
+                            <div className="flex justify-between items-center mt-3 pt-3 border-t border-dashed border-lumina-border font-bold text-text-primary">
                                 <span>Total Cash</span>
                                 <span className="text-emerald-400">{loading ? '...' : formatRupiah(assets.cash)}</span>
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Inventory</p>
+                            <p className="text-xs font-bold text-text-secondary uppercase mb-2 tracking-wide">Inventory</p>
                             <div className="flex justify-between items-center pl-3 border-l-2 border-blue-500/30">
-                                <span className="text-sm text-lumina-text opacity-80">Stock Value (At Cost)</span>
+                                <span className="text-sm text-text-primary opacity-80">Stock Value (At Cost)</span>
                                 <span className="font-bold text-blue-400 font-mono">{loading ? '...' : formatRupiah(assets.inventory)}</span>
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-lumina-muted uppercase mb-2 tracking-wide">Receivables</p>
+                            <p className="text-xs font-bold text-text-secondary uppercase mb-2 tracking-wide">Receivables</p>
                             <div className="flex justify-between items-center pl-3 border-l-2 border-amber-500/30">
-                                <span className="text-sm text-lumina-text opacity-80">Unpaid Sales</span>
+                                <span className="text-sm text-text-primary opacity-80">Unpaid Sales</span>
                                 <span className="font-bold text-amber-400 font-mono">{loading ? '...' : formatRupiah(assets.receivable)}</span>
                             </div>
                         </div>
                     </div>
-                    <div className="px-6 py-4 bg-lumina-surface border-t border-lumina-border flex justify-between items-center">
-                        <span className="font-bold text-lumina-text">TOTAL ASSETS</span>
+                    <div className="px-6 py-4 bg-surface border-t border-lumina-border flex justify-between items-center">
+                        <span className="font-bold text-text-primary">TOTAL ASSETS</span>
                         <span className="font-extrabold text-emerald-500 text-xl font-mono">{loading ? '...' : formatRupiah(totalAssets)}</span>
                     </div>
                 </div>
@@ -196,12 +196,12 @@ export default function BalanceSheetPage() {
                         </div>
                         <div className="p-6">
                             <div className="flex justify-between items-center pl-3 border-l-2 border-rose-500/30">
-                                <span className="text-sm text-lumina-text opacity-80">Accounts Payable (PO)</span>
+                                <span className="text-sm text-text-primary opacity-80">Accounts Payable (PO)</span>
                                 <span className="font-bold text-rose-400 font-mono">{loading ? '...' : formatRupiah(liabilities.payable)}</span>
                             </div>
                         </div>
-                        <div className="px-6 py-4 bg-lumina-surface border-t border-lumina-border flex justify-between items-center">
-                            <span className="font-bold text-lumina-text">TOTAL LIABILITIES</span>
+                        <div className="px-6 py-4 bg-surface border-t border-lumina-border flex justify-between items-center">
+                            <span className="font-bold text-text-primary">TOTAL LIABILITIES</span>
                             <span className="font-bold text-rose-500 text-lg font-mono">{loading ? '...' : formatRupiah(liabilities.payable)}</span>
                         </div>
                     </div>
@@ -209,14 +209,14 @@ export default function BalanceSheetPage() {
                     {/* EQUITY */}
                     <div className="card-luxury p-6 bg-gradient-to-br from-lumina-surface to-lumina-highlight text-center relative overflow-hidden border-none shadow-2xl">
                         <div className="relative z-10">
-                            <p className="text-xs text-lumina-muted uppercase tracking-widest mb-2 font-bold">Owners Equity</p>
-                            <h3 className={`text-3xl font-display font-extrabold tracking-tight ${equity >= 0 ? 'text-lumina-text' : 'text-rose-400'}`}>
+                            <p className="text-xs text-text-secondary uppercase tracking-widest mb-2 font-bold">Owners Equity</p>
+                            <h3 className={`text-3xl font-display font-extrabold tracking-tight ${equity >= 0 ? 'text-text-primary' : 'text-rose-400'}`}>
                                 {loading ? '...' : formatRupiah(equity)}
                             </h3>
-                            <p className="text-[10px] text-lumina-muted mt-2 opacity-70">Assets - Liabilities</p>
+                            <p className="text-[10px] text-text-secondary mt-2 opacity-70">Assets - Liabilities</p>
                         </div>
                         {/* Decoration */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-lumina-gold/10 rounded-full blur-3xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
                     </div>
                 </div>

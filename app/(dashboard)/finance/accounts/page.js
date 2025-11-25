@@ -191,12 +191,12 @@ export default function FinanceAccountsPage() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-xl md:text-3xl font-bold text-lumina-text">Chart of Accounts</h2>
-          <p className="text-lumina-muted mt-1">Master financial accounts (Assets, Liabilities, Equity).</p>
+          <h2 className="text-xl md:text-3xl font-bold text-text-primary">Chart of Accounts</h2>
+          <p className="text-text-secondary mt-1">Master financial accounts (Assets, Liabilities, Equity).</p>
         </div>
         <button
           onClick={() => openModal()}
-          className="px-6 py-2 bg-lumina-gold text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap"
+          className="px-6 py-2 bg-primary text-black font-bold rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap"
         >
           + ADD ACCOUNT
         </button>
@@ -218,11 +218,11 @@ export default function FinanceAccountsPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-lumina-muted">Loading...</td>
+                  <td colSpan="5" className="p-8 text-center text-text-secondary">Loading...</td>
                 </tr>
               ) : accounts.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="p-8 text-center text-lumina-muted">No accounts found.</td>
+                  <td colSpan="5" className="p-8 text-center text-text-secondary">No accounts found.</td>
                 </tr>
               ) : (
                 accounts.map((account) => {
@@ -231,7 +231,7 @@ export default function FinanceAccountsPage() {
                   return (
                     <tr key={account.id} className="border-t border-lumina-border hover:bg-lumina-highlight/10 transition">
                       <td className="text-left pl-6 py-3 font-mono font-bold text-lumina-gold">{account.code}</td>
-                      <td className="text-left text-lumina-text py-3">{account.name}</td>
+                      <td className="text-left text-text-primary py-3">{account.name}</td>
                       <td className="text-left py-3">
                         <span className="badge-luxury badge-neutral whitespace-nowrap">{account.category}</span>
                       </td>
@@ -274,17 +274,17 @@ export default function FinanceAccountsPage() {
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className="fixed inset-0 bg-lumina-surface/80 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-surface/80 backdrop-blur-sm z-40"
               onClick={() => setModalOpen(false)}
             />
 
-            <div className="relative z-50 bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
+            <div className="relative z-50 bg-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-md mx-4 flex flex-col max-h-[90vh]">
               
-              <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl flex-shrink-0">
-                <h3 className="text-lg font-bold text-lumina-text">Add New Account</h3>
+              <div className="px-6 py-4 border-b border-lumina-border flex justify-between items-center bg-surface rounded-t-2xl flex-shrink-0">
+                <h3 className="text-lg font-bold text-text-primary">Add New Account</h3>
                 <button
                   onClick={() => setModalOpen(false)}
-                  className="text-lumina-muted hover:text-lumina-text transition-colors p-1"
+                  className="text-text-secondary hover:text-text-primary transition-colors p-1"
                   aria-label="Close modal"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -293,13 +293,13 @@ export default function FinanceAccountsPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-lumina-surface custom-scrollbar">
+              <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 space-y-5 bg-surface custom-scrollbar">
                 <div>
-                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Account Code</label>
+                  <label className="block text-xs font-bold text-text-secondary uppercase mb-2">Account Code</label>
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text font-mono uppercase focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-surface border border-lumina-border rounded-lg text-text-primary font-mono uppercase focus:border-lumina-gold outline-none"
                     value={formData.code}
                     onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                     placeholder="e.g., 1101"
@@ -308,11 +308,11 @@ export default function FinanceAccountsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Account Name</label>
+                  <label className="block text-xs font-bold text-text-secondary uppercase mb-2">Account Name</label>
                   <input
                     type="text"
                     required
-                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-surface border border-lumina-border rounded-lg text-text-primary focus:border-lumina-gold outline-none"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Utang Gaji"
@@ -320,10 +320,10 @@ export default function FinanceAccountsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-lumina-muted uppercase mb-2">Category</label>
+                  <label className="block text-xs font-bold text-text-secondary uppercase mb-2">Category</label>
                   <select
                     required
-                    className="w-full px-3 py-2 bg-lumina-surface border border-lumina-border rounded-lg text-lumina-text focus:border-lumina-gold outline-none"
+                    className="w-full px-3 py-2 bg-surface border border-lumina-border rounded-lg text-text-primary focus:border-lumina-gold outline-none"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     disabled={uploading}
@@ -336,11 +336,11 @@ export default function FinanceAccountsPage() {
                 </div>
               </form>
 
-              <div className="px-6 py-4 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
+              <div className="px-6 py-4 border-t border-lumina-border bg-surface rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-6 py-2 bg-lumina-surface text-lumina-text rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
+                  className="px-6 py-2 bg-surface text-text-primary rounded-lg hover:bg-lumina-highlight transition-colors font-medium"
                   disabled={uploading}
                 >
                   Cancel
@@ -348,7 +348,7 @@ export default function FinanceAccountsPage() {
                 <button
                   type="submit"
                   onClick={handleSubmit}
-                  className="px-8 py-2 bg-lumina-gold text-black rounded-lg hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2"
+                  className="px-8 py-2 bg-primary text-black rounded-lg hover:bg-yellow-400 transition-colors font-semibold flex items-center gap-2"
                   disabled={uploading}
                 >
                   {uploading ? (

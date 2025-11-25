@@ -207,19 +207,19 @@ export default function ImportProductsPage() {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 fade-in">
-            <div className="card-luxury p-6 bg-lumina-surface border-lumina-border">
-                <h2 className="text-xl md:text-3xl font-bold text-lumina-text mb-4 font-display">
+            <div className="card-luxury p-6 bg-surface border-lumina-border">
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary mb-4 font-display">
                     Import Products & Variants
                 </h2>
-                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-surface/50 hover:bg-lumina-surface transition-colors cursor-pointer relative group">
+                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-surface/50 hover:bg-surface transition-colors cursor-pointer relative group">
                     <input type="file" accept=".csv, .xlsx" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className="pointer-events-none relative z-0">
                         <div className="w-12 h-12 bg-lumina-highlight rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                             <svg className="w-6 h-6 text-lumina-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                         </div>
-                        <p className="text-sm font-bold text-lumina-text">Click to upload file</p>
-                        <p className="text-xs text-lumina-muted mt-1">Supported: .xlsx, .csv</p>
-                        <p className="text-[10px] text-lumina-muted/60 mt-2 font-mono">Format: base_sku, product_name, brand, category, color, size, cost, price</p>
+                        <p className="text-sm font-bold text-text-primary">Click to upload file</p>
+                        <p className="text-xs text-text-secondary mt-1">Supported: .xlsx, .csv</p>
+                        <p className="text-[10px] text-text-secondary/60 mt-2 font-mono">Format: base_sku, product_name, brand, category, color, size, cost, price</p>
                     </div>
                 </div>
             </div>
@@ -230,13 +230,13 @@ export default function ImportProductsPage() {
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-lumina-muted ml-2">Import Terminal</span>
+                    <span className="text-text-secondary ml-2">Import Terminal</span>
                 </div>
                 <div className="space-y-1">
                     {logs.length === 0 ? (
-                        <span className="text-lumina-muted/50 animate-pulse">Waiting for file...</span>
+                        <span className="text-text-secondary/50 animate-pulse">Waiting for file...</span>
                     ) : logs.map((l, i) => (
-                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-lumina-muted')}`}>
+                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-text-secondary')}`}>
                             <span className="opacity-50 select-none">{'>'}</span>
                             <span>{l.msg}</span>
                         </div>

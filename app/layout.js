@@ -8,11 +8,12 @@ import { LayoutProvider } from "@/context/LayoutContext";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ["latin"], variable: '--font-outfit' });
-const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: '--font-jetbrains' });
+// Menggunakan nama variabel yang Anda berikan
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: '--font-jetbrains' }); 
 
 export const metadata = { 
-  title: "Lumina ERP", 
-  description: "Luxury Command Center" 
+  title: "Bobing SSOT System", // Diperbarui dari Lumina ERP
+  description: "Enterprise Command Center" // Diperbarui dari Luxury Command Center
 };
 
 export const viewport = {
@@ -25,7 +26,8 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
-      <body className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} bg-lumina-surface text-lumina-text font-sans`}>
+      {/* KOREKSI: Mengganti bg-surface menjadi bg-background untuk latar belakang halaman global */}
+      <body className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} bg-background text-text-primary font-sans`}>
         {/* AuthContext dan LayoutProvider adalah GLOBAL dan tetap di sini */}
         <AuthContextProvider>
           <LayoutProvider>

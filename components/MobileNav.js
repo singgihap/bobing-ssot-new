@@ -8,9 +8,9 @@ import { useAuth } from '@/context/AuthContext';
 import { Portal } from '@/lib/usePortal';
 import { navData, footerNav } from '@/lib/navData';
 import { NavIcon, D_MONEY } from '@/components/DashboardIcons'; 
-// Import text-lumina-text dan text-lumina-gold dari theme Anda
-const TEXT_ACTIVE = 'text-lumina-text'; // Dark text for light background
-const BG_HOVER = 'bg-lumina-highlight'; // Light gray highlight
+// Menggunakan warna semantik baru dari theme Tailwind
+const TEXT_ACTIVE = 'text-text-primary'; // Dark text for light background
+const BG_HOVER = 'bg-gray-100'; // Light gray highlight (Pengganti lumina-highlight)
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -30,8 +30,8 @@ export default function MobileNav() {
       onClick={onClick}
       className={`flex items-center p-3 rounded-xl transition-all duration-200 
         ${isActive(href) 
-            ? `${BG_HOVER} ${TEXT_ACTIVE} shadow-lg` // PERUBAHAN 1: Active state menggunakan highlight dan dark text
-            : `hover:${BG_HOVER} text-lumina-muted` // PERUBAHAN 2: Hover menggunakan highlight
+            ? `${BG_HOVER} ${TEXT_ACTIVE} shadow-lg` 
+            : `hover:${BG_HOVER} text-text-secondary` // text-lumina-muted -> text-text-secondary
         }
       `}
     >
@@ -41,8 +41,10 @@ export default function MobileNav() {
       </div>
 
       <div>
-        <p className={`text-sm font-semibold ${isActive(href) ? TEXT_ACTIVE : 'text-lumina-muted'}`}>{label}</p>
-        <p className="text-xs text-lumina-muted/70">{description}</p>
+        {/* text-lumina-muted -> text-text-secondary */}
+        <p className={`text-sm font-semibold ${isActive(href) ? TEXT_ACTIVE : 'text-text-secondary'}`}>{label}</p>
+        {/* text-lumina-muted/70 -> text-text-secondary/70 */}
+        <p className="text-xs text-text-secondary/70">{description}</p>
       </div>
     </Link>
   );
@@ -53,33 +55,34 @@ export default function MobileNav() {
   return (
     <>
       {/* MOBILE BOTTOM NAVIGATION BAR */}
-      <div className={`fixed bottom-0 left-0 right-0 h-16 bg-lumina-base border-t border-lumina-border z-30 flex justify-around md:hidden`}>
+      {/* bg-lumina-base -> bg-surface, border-lumina-border -> border-border */}
+      <div className={`fixed bottom-0 left-0 right-0 h-16 bg-surface border-t border-border z-30 flex justify-around md:hidden`}>
         
         <Link href="/dashboard" className="flex flex-col items-center justify-center">
           <NavIcon d={D_DASH} active={isActive('/dashboard')} size="w-6 h-6" />
-          {/* PERUBAHAN 3: Active text color */}
-          <span className={`text-[10px] ${isActive('/dashboard') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Home</span>
+          {/* text-lumina-muted -> text-text-secondary */}
+          <span className={`text-[10px] ${isActive('/dashboard') ? `${TEXT_ACTIVE} font-bold` : 'text-text-secondary'}`}>Home</span>
         </Link>
         
         <Link href="/sales/manual" className="flex flex-col items-center justify-center">
           <NavIcon d={D_POS} active={isActive('/sales/manual')} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive('/sales/manual') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>POS</span>
+          <span className={`text-[10px] ${isActive('/sales/manual') ? `${TEXT_ACTIVE} font-bold` : 'text-text-secondary'}`}>POS</span>
         </Link>
         
         <button onClick={toggleMenu} className="flex flex-col items-center justify-center focus:outline-none">
           <NavIcon d="M4 6h16M4 12h16M4 18h16" active={isMenuOpen} size="w-6 h-6" />
-          <span className={`text-[10px] ${isMenuOpen ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Menu</span>
+          <span className={`text-[10px] ${isMenuOpen ? `${TEXT_ACTIVE} font-bold` : 'text-text-secondary'}`}>Menu</span>
         </button>
 
         <Link href="/finance" className="flex flex-col items-center justify-center">
           <NavIcon d={D_MONEY} active={isActive('/finance')} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive('/finance') ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Finance</span>
+          <span className={`text-[10px] ${isActive('/finance') ? `${TEXT_ACTIVE} font-bold` : 'text-text-secondary'}`}>Finance</span>
         </Link>
 
         {/* Menggunakan data dari footerNav */}
         <Link href={footerNav.href} className="flex flex-col items-center justify-center">
           <NavIcon d={footerNav.iconD} active={isActive(footerNav.href)} size="w-6 h-6" />
-          <span className={`text-[10px] ${isActive(footerNav.href) ? `${TEXT_ACTIVE} font-bold` : 'text-lumina-muted'}`}>Settings</span>
+          <span className={`text-[10px] ${isActive(footerNav.href) ? `${TEXT_ACTIVE} font-bold` : 'text-text-secondary'}`}>Settings</span>
         </Link>
       </div>
 
@@ -89,17 +92,17 @@ export default function MobileNav() {
             className="fixed inset-0 bg-black/60 z-40 md:hidden" 
             onClick={toggleMenu}
           ></div>
-          {/* PERUBAHAN 4: Ganti bg-[#181A1F] menjadi light mode surface */}
-          <div className="fixed top-0 right-0 w-full max-w-xs h-full bg-lumina-surface border-l border-lumina-border p-6 z-50 overflow-y-auto">
+          {/* bg-lumina-surface -> bg-surface, border-lumina-border -> border-border */}
+          <div className="fixed top-0 right-0 w-full max-w-xs h-full bg-surface border-l border-border p-6 z-50 overflow-y-auto">
             
-            {/* PERUBAHAN 5: Ganti text-white menjadi dark text */}
-            <h2 className="text-xl font-bold text-lumina-text mb-6">Navigation</h2>
+            {/* text-lumina-text -> text-text-primary */}
+            <h2 className="text-xl font-bold text-text-primary mb-6">Navigation</h2>
             
             {/* RENDER DYNAMIC DARI navData */}
             {navData.map((category) => (
                 <div key={category.title}>
-                    {/* Judul Kategori Utama */}
-                    <h3 className="text-xs font-bold text-lumina-muted/50 uppercase tracking-[0.2em] mt-6 mb-3">
+                    {/* text-lumina-muted/50 -> text-text-secondary/50 */}
+                    <h3 className="text-xs font-bold text-text-secondary/50 uppercase tracking-[0.2em] mt-6 mb-3">
                         {category.title}
                     </h3>
                     <div className="space-y-3">
@@ -116,7 +119,7 @@ export default function MobileNav() {
                               
                               {/* RENDER SUB ITEMS (JIKA ADA) */}
                               {item.subItems && (
-                                <div className="ml-5 mt-2 space-y-2 border-l border-lumina-border/50 pl-3">
+                                <div className="ml-5 mt-2 space-y-2 border-l border-border/50 pl-3">
                                    {item.subItems.map((subItem) => (
                                       <Link
                                          key={subItem.href}
@@ -124,8 +127,8 @@ export default function MobileNav() {
                                          onClick={toggleMenu}
                                          className={`block text-xs py-1.5 rounded-md transition-colors 
                                                      ${isActive(subItem.href) 
-                                                        ? 'text-lumina-gold font-semibold' 
-                                                        : 'text-lumina-muted hover:text-lumina-text' // PERUBAHAN 6: Ganti hover:text-white
+                                                        ? 'text-primary font-semibold' // text-lumina-gold -> text-primary
+                                                        : 'text-text-secondary hover:text-text-primary' // text-lumina-muted -> text-text-secondary, hover:text-lumina-text -> hover:text-text-primary
                                                      }`}
                                       >
                                          — {subItem.label}
@@ -140,7 +143,7 @@ export default function MobileNav() {
             ))}
 
             {/* FOOTER SETTINGS (Diambil dari footerNav) */}
-            <h3 className="text-xs font-bold text-lumina-muted/50 uppercase tracking-[0.2em] mt-6 mb-3">System</h3>
+            <h3 className="text-xs font-bold text-text-secondary/50 uppercase tracking-[0.2em] mt-6 mb-3">System</h3>
             <div className="space-y-3">
               <DrawerItem 
                 href={footerNav.href} 

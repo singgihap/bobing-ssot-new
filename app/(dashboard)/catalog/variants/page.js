@@ -175,15 +175,15 @@ export default function VariantsPage() {
     return (
         <div className="max-w-full mx-auto space-y-6 fade-in pb-20">
             {/* Header Sticky */}
-            <div className="flex flex-col md:flex-row justify-between items-center sticky top-0 z-20 bg-lumina-base py-4 px-4 md:px-8 -mx-4 md:-mx-8 border-b border-lumina-border/50 shadow-md md:static">
+            <div className="flex flex-col md:flex-row justify-between items-center sticky top-0 z-20 bg-background py-4 px-4 md:px-8 -mx-4 md:-mx-8 border-b border-lumina-border/50 shadow-md md:static">
                 <div className="w-full md:w-auto">
-                    <h2 className="text-xl md:text-3xl font-bold text-lumina-text">Master SKU</h2>
-                    <p className="text-sm text-lumina-muted mt-1 hidden md:block">Kelola varian warna, ukuran, dan harga.</p>
+                    <h2 className="text-xl md:text-3xl font-bold text-text-primary">Master SKU</h2>
+                    <p className="text-sm text-text-secondary mt-1 hidden md:block">Kelola varian warna, ukuran, dan harga.</p>
                 </div>
                 <div className="flex w-full md:w-auto gap-2 mt-2 md:mt-0">
-                    <div className="bg-lumina-surface border border-lumina-border p-1.5 rounded-xl shadow-lg flex-1 md:w-64">
+                    <div className="bg-surface border border-lumina-border p-1.5 rounded-xl shadow-lg flex-1 md:w-64">
                         <input 
-                            className="w-full bg-transparent text-lumina-text px-3 py-1 outline-none text-sm" 
+                            className="w-full bg-transparent text-text-primary px-3 py-1 outline-none text-sm" 
                             placeholder="Search SKU / Product..." 
                             value={searchTerm} 
                             onChange={e=>setSearchTerm(e.target.value)} 
@@ -201,26 +201,26 @@ export default function VariantsPage() {
                         <thead><tr><th className="pl-6">SKU</th><th>Parent</th><th>Spec</th><th className="text-right">Price</th><th className="text-right pr-6">Action</th></tr></thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="5" className="text-center py-8 text-lumina-muted animate-pulse">Loading variants...</td></tr>
+                                <tr><td colSpan="5" className="text-center py-8 text-text-secondary animate-pulse">Loading variants...</td></tr>
                             ) : filteredVariants.length === 0 ? (
-                                <tr><td colSpan="5" className="text-center py-8 text-lumina-muted">No variants found (loaded top 100).</td></tr>
+                                <tr><td colSpan="5" className="text-center py-8 text-text-secondary">No variants found (loaded top 100).</td></tr>
                             ) : (
                                 filteredVariants.map(v=>(
                                     <tr key={v.id} className="hover:bg-lumina-highlight/20 transition-colors">
                                         <td className="pl-6 py-3 font-mono text-lumina-gold font-bold text-sm">{v.sku}</td>
-                                        <td className="text-lumina-text text-sm">{products.find(p=>p.id===v.product_id)?.name || '-'}</td>
+                                        <td className="text-text-primary text-sm">{products.find(p=>p.id===v.product_id)?.name || '-'}</td>
                                         <td>
                                             <div className="flex gap-1">
                                                 <span className="badge-luxury badge-neutral">{v.color}</span>
                                                 <span className="badge-luxury badge-neutral">{v.size}</span>
                                             </div>
                                         </td>
-                                        <td className="text-right font-bold text-lumina-text text-sm font-mono">{formatRupiah(v.price)}</td>
+                                        <td className="text-right font-bold text-text-primary text-sm font-mono">{formatRupiah(v.price)}</td>
                                         <td className="text-right pr-6">
                                             <button onClick={()=>{setFormData({...v}); 
                                                 const p = products.find(x=>x.id===v.product_id);
                                                 setSelectedBaseSku(p?p.base_sku:'-');
-                                                setModalOpen(true);}} className="text-xs font-bold text-lumina-muted hover:text-lumina-text border border-lumina-border hover:border-white px-2 py-1 rounded transition-colors">
+                                                setModalOpen(true);}} className="text-xs font-bold text-text-secondary hover:text-text-primary border border-lumina-border hover:border-white px-2 py-1 rounded transition-colors">
                                                 Edit
                                             </button>
                                         </td>
@@ -236,14 +236,14 @@ export default function VariantsPage() {
             <Portal>
             {modalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
-                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-lumina-surface rounded-t-2xl">
-                            <h3 className="text-lg font-bold text-lumina-text">{formData.id?'Edit SKU':'New SKU'}</h3>
-                            <button onClick={()=>setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
+                    <div className="bg-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-surface rounded-t-2xl">
+                            <h3 className="text-lg font-bold text-text-primary">{formData.id?'Edit SKU':'New SKU'}</h3>
+                            <button onClick={()=>setModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
-                            <div className="bg-lumina-base p-4 rounded-xl border border-lumina-border">
-                                <label className="text-xs font-bold text-lumina-muted uppercase block">Parent Product</label>
+                            <div className="bg-background p-4 rounded-xl border border-lumina-border">
+                                <label className="text-xs font-bold text-text-secondary uppercase block">Parent Product</label>
                                 <select className="input-luxury mt-1 w-full" value={formData.product_id} onChange={handleParentChange}>
                                     <option value="">-- Select Product --</option>
                                     {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
@@ -251,26 +251,26 @@ export default function VariantsPage() {
                                 <div className="text-xs text-lumina-gold mt-2 font-mono">Base SKU: {selectedBaseSku}</div>
                             </div>
                             <div className="grid grid-cols-3 gap-4">
-                                <div><label className="text-xs font-bold text-lumina-muted block mb-1">Color</label><input className="input-luxury w-full" value={formData.color} onChange={e=>setFormData({...formData, color:e.target.value})}/></div>
-                                <div><label className="text-xs font-bold text-lumina-muted block mb-1">Size</label><input className="input-luxury w-full" value={formData.size} onChange={e=>setFormData({...formData, size:e.target.value})}/></div>
-                                <div><label className="text-xs font-bold text-lumina-muted block mb-1">Weight (g)</label><input type="number" className="input-luxury w-full" value={formData.weight} onChange={e=>setFormData({...formData, weight:e.target.value})}/></div>
+                                <div><label className="text-xs font-bold text-text-secondary block mb-1">Color</label><input className="input-luxury w-full" value={formData.color} onChange={e=>setFormData({...formData, color:e.target.value})}/></div>
+                                <div><label className="text-xs font-bold text-text-secondary block mb-1">Size</label><input className="input-luxury w-full" value={formData.size} onChange={e=>setFormData({...formData, size:e.target.value})}/></div>
+                                <div><label className="text-xs font-bold text-text-secondary block mb-1">Weight (g)</label><input type="number" className="input-luxury w-full" value={formData.weight} onChange={e=>setFormData({...formData, weight:e.target.value})}/></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-bold text-lumina-muted block mb-1">SKU Final</label>
+                                    <label className="text-xs font-bold text-text-secondary block mb-1">SKU Final</label>
                                     <div className="flex gap-2">
                                         <input className="input-luxury font-mono w-full" value={formData.sku} onChange={e=>setFormData({...formData, sku:e.target.value})} />
                                         <button onClick={generateSku} type="button" className="btn-ghost-dark px-3 py-2 text-xs">Auto</button>
                                     </div>
                                 </div>
-                                <div><label className="text-xs font-bold text-lumina-muted block mb-1">Barcode</label><input className="input-luxury w-full" value={formData.barcode} onChange={e=>setFormData({...formData, barcode:e.target.value})}/></div>
+                                <div><label className="text-xs font-bold text-text-secondary block mb-1">Barcode</label><input className="input-luxury w-full" value={formData.barcode} onChange={e=>setFormData({...formData, barcode:e.target.value})}/></div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div><label className="text-xs font-bold text-lumina-muted block mb-1">HPP (Cost)</label><input type="number" className="input-luxury w-full" value={formData.cost} onChange={e=>setFormData({...formData, cost:e.target.value})}/></div>
+                                <div><label className="text-xs font-bold text-text-secondary block mb-1">HPP (Cost)</label><input type="number" className="input-luxury w-full" value={formData.cost} onChange={e=>setFormData({...formData, cost:e.target.value})}/></div>
                                 <div><label className="text-xs font-bold text-lumina-gold block mb-1">Sell Price</label><input type="number" className="input-luxury w-full border-lumina-gold/50 focus:border-lumina-gold" value={formData.price} onChange={e=>setFormData({...formData, price:e.target.value})}/></div>
                             </div>
                         </div>
-                        <div className="p-6 border-t border-lumina-border bg-lumina-surface rounded-b-2xl flex justify-end gap-3">
+                        <div className="p-6 border-t border-lumina-border bg-surface rounded-b-2xl flex justify-end gap-3">
                             <button onClick={()=>setModalOpen(false)} className="btn-ghost-dark">Cancel</button>
                             <button onClick={handleSubmit} className="btn-gold">Save SKU</button>
                         </div>

@@ -191,8 +191,8 @@ export default function CustomersPage() {
         <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h2 className="text-xl md:text-3xl font-bold text-lumina-text font-display">Customers</h2>
-                <p className="text-sm text-lumina-muted mt-1 font-light">CRM database for resellers and loyal customers.</p>
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary font-display">Customers</h2>
+                <p className="text-sm text-text-secondary mt-1 font-light">CRM database for resellers and loyal customers.</p>
             </div>
             <div className="flex gap-2">
                 <button onClick={scanFromSales} disabled={scanning} className="btn-ghost-dark text-xs">
@@ -218,15 +218,15 @@ export default function CustomersPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-lumina-muted">Loading...</td></tr> : customers.map(c => (
+                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-text-secondary">Loading...</td></tr> : customers.map(c => (
                                 <tr key={c.id}>
-                                    <td className="pl-6 font-medium text-lumina-text">{c.name}</td>
+                                    <td className="pl-6 font-medium text-text-primary">{c.name}</td>
                                     <td><span className="badge-luxury badge-neutral">{c.type?.replace('_', ' ')}</span></td>
-                                    <td className="font-mono text-lumina-muted text-xs">{c.phone || '-'}</td>
-                                    <td className="text-lumina-muted truncate max-w-xs text-xs">{c.address || '-'}</td>
+                                    <td className="font-mono text-text-secondary text-xs">{c.phone || '-'}</td>
+                                    <td className="text-text-secondary truncate max-w-xs text-xs">{c.address || '-'}</td>
                                     <td className="text-right pr-6">
                                         <div className="flex justify-end gap-3">
-                                            <button onClick={() => openModal(c)} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">Edit</button>
+                                            <button onClick={() => openModal(c)} className="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors">Edit</button>
                                             <button onClick={() => deleteItem(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
                                         </div>
                                     </td>
@@ -239,20 +239,20 @@ export default function CustomersPage() {
 
             <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-lumina-text">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
-                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
+                            <h3 className="text-lg font-bold text-text-primary">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
+                            <button onClick={() => setModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Name</label>
+                                    <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Name</label>
                                     <input required className="input-luxury" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Type</label>
+                                    <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Type</label>
                                     <select className="input-luxury" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                                         <option value="end_customer">Customer Umum</option>
                                         <option value="reseller">Reseller / Agen</option>
@@ -261,11 +261,11 @@ export default function CustomersPage() {
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Phone / WA</label>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Phone / WA</label>
                                 <input className="input-luxury" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Address</label>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Address</label>
                                 <textarea rows="3" className="input-luxury" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Complete address..."></textarea>
                             </div>
                             <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">

@@ -9,7 +9,7 @@ export default function CreateProductPage() {
   const BackButton = () => (
       <Link 
           href="/catalog/products" 
-          className="text-lumina-muted hover:text-lumina-text flex items-center gap-2 text-sm"
+          className="text-text-secondary hover:text-text-primary flex items-center gap-2 text-sm"
       >
           &larr; Kembali ke Daftar Produk
       </Link>
@@ -25,10 +25,10 @@ export default function CreateProductPage() {
       </PageHeader>
       
       {/* Container utama untuk formulir */}
-      <div className="bg-lumina-surface p-6 rounded-xl shadow-lg border border-lumina-border">
-          <h3 className="text-xl font-display font-bold text-lumina-text mb-4">Detail Produk & Varian</h3>
+      <div className="bg-surface p-6 rounded-xl shadow-lg border border-lumina-border">
+          <h3 className="text-xl font-display font-bold text-text-primary mb-4">Detail Produk & Varian</h3>
           
-          <p className="text-lumina-muted">
+          <p className="text-text-secondary">
             [Area Formulir Utama]
             Di sini kita bisa membagi input menjadi beberapa bagian (misalnya, Info Dasar, Harga, Deskripsi, Varian, Gambar, SEO).
           </p>

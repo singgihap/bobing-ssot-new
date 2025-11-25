@@ -196,8 +196,8 @@ export default function WarehousesPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-lumina-text font-display">Warehouses</h2>
-                    <p className="text-sm text-lumina-muted mt-1 font-light">Manage physical locations and virtual supplier stocks.</p>
+                    <h2 className="text-2xl font-bold text-text-primary font-display">Warehouses</h2>
+                    <p className="text-sm text-text-secondary mt-1 font-light">Manage physical locations and virtual supplier stocks.</p>
                 </div>
                 <button onClick={() => openModal()} className="btn-gold">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/></svg>
@@ -207,7 +207,7 @@ export default function WarehousesPage() {
 
             {/* Grid Card */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {loading ? <div className="col-span-full text-center py-12 text-lumina-muted">Loading...</div> : warehouses.map(w => {
+                {loading ? <div className="col-span-full text-center py-12 text-text-secondary">Loading...</div> : warehouses.map(w => {
                     const isVirtual = w.type === 'virtual_supplier';
                     const supName = isVirtual ? (suppliers.find(s => s.id === w.supplier_id)?.name || 'Unknown') : '-';
                     
@@ -225,8 +225,8 @@ export default function WarehousesPage() {
                                         {isVirtual ? 'Virtual' : 'Physical'}
                                     </span>
                                 </div>
-                                <h3 className="text-lg font-bold text-lumina-text mb-1 group-hover:text-lumina-gold transition-colors">{w.name}</h3>
-                                <p className="text-xs text-lumina-muted font-mono mb-4">{w.id.substring(0,8)}...</p>
+                                <h3 className="text-lg font-bold text-text-primary mb-1 group-hover:text-lumina-gold transition-colors">{w.name}</h3>
+                                <p className="text-xs text-text-secondary font-mono mb-4">{w.id.substring(0,8)}...</p>
                                 
                                 {isVirtual && (
                                     <div className="mb-4 text-xs font-medium text-indigo-300 bg-indigo-900/20 px-3 py-2 rounded-lg border border-indigo-500/20 flex items-center gap-2">
@@ -234,12 +234,12 @@ export default function WarehousesPage() {
                                         Supplier: {supName}
                                     </div>
                                 )}
-                                <p className="text-sm text-lumina-muted mb-4 line-clamp-2">{w.address || 'No address provided.'}</p>
+                                <p className="text-sm text-text-secondary mb-4 line-clamp-2">{w.address || 'No address provided.'}</p>
                             </div>
 
                             <div className="pt-4 border-t border-lumina-border flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => openModal(w)} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">EDIT</button>
-                                <button onClick={() => deleteWh(w.id)} className="text-xs font-bold text-lumina-muted hover:text-rose-500 transition-colors">DELETE</button>
+                                <button onClick={() => openModal(w)} className="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors">EDIT</button>
+                                <button onClick={() => deleteWh(w.id)} className="text-xs font-bold text-text-secondary hover:text-rose-500 transition-colors">DELETE</button>
                             </div>
                         </div>
                     );
@@ -249,28 +249,28 @@ export default function WarehousesPage() {
             {/* Modal */}
             <Portal>
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
                         <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h2 className="text-xl md:text-3xl font-bold text-lumina-text">
+                            <h2 className="text-xl md:text-3xl font-bold text-text-primary">
                                 {formData.id ? 'Edit Warehouse' : 'New Warehouse'}
                             </h2>
-                            <button onClick={() => setModalOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
+                            <button onClick={() => setModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div>
-                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Warehouse Name</label>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Warehouse Name</label>
                                 <input required className="input-luxury" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Gudang Utama" />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Type</label>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Type</label>
                                 <select className="input-luxury" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                                     <option value="physical">🏠 Physical (Inventory)</option>
                                     <option value="virtual_supplier">☁️ Virtual (Supplier Stock)</option>
                                 </select>
                             </div>
                             {formData.type === 'virtual_supplier' && (
-                                <div className="bg-lumina-surface p-4 rounded-xl border border-lumina-border">
+                                <div className="bg-surface p-4 rounded-xl border border-lumina-border">
                                     <label className="block text-xs font-bold text-lumina-gold mb-1 uppercase">Link to Supplier</label>
                                     <select className="input-luxury bg-lumina-highlight" value={formData.supplier_id} onChange={e => setFormData({...formData, supplier_id: e.target.value})}>
                                         <option value="">-- Select Supplier --</option>
@@ -279,7 +279,7 @@ export default function WarehousesPage() {
                                 </div>
                             )}
                             <div>
-                                <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Address</label>
+                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Address</label>
                                 <textarea rows="3" className="input-luxury" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Location address..."></textarea>
                             </div>
                             <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">

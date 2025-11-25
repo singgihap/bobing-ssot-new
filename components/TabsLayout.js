@@ -5,40 +5,48 @@ import { usePathname, useRouter } from 'next/navigation';
 import PageHeader from './PageHeader';
 import Skeleton from './Skeleton';
 
-// PERBAIKAN: Hapus 'children' dari props.
 export default function TabsLayout({ tabs, defaultPath, pageTitle, pageSubtitle }) { 
   const pathname = usePathname();
   const router = useRouter();
   const [currentTab, setCurrentTab] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Set default tab on mount and update URL
+  // --- LOGIKA UTAMA: Tentukan Tab Aktif & Lakukan Redirect HANYA jika diperlukan ---
   useEffect(() => {
-    let activePath = pathname;
-
-    // Jika pathname adalah path root tab group (e.g. /finance)
-    // Arahkan ke defaultPath (e.g. /finance/accounts)
-    if (tabs.some(tab => tab.path === pathname) && pathname !== defaultPath) {
-      router.replace(defaultPath);
-      activePath = defaultPath;
-    }
-
-    const matchedTab = tabs.find(t => t.path === activePath);
+    setLoading(true); // Mulai loading saat pathname berubah
+    
+    const matchedTab = tabs.find(t => t.path === pathname);
+    
     if (matchedTab) {
+      // 1. Path cocok dengan salah satu tab. Tetapkan sebagai aktif.
       setCurrentTab(matchedTab.path);
-    } else {
-      // Ini memastikan kita selalu kembali ke default jika ada path yang tidak dikenal di grup ini
-      setCurrentTab(defaultPath);
+    } else if (pathname.endsWith('/catalog') || pathname.endsWith('/finance') /* tambahkan root group lainnya di sini */) {
+      // 2. Path adalah root group (misal: /catalog). Redirect ke default.
       router.replace(defaultPath);
+    } else {
+      // 3. Path tidak cocok dan BUKAN root group. Cek apakah ini path yang benar-benar tidak dikenal.
+      // Jika pathname BUKAN sub-path dari group ini, biarkan Next.js handle 404.
+      // Jika pathname adalah sub-path dari group ini tetapi tidak cocok (misal: /catalog/xyz), redirect ke default.
+      
+      const isSubPath = pathname.startsWith(defaultPath.substring(0, defaultPath.lastIndexOf('/')));
+      
+      if (isSubPath) {
+          router.replace(defaultPath);
+      }
     }
-
+    
+    // Matikan loading setelah logika selesai
     setLoading(false);
+    
   }, [pathname, router, tabs, defaultPath]);
 
+
   // Cari komponen untuk tab yang aktif/default
+  // Pastikan menggunakan currentTab, atau defaultPath saat komponen pertama kali dimuat
   const Component = currentTab 
     ? tabs.find(t => t.path === currentTab)?.component 
     : tabs.find(t => t.path === defaultPath)?.component;
+  
 
   const handleTabClick = (path) => {
     if (path !== currentTab) {
@@ -46,7 +54,7 @@ export default function TabsLayout({ tabs, defaultPath, pageTitle, pageSubtitle 
     }
   };
 
-  if (loading) {
+  if (loading || !currentTab) {
     return <Skeleton type="tabs" />;
   }
   
@@ -61,16 +69,16 @@ export default function TabsLayout({ tabs, defaultPath, pageTitle, pageSubtitle 
     <>
       <PageHeader title={pageTitle} subtitle={pageSubtitle} />
       
-      <div className='flex space-x-4 border-b border-lumina-border/50'>
+      {/* Tabs Rendering Logic (sudah benar dari refactor sebelumnya) */}
+      <div className='flex space-x-4 border-b border-border/50'>
         {tabs.map((tab) => (
           <button
             key={tab.path}
             onClick={() => handleTabClick(tab.path)}
             className={`flex items-center gap-2 py-3 px-4 text-sm font-semibold transition-colors duration-200
               ${currentTab === tab.path 
-                ? 'text-lumina-text border-b-2 border-lumina-gold' // PERBAIKAN 1: text-white -> text-lumina-text
-                // PERBAIKAN 2: hover:text-white/80 -> hover:text-lumina-text
-                : 'text-lumina-muted hover:text-lumina-text border-b-2 border-transparent' 
+                ? 'text-text-primary border-b-2 border-primary' 
+                : 'text-text-secondary hover:text-text-primary border-b-2 border-transparent' 
               }`}
           >
             {tab.icon}

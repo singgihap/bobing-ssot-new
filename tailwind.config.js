@@ -12,23 +12,32 @@ module.exports = {
             mono: ['JetBrains Mono', 'monospace'],
          },
          colors: {
-            // --- PALET WARNA LIGHT MODE MODERN ---
-            'lumina-base': '#FFFFFF',               // Putih Murni (Hampir selalu background utama)
-            'lumina-surface': '#F9FAFB',          // Surface (Card/Modal) - Sedikit lebih gelap dari base
-            'lumina-border': '#E5E7EB',            // Border yang lembut
-            'lumina-text': '#111827',               // Teks Utama - Hitam Kebiruan
-            'lumina-muted': '#99a0adff',             // Teks Sekunder/Muted - Abu-abu sedang
-            'lumina-highlight': '#F3F4F6',       // Hover Background yang sangat subtle
+            // --- PALET WARNA PROFESIONAL ERP BARU ---
+            // Nomenklatur berdasarkan peran: primary, accent, secondary, dan utility lainnya.
+
+            // Warna Fungsional Utama (Primary, Accent, Secondary)
+            'primary': '#2563EB',             // Biru Vibrant: Kepercayaan, Fokus.
+            'accent': '#844fc1',              // Ungu Premium: Inovatif, Modern.
+            'secondary': '#34E9E1',           // Aqua Water: Segar, Info Sekunder.
             
-            // PERUBAHAN UTAMA: Melembutkan Gold (Menggunakan format heksa 6 digit yang konsisten)
-            'lumina-gold': '#CFA24D',         // Aksen Gold yang lebih lembut (softened Gold)
-            'lumina-gold-light': '#FCD34D',   // Aksen Gold versi terang (untuk gradient)
-            // --- AKHIR PALET WARNA ---
+            // Warna Netral & Latar Belakang
+            'background': '#f6f6fa',          // Putih Kebiruan: Latar Belakang Utama.
+            'surface': '#FFFFFF',             // Putih Murni: Untuk Card/Modal.
+            'border': '#E5E7EB',              // Border: Abu-abu netral yang lembut.
+            
+            // Warna Teks
+            'text-primary': '#181C24',        // Slate/Navy Gelap: Teks Utama (Kontras Tinggi).
+            'text-secondary': '#6B7280',      // Abu-abu Sedang: Untuk Teks Sekunder/Muted.
+
+            // Aksen Opsional
+            'accent-gold': '#FFC857',         // Emas Desaturated: Aksi Khusus/Premium.
+
+            // Palet 'lumina-' lama telah dihapus untuk mengadopsi skema baru.
          },
          boxShadow: {
-            // PERUBAHAN 1: Melembutkan glow agar tidak terlalu tajam di light mode
-            'gold-glow': '0 0 10px rgba(207, 162, 77, 0.2)', 
-            // PERUBAHAN 2: Menghapus shadow glass gelap yang kontradiktif
+            // PERUBAHAN 1: Mengubah glow ke Ungu Premium (accent) untuk konsistensi.
+            'accent-glow': '0 0 10px rgba(132, 79, 193, 0.2)', // Berbasis Ungu (#844fc1)
+            // PERUBAHAN 2: Pertahankan shadow glass netral.
             'glass': '0 4px 12px 0 rgba(0, 0, 0, 0.05)',          
          }
       },

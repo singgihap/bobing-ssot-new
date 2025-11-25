@@ -1,6 +1,16 @@
 {
   "app": {
-    "[project]/bobing-ssot-new/app/(auth)/login/page": [
+    "[project]/bobing-ssot-new/app/(dashboard)/catalog/brands/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/catalog/categories/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/catalog/import/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
@@ -15,12 +25,17 @@
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
+    "[project]/bobing-ssot-new/app/(dashboard)/catalog/variants/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
     "[project]/bobing-ssot-new/app/(dashboard)/dashboard/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
-    "[project]/bobing-ssot-new/app/(dashboard)/finance/accounts/page": [
+    "[project]/bobing-ssot-new/app/(dashboard)/finance/cash/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
@@ -30,7 +45,27 @@
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
+    "[project]/bobing-ssot-new/app/(dashboard)/finance/reports/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
     "[project]/bobing-ssot-new/app/(dashboard)/purchases/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/purchases/suppliers/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/sales/customers/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/sales/import/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
@@ -61,6 +96,16 @@
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
     ],
     "[project]/bobing-ssot-new/app/(dashboard)/stock/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/stock/supplier-sessions/page": [
+      "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
+      "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
+      "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"
+    ],
+    "[project]/bobing-ssot-new/app/(dashboard)/stock/warehouses/page": [
       "static/media/83afe278b6a6bb3c-s.p.3a6ba036.woff2",
       "static/media/1b99372b3eaef0c8-s.p.758e15a8.woff2",
       "static/media/70bc3e132a0a741e-s.p.15008bfb.woff2"

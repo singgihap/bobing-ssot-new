@@ -16,19 +16,19 @@ export default function ProductDetailPage({ params }) {
       >
         <Link 
             href="/catalog/products" 
-            className="text-lumina-muted hover:text-lumina-text flex items-center gap-2 text-sm"
+            className="text-text-secondary hover:text-text-primary flex items-center gap-2 text-sm"
         >
             &larr; Kembali ke Daftar Produk
         </Link>
       </PageHeader>
 
       {/* Container utama untuk detail */}
-      <div className="bg-lumina-surface p-6 rounded-xl shadow-lg border border-lumina-border">
-          <h3 className="text-xl font-display font-bold text-lumina-text mb-4">
+      <div className="bg-surface p-6 rounded-xl shadow-lg border border-lumina-border">
+          <h3 className="text-xl font-display font-bold text-text-primary mb-4">
              Area Tabular Detail Produk
           </h3>
           
-          <p className="text-lumina-muted">
+          <p className="text-text-secondary">
             [Area Detail]
             Gunakan Tabs/Accordion di sini untuk memisahkan: Info Dasar, Data Varian, Stok Gudang, dan Log Transaksi/History.
           </p>

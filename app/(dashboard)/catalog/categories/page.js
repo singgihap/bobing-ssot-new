@@ -88,7 +88,7 @@ export default function CategoriesPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-6 fade-in pb-20">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-xl md:text-3xl font-bold text-lumina-text">Categories</h2>
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary">Categories</h2>
                 <button onClick={() => { setFormData({ name:'' }); setModalOpen(true); }} className="btn-gold w-full sm:w-auto">
                     Add Category
                 </button>
@@ -105,12 +105,12 @@ export default function CategoriesPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="2" className="text-center py-4 text-lumina-muted">Loading...</td></tr>
+                                <tr><td colSpan="2" className="text-center py-4 text-text-secondary">Loading...</td></tr>
                             ) : data.map(c => (
                                 <tr key={c.id}>
-                                    <td className="pl-6 text-lumina-text font-medium">{c.name}</td>
+                                    <td className="pl-6 text-text-primary font-medium">{c.name}</td>
                                     <td className="text-right pr-6 flex justify-end gap-3 py-3">
-                                        <button onClick={()=>{setFormData({...c}); setModalOpen(true)}} className="text-xs font-bold text-lumina-muted hover:text-lumina-text transition-colors">Edit</button>
+                                        <button onClick={()=>{setFormData({...c}); setModalOpen(true)}} className="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors">Edit</button>
                                         <button onClick={()=>handleDelete(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
                                     </td>
                                 </tr>
@@ -122,9 +122,9 @@ export default function CategoriesPage() {
 
             <Portal>
                 {modalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 p-4 fade-in">
-                        <div className="bg-lumina-surface border border-lumina-border rounded-2xl p-6 w-full max-w-sm shadow-2xl ring-1 ring-lumina-gold/20">
-                            <h3 className="text-lg font-bold text-lumina-text mb-4">{formData.id ? 'Edit Category' : 'New Category'}</h3>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 p-4 fade-in">
+                        <div className="bg-surface border border-lumina-border rounded-2xl p-6 w-full max-w-sm shadow-2xl ring-1 ring-lumina-gold/20">
+                            <h3 className="text-lg font-bold text-text-primary mb-4">{formData.id ? 'Edit Category' : 'New Category'}</h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <input 
                                     className="input-luxury" 

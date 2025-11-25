@@ -232,24 +232,24 @@ export default function InventoryPage() {
     return (
         <div className="space-y-6 fade-in pb-20">
             {/* --- HEADER SECTION (FIXED & SOLID) --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-lumina-surface px-4 md:px-8 py-4 border-b border-lumina-border/50 shadow-md sticky top-0 z-30 md:static">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface px-4 md:px-8 py-4 border-b border-lumina-border/50 shadow-md sticky top-0 z-30 md:static">
                 <div>
-                    <h2 className="text-xl md:text-3xl font-display font-semibold text-lumina-text tracking-tight">
+                    <h2 className="text-xl md:text-3xl font-display font-semibold text-text-primary tracking-tight">
                     Inventory Control
                     </h2>
-                    <p className="text-sm text-lumina-muted mt-1 font-light hidden md:block">
+                    <p className="text-sm text-text-secondary mt-1 font-light hidden md:block">
                     Monitor stok fisik & virtual secara real-time.
                     </p>
                 </div>
                 {/* Search input */}
-                <div className="w-full md:w-80 bg-lumina-surface p-1.5 rounded-xl border border-lumina-border shadow-lg flex items-center focus-within:ring-1 focus-within:ring-lumina-gold transition-all">
-                    <div className="pl-3 text-lumina-muted">
+                <div className="w-full md:w-80 bg-surface p-1.5 rounded-xl border border-lumina-border shadow-lg flex items-center focus-within:ring-1 focus-within:ring-lumina-gold transition-all">
+                    <div className="pl-3 text-text-secondary">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     </div>
                     <input 
                     type="text" 
                     placeholder="Search Product or SKU..." 
-                    className="w-full bg-transparent text-lumina-text text-sm px-3 py-2 outline-none placeholder:text-lumina-muted/50 font-mono"
+                    className="w-full bg-transparent text-text-primary text-sm px-3 py-2 outline-none placeholder:text-text-secondary/50 font-mono"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -272,9 +272,9 @@ export default function InventoryPage() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan="6" className="px-6 py-12 text-center text-lumina-muted animate-pulse">Loading Inventory Data...</td></tr>
+                                <tr><td colSpan="6" className="px-6 py-12 text-center text-text-secondary animate-pulse">Loading Inventory Data...</td></tr>
                             ) : filteredProducts.length === 0 ? (
-                                <tr><td colSpan="6" className="px-6 py-12 text-center text-lumina-muted">No products found.</td></tr>
+                                <tr><td colSpan="6" className="px-6 py-12 text-center text-text-secondary">No products found.</td></tr>
                             ) : (
                                 filteredProducts.map(p => {
                                     const isExpanded = expandedProductId === p.id;
@@ -288,20 +288,20 @@ export default function InventoryPage() {
                                                 className={`group cursor-pointer transition-all duration-200 ${isExpanded ? 'bg-lumina-highlight/30 border-l-4 border-l-lumina-gold' : 'hover:bg-lumina-highlight/20 border-l-4 border-l-transparent'}`}
                                             >
                                                 <td className="pl-6 py-4">
-                                                    <div className="w-12 h-12 rounded-lg bg-lumina-surface border border-lumina-border flex items-center justify-center overflow-hidden shadow-inner">
+                                                    <div className="w-12 h-12 rounded-lg bg-surface border border-lumina-border flex items-center justify-center overflow-hidden shadow-inner">
                                                         {p.image_url ? (
                                                             <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
                                                         ) : (
-                                                            <svg className="w-5 h-5 text-lumina-muted opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                            <svg className="w-5 h-5 text-text-secondary opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="font-display font-medium text-lumina-text text-base group-hover:text-lumina-gold transition-colors">{p.name}</div>
-                                                    <div className="text-xs text-lumina-muted mt-1">{p.variants.length} Variants</div>
+                                                    <div className="font-display font-medium text-text-primary text-base group-hover:text-lumina-gold transition-colors">{p.name}</div>
+                                                    <div className="text-xs text-text-secondary mt-1">{p.variants.length} Variants</div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="font-mono text-sm text-lumina-muted group-hover:text-lumina-text transition-colors">{p.base_sku}</span>
+                                                    <span className="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{p.base_sku}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className="badge-luxury badge-neutral">{p.category}</span>
@@ -323,9 +323,9 @@ export default function InventoryPage() {
                                                 <tr className="bg-[#0F1115] shadow-inner border-b border-lumina-border">
                                                     <td colSpan="6" className="p-0">
                                                         <div className="p-6 fade-in">
-                                                            <div className="border border-lumina-border rounded-lg overflow-hidden w-full bg-lumina-surface">
+                                                            <div className="border border-lumina-border rounded-lg overflow-hidden w-full bg-surface">
                                                                 <table className="w-full text-sm text-left">
-                                                                    <thead className="bg-lumina-surface text-[10px] text-lumina-muted uppercase tracking-wider font-semibold border-b border-lumina-border">
+                                                                    <thead className="bg-surface text-[10px] text-text-secondary uppercase tracking-wider font-semibold border-b border-lumina-border">
                                                                         <tr>
                                                                             <th className="px-4 py-3 w-48">Variant SKU</th>
                                                                             <th className="px-4 py-3 w-32">Spec</th>
@@ -341,7 +341,7 @@ export default function InventoryPage() {
                                                                         {p.variants.sort(sortBySize).map(v => (
                                                                             <tr key={v.id} className="hover:bg-lumina-highlight/20 transition-colors">
                                                                                 <td className="px-4 py-3 font-mono text-lumina-gold text-xs font-bold">{v.sku}</td>
-                                                                                <td className="px-4 py-3 text-lumina-text">
+                                                                                <td className="px-4 py-3 text-text-primary">
                                                                                     <div className="flex gap-2">
                                                                                         <span className="badge-luxury badge-neutral">{v.color}</span>
                                                                                         <span className="badge-luxury badge-neutral">{v.size}</span>
@@ -351,7 +351,7 @@ export default function InventoryPage() {
                                                                                     const qty = snapshots[`${v.id}_${w.id}`] || 0;
                                                                                     return (
                                                                                         <td key={w.id} className="px-4 py-3 text-center border-l border-lumina-border/30">
-                                                                                            <span className={`font-mono font-medium ${qty > 0 ? 'text-lumina-text' : 'text-lumina-border'}`}>
+                                                                                            <span className={`font-mono font-medium ${qty > 0 ? 'text-text-primary' : 'text-lumina-border'}`}>
                                                                                                 {qty}
                                                                                             </span>
                                                                                         </td>
@@ -359,10 +359,10 @@ export default function InventoryPage() {
                                                                                 })}
                                                                                 <td className="px-4 py-3 text-right">
                                                                                     <div className="flex justify-end gap-2">
-                                                                                        <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="text-[10px] uppercase font-bold text-lumina-muted hover:text-lumina-gold border border-lumina-border hover:border-lumina-gold rounded px-2 py-1 transition-colors">
+                                                                                        <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="text-[10px] uppercase font-bold text-text-secondary hover:text-lumina-gold border border-lumina-border hover:border-lumina-gold rounded px-2 py-1 transition-colors">
                                                                                             Opname
                                                                                         </button>
-                                                                                        <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="text-[10px] uppercase font-bold text-lumina-muted hover:text-lumina-text border border-lumina-border hover:border-white rounded px-2 py-1 transition-colors">
+                                                                                        <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="text-[10px] uppercase font-bold text-text-secondary hover:text-text-primary border border-lumina-border hover:border-white rounded px-2 py-1 transition-colors">
                                                                                             History
                                                                                         </button>
                                                                                     </div>
@@ -388,9 +388,9 @@ export default function InventoryPage() {
              {/* --- MOBILE VIEW (CARDS) --- */}
              <div className="md:hidden grid grid-cols-1 gap-4">
                 {loading ? (
-                    <div className="text-center py-10 text-lumina-muted animate-pulse">Loading Inventory...</div>
+                    <div className="text-center py-10 text-text-secondary animate-pulse">Loading Inventory...</div>
                 ) : filteredProducts.length === 0 ? (
-                     <div className="text-center py-10 text-lumina-muted">No products found.</div>
+                     <div className="text-center py-10 text-text-secondary">No products found.</div>
                 ) : (
                     filteredProducts.map(p => {
                          const isExpanded = expandedProductId === p.id;
@@ -400,23 +400,23 @@ export default function InventoryPage() {
                              <div key={p.id} onClick={() => toggleAccordion(p.id)} className="card-luxury p-4 active:scale-[0.98] transition-transform">
                                 {/* Card Header */}
                                 <div className="flex gap-4 items-start">
-                                    <div className="w-16 h-16 rounded-lg bg-lumina-surface border border-lumina-border flex-shrink-0 overflow-hidden">
+                                    <div className="w-16 h-16 rounded-lg bg-surface border border-lumina-border flex-shrink-0 overflow-hidden">
                                          {p.image_url ? (
                                             <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-lumina-muted"><span className="text-xs">IMG</span></div>
+                                            <div className="w-full h-full flex items-center justify-center text-text-secondary"><span className="text-xs">IMG</span></div>
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start">
-                                             <span className="text-xs font-mono font-bold text-lumina-gold bg-lumina-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
+                                             <span className="text-xs font-mono font-bold text-lumina-gold bg-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
                                              <span className={`text-sm font-bold font-mono ${p.totalStock === 0 ? 'text-rose-500' : (isLowStock ? 'text-amber-500' : 'text-emerald-400')}`}>
-                                                {p.totalStock} <span className="text-[10px] text-lumina-muted font-normal">qty</span>
+                                                {p.totalStock} <span className="text-[10px] text-text-secondary font-normal">qty</span>
                                              </span>
                                         </div>
-                                        <h3 className="text-sm font-bold text-lumina-text mt-1 truncate">{p.name}</h3>
+                                        <h3 className="text-sm font-bold text-text-primary mt-1 truncate">{p.name}</h3>
                                         <div className="flex items-center justify-between mt-1">
-                                            <span className="text-[10px] text-lumina-muted">{p.variants.length} Varian</span>
+                                            <span className="text-[10px] text-text-secondary">{p.variants.length} Varian</span>
                                             <span className="badge-luxury badge-neutral text-[9px]">{p.category}</span>
                                         </div>
                                     </div>
@@ -426,15 +426,15 @@ export default function InventoryPage() {
                                 {isExpanded && (
                                     <div className="mt-4 border-t border-lumina-border pt-3 space-y-4 animate-fade-in">
                                             {p.variants.sort(sortBySize).map(v => (
-                                                <div key={v.id} className="bg-lumina-surface/50 rounded-lg p-3 border border-lumina-border/50">
+                                                <div key={v.id} className="bg-surface/50 rounded-lg p-3 border border-lumina-border/50">
                                                     <div className="flex justify-between items-center mb-2">
                                                          <div>
                                                             <div className="text-xs font-mono text-lumina-gold">{v.sku}</div>
-                                                            <div className="text-[10px] text-lumina-text">{v.color} / {v.size}</div>
+                                                            <div className="text-[10px] text-text-primary">{v.color} / {v.size}</div>
                                                          </div>
                                                          <div className="flex gap-2">
-                                                             <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-lumina-gold text-lumina-muted hover:text-lumina-gold">Opname</button>
-                                                             <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="px-2 py-1 bg-lumina-surface border border-lumina-border rounded text-[10px] hover:border-white text-lumina-muted hover:text-lumina-text">History</button>
+                                                             <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="px-2 py-1 bg-surface border border-lumina-border rounded text-[10px] hover:border-lumina-gold text-text-secondary hover:text-lumina-gold">Opname</button>
+                                                             <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="px-2 py-1 bg-surface border border-lumina-border rounded text-[10px] hover:border-white text-text-secondary hover:text-text-primary">History</button>
                                                          </div>
                                                     </div>
                                                     
@@ -444,9 +444,9 @@ export default function InventoryPage() {
                                                             const qty = snapshots[`${v.id}_${w.id}`] || 0;
                                                             if(w.type === 'virtual_supplier' && qty === 0) return null; 
                                                             return (
-                                                                <div key={w.id} className="flex justify-between items-center text-[10px] bg-lumina-surface px-2 py-1 rounded border border-lumina-border/30">
-                                                                    <span className={`truncate max-w-[80px] ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-lumina-muted'}`}>{w.name}</span>
-                                                                    <span className={`font-mono font-bold ${qty > 0 ? 'text-lumina-text' : 'text-lumina-muted/30'}`}>{qty}</span>
+                                                                <div key={w.id} className="flex justify-between items-center text-[10px] bg-surface px-2 py-1 rounded border border-lumina-border/30">
+                                                                    <span className={`truncate max-w-[80px] ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-text-secondary'}`}>{w.name}</span>
+                                                                    <span className={`font-mono font-bold ${qty > 0 ? 'text-text-primary' : 'text-text-secondary/30'}`}>{qty}</span>
                                                                 </div>
                                                             )
                                                         })}
@@ -464,29 +464,29 @@ export default function InventoryPage() {
             {/* --- STOCK OPNAME MODAL (FIXED) --- */}
             <Portal>
             {modalAdjOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-lumina-gold/20">
-                        <div className="px-6 py-5 border-b border-lumina-border bg-lumina-surface rounded-t-2xl">
-                            <h3 className="text-lg font-display font-bold text-lumina-text">Stock Opname</h3>
-                            <p className="text-xs text-lumina-muted mt-1">Adjust stock discrepancy.</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-lumina-gold/20">
+                        <div className="px-6 py-5 border-b border-lumina-border bg-surface rounded-t-2xl">
+                            <h3 className="text-lg font-display font-bold text-text-primary">Stock Opname</h3>
+                            <p className="text-xs text-text-secondary mt-1">Adjust stock discrepancy.</p>
                         </div>
                         
                         {/* SCROLLABLE FORM */}
                         <div className="p-6 space-y-5 overflow-y-auto flex-1">
-                            <div className="bg-lumina-surface p-4 rounded-lg border border-lumina-border flex justify-between items-center">
+                            <div className="bg-surface p-4 rounded-lg border border-lumina-border flex justify-between items-center">
                                 <div>
                                     <p className="font-mono font-bold text-lumina-gold text-sm">{adjData.sku}</p>
-                                    <p className="text-xs text-lumina-text mt-0.5">{adjData.productName}</p>
+                                    <p className="text-xs text-text-primary mt-0.5">{adjData.productName}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] text-lumina-muted uppercase">System Qty</p>
-                                    <p className="text-lg font-bold text-lumina-text font-mono">{adjData.currentQty}</p>
+                                    <p className="text-[10px] text-text-secondary uppercase">System Qty</p>
+                                    <p className="text-lg font-bold text-text-primary font-mono">{adjData.currentQty}</p>
                                 </div>
                             </div>
                             
                             <form onSubmit={submitOpname} className="space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold text-lumina-muted uppercase mb-1 block">Warehouse</label>
+                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Warehouse</label>
                                     <select className="input-luxury" value={adjData.warehouseId} onChange={handleAdjWarehouseChange}>
                                         {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                                     </select>
@@ -494,11 +494,11 @@ export default function InventoryPage() {
                                 
                                 <div>
                                     <label className="text-xs font-bold text-lumina-gold uppercase mb-1 block">New Physical Quantity</label>
-                                    <input type="number" required className="input-luxury border-lumina-gold text-center font-bold text-lumina-text bg-lumina-gold/10 focus:ring-lumina-gold text-lg py-3" value={adjData.realQty} onChange={e => setAdjData({...adjData, realQty: e.target.value})} autoFocus placeholder="0" />
+                                    <input type="number" required className="input-luxury border-lumina-gold text-center font-bold text-text-primary bg-primary/10 focus:ring-lumina-gold text-lg py-3" value={adjData.realQty} onChange={e => setAdjData({...adjData, realQty: e.target.value})} autoFocus placeholder="0" />
                                 </div>
                                 
                                 <div>
-                                    <label className="text-xs font-bold text-lumina-muted uppercase mb-1 block">Reason / Notes</label>
+                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Reason / Notes</label>
                                     <textarea required className="input-luxury" rows="2" value={adjData.note} onChange={e => setAdjData({...adjData, note: e.target.value})} placeholder="E.g. Broken goods, Found item..."></textarea>
                                 </div>
                                 
@@ -517,25 +517,25 @@ export default function InventoryPage() {
             {/* --- STOCK CARD MODAL (FIXED) --- */}
             <Portal>
             {modalCardOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-lumina-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-2xl flex flex-col max-h-[80vh] overflow-hidden">
-                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-lumina-surface">
-                            <h3 className="text-lg font-display font-bold text-lumina-text">Stock History</h3>
-                            <button onClick={() => setModalCardOpen(false)} className="text-lumina-muted hover:text-lumina-text text-xl">✕</button>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
+                    <div className="bg-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-2xl flex flex-col max-h-[80vh] overflow-hidden">
+                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-surface">
+                            <h3 className="text-lg font-display font-bold text-text-primary">Stock History</h3>
+                            <button onClick={() => setModalCardOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
                         </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar bg-lumina-surface">
+                        <div className="flex-1 overflow-y-auto custom-scrollbar bg-surface">
                             <table className="table-dark w-full">
-                                <thead className="sticky top-0 z-10 bg-lumina-surface border-b border-lumina-border">
+                                <thead className="sticky top-0 z-10 bg-surface border-b border-lumina-border">
                                     <tr><th className="pl-6">Date</th><th>Type</th><th>Warehouse</th><th className="text-right">Qty</th><th>Note</th></tr>
                                 </thead>
                                 <tbody>
-                                    {!cardData ? <tr><td colSpan="5" className="text-center p-6 text-lumina-muted">Loading...</td></tr> : cardData.length === 0 ? <tr><td colSpan="5" className="text-center p-6 italic text-lumina-muted">No history found.</td></tr> : cardData.map(m => (
+                                    {!cardData ? <tr><td colSpan="5" className="text-center p-6 text-text-secondary">Loading...</td></tr> : cardData.length === 0 ? <tr><td colSpan="5" className="text-center p-6 italic text-text-secondary">No history found.</td></tr> : cardData.map(m => (
                                         <tr key={m.id}>
-                                            <td className="pl-6 text-xs text-lumina-muted font-mono">{new Date(m.date.toDate()).toLocaleDateString()}</td>
+                                            <td className="pl-6 text-xs text-text-secondary font-mono">{new Date(m.date.toDate()).toLocaleDateString()}</td>
                                             <td><span className="badge-luxury badge-neutral">{m.type}</span></td>
-                                            <td className="text-xs text-lumina-text">{warehouses.find(w => w.id === m.warehouse_id)?.name}</td>
+                                            <td className="text-xs text-text-primary">{warehouses.find(w => w.id === m.warehouse_id)?.name}</td>
                                             <td className={`text-right font-mono font-bold ${m.qty > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{m.qty > 0 ? `+${m.qty}` : m.qty}</td>
-                                            <td className="text-xs text-lumina-muted truncate max-w-[150px]">{m.notes}</td>
+                                            <td className="text-xs text-text-secondary truncate max-w-[150px]">{m.notes}</td>
                                         </tr>
                                     ))}
                                 </tbody>

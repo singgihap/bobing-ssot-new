@@ -1,5 +1,5 @@
 // app/(dashboard)/stock/page.js
-
+// FILE DISESUAIKAN: Hanya berfungsi sebagai redirect ke default tab
 import { redirect } from 'next/navigation';
 
 /**
@@ -7,6 +7,5 @@ import { redirect } from 'next/navigation';
  * Langsung mengarahkan pengguna ke halaman Inventory (/stock/inventory).
  */
 export default function StockRootPage() {
-  // Mengarahkan ke sub-rute utama stock
   redirect('/stock/inventory');
 }

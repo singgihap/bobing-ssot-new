@@ -2,13 +2,15 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* --- 1. Base Styles --- */
 body {
-  @apply bg-lumina-base text-lumina-text antialiased selection:bg-lumina-gold selection:text-black font-sans;
+  /* selection:bg-lumina-primary (Biru Vibrant) telah dikoreksi menjadi selection:bg-primary */
+  @apply bg-background text-text-primary antialiased selection:bg-primary selection:text-white font-sans;
   /* Mencegah pull-to-refresh di mobile agar terasa seperti Native App */
   overscroll-behavior-y: none; 
   -webkit-tap-highlight-color: transparent;
@@ -20,10 +22,12 @@ body {
     height: 6px; 
 }
 ::-webkit-scrollbar-track { 
-    @apply bg-lumina-surface; /* PERBAIKAN: Ganti dark color menjadi lumina-surface */
+    @apply bg-surface;
 }
 ::-webkit-scrollbar-thumb { 
-    @apply bg-lumina-border rounded-full hover:bg-lumina-gold transition-colors; 
+    /* bg-lumina-border dikoreksi menjadi bg-border */
+    /* hover:bg-lumina-primary dikoreksi menjadi hover:bg-primary */
+    @apply bg-border rounded-full hover:bg-primary transition-colors; 
 }
 
 /* Hide Scrollbar but allow scrolling (Mobile Native Feel) */
@@ -38,81 +42,94 @@ body {
 @layer components {
   /* --- Card Component (Glass Effect) --- */
   .card-luxury {
-    /* PERBAIKAN: Background dark diganti solid light, blur dihapus/disesuaikan */
-    @apply bg-lumina-surface border border-lumina-border/80 rounded-xl shadow-md transition-all duration-300;
+    /* border-lumina-border/80 dikoreksi menjadi border-border/80 (SOLUSI UNTUK ERROR BARIS 43) */
+    @apply bg-surface border border-border/80 rounded-xl shadow-md transition-all duration-300;
   }
 
   /* --- Button Components --- */
   .btn-gold {
-    @apply bg-gradient-to-r from-[#D4AF37] to-[#F6C945] text-black font-bold px-5 py-2.5 rounded-xl 
-          shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)]
+    /* bg-lumina-primary dikoreksi menjadi bg-primary */
+    @apply bg-primary text-white font-bold px-5 py-2.5 rounded-xl 
+          shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]
           hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 
           text-xs uppercase tracking-wider touch-manipulation font-display;
   }
 
   .btn-ghost-dark {
-    /* PERBAIKAN: Ganti dark hover menjadi light hover */
-    @apply bg-transparent text-lumina-muted border border-lumina-border/50 px-4 py-2 rounded-xl
-          hover:bg-lumina-highlight hover:text-lumina-text hover:border-lumina-border 
+    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
+    /* border-lumina-border/50 dikoreksi menjadi border-border/50 */
+    @apply bg-transparent text-text-secondary border border-border/50 px-4 py-2 rounded-xl
+          /* hover:bg-lumina-highlight dikoreksi menjadi hover:bg-gray-100 (sesuai nilai hex lama) */
+          /* hover:border-lumina-border dikoreksi menjadi hover:border-border */
+          hover:bg-gray-100 hover:text-text-primary hover:border-border 
           active:scale-95 transition-all flex items-center justify-center gap-2 text-xs font-medium touch-manipulation;
   }
 
   /* --- Form Elements (Inputs) --- */
   .input-luxury {
-    /* PERBAIKAN: Background dark & text-white diganti light/dark text */
-    @apply w-full bg-lumina-surface border border-lumina-border/50 text-lumina-text text-sm rounded-xl 
-          py-3 px-4 outline-none transition-all placeholder:text-lumina-muted/50 font-sans
-    /* Sesuaikan focus state agar background tetap terang */
-          focus:border-lumina-gold/50 focus:ring-1 focus:ring-lumina-gold/50 focus:bg-white appearance-none;
+    /* border-lumina-border/50 dikoreksi menjadi border-border/50 */
+    @apply w-full bg-surface border border-border/50 text-text-primary text-sm rounded-xl 
+          py-3 px-4 outline-none transition-all 
+          /* placeholder:text-lumina-muted/50 dikoreksi menjadi placeholder:text-text-secondary/50 */
+          placeholder:text-text-secondary/50 font-sans
+          /* fokus ke lumina-primary dikoreksi menjadi fokus ke primary */
+          focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:bg-white appearance-none;
   }
   
   /* --- Table Modern (Wrapper & Styling) --- */
   .table-wrapper-dark {
-    /* PERBAIKAN: Ganti dark background menjadi light surface */
-    @apply overflow-x-auto rounded-xl border border-lumina-border/30 bg-lumina-surface scrollbar-hide;
+    /* border-lumina-border/30 dikoreksi menjadi border-border/30 */
+    @apply overflow-x-auto rounded-xl border border-border/30 bg-surface scrollbar-hide;
     -webkit-overflow-scrolling: touch; 
   }
   .table-dark {
-    @apply min-w-full divide-y divide-lumina-border/30;
+    /* divide-lumina-border/30 dikoreksi menjadi divide-border/30 */
+    @apply min-w-full divide-y divide-border/30;
   }
   .table-dark th {
-    /* PERBAIKAN: Ganti dark header background */
-    @apply px-6 py-4 text-left text-[10px] font-bold text-lumina-muted uppercase tracking-widest bg-lumina-highlight whitespace-nowrap;
+    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
+    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
+    @apply px-6 py-4 text-left text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-gray-100 whitespace-nowrap;
   }
   .table-dark tbody {
-    @apply divide-y divide-lumina-border/30;
+    /* divide-lumina-border/30 dikoreksi menjadi divide-border/30 */
+    @apply divide-y divide-border/30;
   }
   .table-dark td {
-    /* PERBAIKAN: Pastikan text color adalah text-lumina-text */
-    @apply px-6 py-4 text-sm text-lumina-text whitespace-nowrap transition-colors;
+    @apply px-6 py-4 text-sm text-text-primary whitespace-nowrap transition-colors;
   }
   .table-dark tr {
     @apply transition-colors duration-150;
   }
   .table-dark tr:hover td {
-    /* PERBAIKAN: Ganti dark hover bg menjadi light hover bg */
-    @apply bg-lumina-highlight;
+    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
+    @apply bg-gray-100;
   }
 
   /* --- Badges --- */
   .badge-luxury {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide border;
   }
-  /* PERBAIKAN: Badge Netral harus menggunakan warna dasar yang terang */
-  .badge-neutral { @apply bg-lumina-highlight text-lumina-muted border-lumina-border; }
-  .badge-success { @apply bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]; } /* Darker text for contrast */
-  .badge-warning { @apply bg-amber-500/10 text-amber-600 border-amber-500/20; } /* Darker text for contrast */
-  .badge-danger { @apply bg-rose-500/10 text-rose-600 border-rose-500/20; } /* Darker text for contrast */
+  .badge-neutral { 
+    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
+    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
+    /* border-lumina-border dikoreksi menjadi border-border */
+    @apply bg-gray-100 text-text-secondary border-border; 
+  }
+  .badge-success { @apply bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]; }
+  .badge-warning { @apply bg-amber-500/10 text-amber-600 border-amber-500/20; }
+  .badge-danger { @apply bg-rose-500/10 text-rose-600 border-rose-500/20; }
 }
 
 /* --- Utilities & Animations --- */
 .glass-nav-dark {
-    /* PERBAIKAN: Navigasi header glass diganti light mode background */
-  @apply bg-lumina-base/90 backdrop-blur-sm border-b border-lumina-border sticky top-0 z-30;
+  /* border-lumina-border dikoreksi menjadi border-border */
+  @apply bg-background/90 backdrop-blur-sm border-b border-border sticky top-0 z-30;
 }
 
 .text-gold-gradient {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#D4AF37] via-[#F6C945] to-[#D4AF37] bg-size-200 animate-gradient;
+  /* from-lumina-accent dan to-lumina-accent dikoreksi menjadi from-accent dan to-accent */
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-accent via-[#A070E3] to-accent bg-size-200 animate-gradient;
 }
 
 /* Animation: Fade In Up */
@@ -136,8 +153,8 @@ body {
 .pt-safe { padding-top: env(safe-area-inset-top); }
 
 .glass-bottom-nav {
-    /* PERBAIKAN: Ganti dark background menjadi light surface */
-  @apply fixed bottom-0 left-0 right-0 bg-lumina-surface/90 backdrop-blur-xl border-t border-lumina-border z-50 pb-safe;
+  /* border-lumina-border dikoreksi menjadi border-border */
+  @apply fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-border z-50 pb-safe;
 }
 
 /* Print Styles */

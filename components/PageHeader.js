@@ -1,28 +1,29 @@
 // components/PageHeader.js
-"use client";
+import React from 'react';
 
-export default function PageHeader({ title, subtitle, children }) {
+const PageHeader = ({ title, subtitle, actions }) => {
   return (
-    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-lumina-border/50 pb-6">
-      {/* Bagian Kiri: Judul & Subjudul */}
-      <div className="w-full md:w-auto">
-        {/* PERBAIKAN: Ganti text-white menjadi text-lumina-text */}
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-lumina-text tracking-tight leading-tight">
+    <div className="flex justify-between items-start mb-6 pt-4 md:pt-8">
+      {/* Kiri: Judul dan Subjudul */}
+      <div className="flex flex-col">
+        {/* Judul: Mengganti text-lumina-text menjadi text-text-primary */}
+        <h1 className="text-2xl md:text-3xl font-display font-bold text-text-primary leading-tight">
           {title}
-        </h2>
+        </h1>
+        {/* Subjudul: Mengganti text-lumina-muted menjadi text-text-secondary */}
         {subtitle && (
-          <p className="text-xs md:text-sm text-lumina-muted mt-1 font-light leading-relaxed">
+          <p className="text-sm text-text-secondary mt-1.5 tracking-wide">
             {subtitle}
           </p>
         )}
       </div>
 
-      {/* Bagian Kanan: Tombol Aksi / Filter */}
-      {children && (
-        <div className="w-full md:w-auto flex flex-wrap items-center gap-3">
-          {children}
-        </div>
-      )}
+      {/* Kanan: Tombol Aksi */}
+      <div className="flex items-center gap-3 mt-1">
+        {actions}
+      </div>
     </div>
   );
-}
+};
+
+export default PageHeader;

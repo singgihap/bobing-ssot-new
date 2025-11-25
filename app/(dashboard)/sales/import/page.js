@@ -260,10 +260,10 @@ export default function ImportSalesPage() {
         <div className="max-w-4xl mx-auto space-y-6 fade-in pb-20">
             <PageHeader title="Import Sales" subtitle="Upload laporan penjualan dari Desty/Marketplace." />
 
-            <div className="card-luxury p-8 bg-lumina-surface border-lumina-border">
+            <div className="card-luxury p-8 bg-surface border-lumina-border">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
-                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Source Warehouse</label>
+                        <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Source Warehouse</label>
                         <select className="input-luxury" value={config.warehouse_id} onChange={e=>setConfig({...config, warehouse_id:e.target.value})}>
                             <option value="">Select Warehouse</option>
                             {warehouses.map(w=><option key={w.id} value={w.id}>{w.name}</option>)}
@@ -277,19 +277,19 @@ export default function ImportSalesPage() {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-lumina-muted uppercase mb-1">Packing Cost</label>
+                        <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Packing Cost</label>
                         <input type="number" className="input-luxury" value={config.packing_cost} onChange={e=>setConfig({...config, packing_cost:e.target.value})} />
                     </div>
                 </div>
 
-                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-lumina-surface/50 hover:bg-lumina-surface transition-colors cursor-pointer relative group">
+                <div className="border-2 border-dashed border-lumina-border rounded-xl p-8 text-center bg-surface/50 hover:bg-surface transition-colors cursor-pointer relative group">
                     <input type="file" accept=".xlsx, .csv" onChange={handleFile} disabled={processing} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                     <div className="pointer-events-none relative z-0">
                         <div className="w-12 h-12 bg-lumina-highlight rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                             <svg className="w-6 h-6 text-lumina-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                         </div>
-                        <p className="text-sm font-bold text-lumina-text">Upload Desty Excel Export</p>
-                        <p className="text-xs text-lumina-muted mt-1">Supported: .xlsx, .csv</p>
+                        <p className="text-sm font-bold text-text-primary">Upload Desty Excel Export</p>
+                        <p className="text-xs text-text-secondary mt-1">Supported: .xlsx, .csv</p>
                     </div>
                 </div>
             </div>
@@ -298,11 +298,11 @@ export default function ImportSalesPage() {
             <div className="bg-[#0B0C10] p-4 rounded-xl border border-lumina-border h-64 overflow-y-auto font-mono text-xs shadow-inner">
                 <div className="flex items-center gap-2 mb-3 border-b border-lumina-border pb-2">
                     <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-lumina-muted ml-2">Import Terminal</span>
+                    <span className="text-text-secondary ml-2">Import Terminal</span>
                 </div>
                 <div className="space-y-1">
                     {logs.map((l,i) => (
-                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-lumina-muted')}`}>
+                        <div key={i} className={`flex gap-2 ${l.type==='error'?'text-rose-400':(l.type==='success'?'text-emerald-400':'text-text-secondary')}`}>
                             <span className="opacity-50 select-none">{'>'}</span>
                             <span>{l.msg}</span>
                         </div>

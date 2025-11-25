@@ -303,16 +303,16 @@ export default function PosPage() {
         <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-7rem)] fade-in relative pb-20 lg:pb-0">
             
             {/* --- MOBILE TAB SWITCHER (Sama) --- */}
-            <div className="lg:hidden flex bg-lumina-surface p-1 rounded-xl border border-lumina-border mb-2 sticky top-0 z-20 shadow-lg">
+            <div className="lg:hidden flex bg-surface p-1 rounded-xl border border-lumina-border mb-2 sticky top-0 z-20 shadow-lg">
                 <button 
                     onClick={() => setActiveMobileTab('products')}
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${activeMobileTab === 'products' ? 'bg-lumina-gold text-black shadow-gold-glow' : 'text-lumina-muted'}`}
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${activeMobileTab === 'products' ? 'bg-primary text-black shadow-accent-glow' : 'text-text-secondary'}`}
                 >
                     Katalog
                 </button>
                 <button 
                     onClick={() => setActiveMobileTab('cart')}
-                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all relative ${activeMobileTab === 'cart' ? 'bg-lumina-gold text-black shadow-gold-glow' : 'text-lumina-muted'}`}
+                    className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all relative ${activeMobileTab === 'cart' ? 'bg-primary text-black shadow-accent-glow' : 'text-text-secondary'}`}
                 >
                     Keranjang ({cart.length})
                 </button>
@@ -360,18 +360,18 @@ export default function PosPage() {
 
                 {/* PRODUCT GRID */}
                 <div className="flex-1 overflow-y-auto pr-1 scrollbar-hide grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 content-start pb-24 lg:pb-0">
-                    {loading ? <div className="col-span-full text-center py-10 text-lumina-muted">Loading...</div> : filteredProducts.map(p => {
+                    {loading ? <div className="col-span-full text-center py-10 text-text-secondary">Loading...</div> : filteredProducts.map(p => {
                         const stock = p.variants.reduce((a,b) => a + (snapshots[`${b.id}_${selectedWh}`] || 0), 0);
                         return (
                             <div key={p.id} onClick={() => { setSelectedProdForVariant(p); setModalVariantOpen(true); }} className={`card-luxury p-3 md:p-4 cursor-pointer hover:border-lumina-gold/50 transition-all flex flex-col justify-between group active:scale-95 bg-[#FFFFFF] border-lumina-border/30 ${stock<=0?'opacity-50':''}`}>
                                 <div>
                                     <div className="flex justify-between mb-2">
-                                        <span className="text-[9px] font-mono font-bold text-lumina-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/10">{p.base_sku}</span>
+                                        <span className="text-[9px] font-mono font-bold text-text-secondary bg-white/5 px-1.5 py-0.5 rounded border border-white/10">{p.base_sku}</span>
                                         <span className={`text-[9px] px-2 rounded font-bold ${stock>0?'text-emerald-400 bg-emerald-500/10':'text-rose-400 bg-rose-500/10'}`}>{stock}</span>
                                     </div>
-                                    <h4 className="text-xs md:text-sm font-bold text-lumina-text group-hover:text-lumina-gold line-clamp-2 leading-tight min-h-[2.5em]">{p.name}</h4>
+                                    <h4 className="text-xs md:text-sm font-bold text-text-primary group-hover:text-lumina-gold line-clamp-2 leading-tight min-h-[2.5em]">{p.name}</h4>
                                 </div>
-                                <div className="mt-3 pt-3 border-t border-white/10 text-[10px] text-lumina-muted text-right flex justify-between items-center">
+                                <div className="mt-3 pt-3 border-t border-white/10 text-[10px] text-text-secondary text-right flex justify-between items-center">
                                     <span className="badge-luxury badge-neutral text-[9px] border-0 bg-white/5">{p.brand_name}</span>
                                     <span>{p.variants.length} Varian</span>
                                 </div>
@@ -385,34 +385,34 @@ export default function PosPage() {
             <div className={`w-full lg:w-1/3 card-luxury flex flex-col h-full overflow-hidden border-lumina-border/50 bg-[#FFFFFF] ${activeMobileTab === 'cart' ? 'flex fixed inset-0 z-30 lg:static' : 'hidden lg:flex'}`}>
                 
                 <div className="p-5 border-b border-lumina-border/50 bg-[#FFFFFF] flex justify-between items-center shrink-0 shadow-md z-10">
-                    <h3 className="font-bold text-lumina-text text-lg flex items-center gap-2">
+                    <h3 className="font-bold text-text-primary text-lg flex items-center gap-2">
                         <svg className="w-5 h-5 text-lumina-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         Keranjang
-                        <span className="bg-lumina-gold text-black text-xs px-2 py-0.5 rounded-full ml-2">{cart.length}</span>
+                        <span className="bg-primary text-black text-xs px-2 py-0.5 rounded-full ml-2">{cart.length}</span>
                     </h3>
-                    <button onClick={()=>setCart([])} className="text-xs text-rose-400 hover:text-lumina-text border border-rose-500/30 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-all">RESET (F8)</button>
+                    <button onClick={()=>setCart([])} className="text-xs text-rose-400 hover:text-text-primary border border-rose-500/30 hover:bg-rose-500/20 px-3 py-1.5 rounded-lg transition-all">RESET (F8)</button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#dddddd]/50 scrollbar-hide">
                     {cart.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-lumina-muted opacity-30">
+                        <div className="flex flex-col items-center justify-center h-full text-text-secondary opacity-30">
                             <svg className="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                             <p className="text-sm font-medium">Belum ada item</p>
                         </div>
                     ) : cart.map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center bg-[#181A25] p-3 rounded-xl border border-white/5 hover:border-lumina-gold/30 transition-all shadow-sm animate-fade-in">
                             <div className="flex-1 mr-3">
-                                <div className="text-sm font-bold text-lumina-text line-clamp-1">{item.name}</div>
-                                <div className="text-xs text-lumina-muted mt-1 flex items-center gap-2">
-                                    <span className="text-lumina-gold font-mono bg-lumina-gold/10 px-1 rounded">{item.sku}</span>
-                                    <span className="text-[10px] bg-white/10 px-1.5 rounded text-lumina-text/70">{item.spec}</span>
+                                <div className="text-sm font-bold text-text-primary line-clamp-1">{item.name}</div>
+                                <div className="text-xs text-text-secondary mt-1 flex items-center gap-2">
+                                    <span className="text-lumina-gold font-mono bg-primary/10 px-1 rounded">{item.sku}</span>
+                                    <span className="text-[10px] bg-white/10 px-1.5 rounded text-text-primary/70">{item.spec}</span>
                                 </div>
                                 <div className="text-sm font-bold text-emerald-400 mt-1">{formatRupiah(item.price)}</div>
                             </div>
                             <div className="flex items-center bg-[#dddddd] rounded-lg border border-white/10 shadow-inner">
-                                <button onClick={() => { const n = [...cart]; if(n[idx].qty > 1) n[idx].qty--; else n.splice(idx, 1); setCart(n); }} className="w-8 h-8 flex items-center justify-center text-lumina-muted hover:text-lumina-text hover:bg-white/5 rounded-l-lg transition-colors">-</button>
-                                <span className="text-sm font-bold w-8 text-center text-lumina-text">{item.qty}</span>
-                                <button onClick={() => { if(item.qty < item.max) { const n = [...cart]; n[idx].qty++; setCart(n); } else { toast.error('Stok max'); } }} className="w-8 h-8 flex items-center justify-center text-lumina-muted hover:text-lumina-text hover:bg-white/5 rounded-r-lg transition-colors">+</button>
+                                <button onClick={() => { const n = [...cart]; if(n[idx].qty > 1) n[idx].qty--; else n.splice(idx, 1); setCart(n); }} className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-l-lg transition-colors">-</button>
+                                <span className="text-sm font-bold w-8 text-center text-text-primary">{item.qty}</span>
+                                <button onClick={() => { if(item.qty < item.max) { const n = [...cart]; n[idx].qty++; setCart(n); } else { toast.error('Stok max'); } }} className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-r-lg transition-colors">+</button>
                             </div>
                         </div>
                     ))}
@@ -432,19 +432,19 @@ export default function PosPage() {
                     
                     <div className="space-y-1 py-2">
                         <div className="flex justify-between items-end">
-                            <span className="text-xs text-lumina-muted uppercase tracking-wider font-bold">Total Tagihan</span>
-                            <span className="text-3xl font-display font-bold text-lumina-text">{formatRupiah(cartTotal)}</span>
+                            <span className="text-xs text-text-secondary uppercase tracking-wider font-bold">Total Tagihan</span>
+                            <span className="text-3xl font-display font-bold text-text-primary">{formatRupiah(cartTotal)}</span>
                         </div>
                     </div>
 
                     <div className="bg-[#dddddd] p-3 rounded-xl border border-lumina-border/50 flex flex-col gap-2">
                         <div className="flex justify-between items-center">
-                            <span className="text-xs text-lumina-muted font-bold uppercase ml-1">Uang Diterima</span>
-                            <input type="number" className="text-right font-bold text-lumina-gold bg-transparent outline-none w-32 text-xl placeholder:text-lumina-muted/20" value={cashReceived} onChange={e=>setCashReceived(e.target.value)} placeholder="0" />
+                            <span className="text-xs text-text-secondary font-bold uppercase ml-1">Uang Diterima</span>
+                            <input type="number" className="text-right font-bold text-lumina-gold bg-transparent outline-none w-32 text-xl placeholder:text-text-secondary/20" value={cashReceived} onChange={e=>setCashReceived(e.target.value)} placeholder="0" />
                         </div>
                         <div className="h-px bg-white/10 w-full"></div>
                         <div className="flex justify-between items-center">
-                            <span className="text-xs text-lumina-muted ml-1">Kembalian</span>
+                            <span className="text-xs text-text-secondary ml-1">Kembalian</span>
                             <span className={`text-sm font-bold font-mono ${change<0?'text-rose-500':'text-emerald-400'}`}>{formatRupiah(Math.max(0,change))}</span>
                         </div>
                     </div>
@@ -462,14 +462,14 @@ export default function PosPage() {
             <Portal>
                 {/* Variant Modal */}
                 {modalVariantOpen && selectedProdForVariant && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lumina-surface/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4">
                         <div className="card-luxury w-full max-w-lg p-0 overflow-hidden fade-in-up max-h-[80vh] flex flex-col">
-                            <div className="p-4 border-b border-lumina-border bg-lumina-surface flex justify-between items-center sticky top-0 z-10">
+                            <div className="p-4 border-b border-lumina-border bg-surface flex justify-between items-center sticky top-0 z-10">
                                 <div>
-                                    <h3 className="font-bold text-lumina-text text-lg">{selectedProdForVariant.name}</h3>
-                                    <p className="text-xs text-lumina-muted font-mono">{selectedProdForVariant.base_sku}</p>
+                                    <h3 className="font-bold text-text-primary text-lg">{selectedProdForVariant.name}</h3>
+                                    <p className="text-xs text-text-secondary font-mono">{selectedProdForVariant.base_sku}</p>
                                 </div>
-                                <button onClick={()=>setModalVariantOpen(false)} className="text-lumina-muted hover:text-lumina-text p-2">✕</button>
+                                <button onClick={()=>setModalVariantOpen(false)} className="text-text-secondary hover:text-text-primary p-2">✕</button>
                             </div>
                             <div className="flex-1 overflow-y-auto p-0 custom-scrollbar">
                                 <table className="table-dark">
@@ -481,12 +481,12 @@ export default function PosPage() {
                                                     <td className="pl-4 py-3 font-medium text-sm">
                                                         {v.color} / {v.size}
                                                     </td>
-                                                    <td className="text-right text-xs text-lumina-muted font-mono">{formatRupiah(v.price)}</td>
+                                                    <td className="text-right text-xs text-text-secondary font-mono">{formatRupiah(v.price)}</td>
                                                     <td className="text-center text-xs">
                                                         <span className={`px-2 py-1 rounded ${qty>0?'bg-emerald-900/30 text-emerald-400':'bg-rose-900/30 text-rose-400'}`}>{qty}</span>
                                                     </td>
                                                     <td className="pr-4 text-right">
-                                                        <button disabled={qty<=0} onClick={()=>addToCart(v, selectedProdForVariant.name)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-transform active:scale-95 ${qty>0?'bg-lumina-gold text-black shadow-gold-glow':'bg-lumina-highlight text-lumina-muted cursor-not-allowed'}`}>
+                                                        <button disabled={qty<=0} onClick={()=>addToCart(v, selectedProdForVariant.name)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-transform active:scale-95 ${qty>0?'bg-primary text-black shadow-accent-glow':'bg-lumina-highlight text-text-secondary cursor-not-allowed'}`}>
                                                             + Add
                                                         </button>
                                                     </td>
@@ -502,18 +502,18 @@ export default function PosPage() {
 
                 {/* Success Modal */}
                 {modalInvoiceOpen && invoiceData && (
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-lumina-surface/90 backdrop-blur-md p-4">
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-surface/90 backdrop-blur-md p-4">
                         <div className="card-luxury max-w-sm w-full p-8 text-center relative overflow-hidden fade-in-up border-lumina-gold/50">
                             <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
                                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                             </div>
-                            <h2 className="text-xl md:text-3xl font-extrabold text-lumina-text">
+                            <h2 className="text-xl md:text-3xl font-extrabold text-text-primary">
                                 Transaksi Berhasil!
                             </h2>
 
-                            <div className="bg-lumina-surface p-5 rounded-2xl border border-lumina-border space-y-3 mt-6">
-                                <div className="flex justify-between text-sm"><span className="text-lumina-muted">Total</span><span className="font-bold text-lumina-text">{formatRupiah(invoiceData.total)}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-lumina-muted">Tunai</span><span className="font-bold text-lumina-text">{formatRupiah(invoiceData.received)}</span></div>
+                            <div className="bg-surface p-5 rounded-2xl border border-lumina-border space-y-3 mt-6">
+                                <div className="flex justify-between text-sm"><span className="text-text-secondary">Total</span><span className="font-bold text-text-primary">{formatRupiah(invoiceData.total)}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-text-secondary">Tunai</span><span className="font-bold text-text-primary">{formatRupiah(invoiceData.received)}</span></div>
                                 <div className="border-t border-lumina-border my-2"></div>
                                 <div className="flex justify-between items-center"><span className="text-sm font-bold text-emerald-400">Kembali</span><span className="text-xl font-extrabold text-emerald-400">{formatRupiah(Math.max(0, invoiceData.change))}</span></div>
                             </div>

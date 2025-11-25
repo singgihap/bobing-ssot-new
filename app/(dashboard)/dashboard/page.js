@@ -1,3 +1,5 @@
+// app\(dashboard)\dashboard\page.js
+
 "use client";
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
@@ -5,16 +7,17 @@ import { collection, getDocs, query, where, orderBy, getAggregateFromServer, sum
 import { formatRupiah } from '@/lib/utils';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, BarElement } from 'chart.js';
 import { Line, Doughnut } from 'react-chartjs-2';
-import PageHeader from '@/components/PageHeader'; // Komponen UI Baru
-import Skeleton from '@/components/Skeleton'; // Komponen Loading Baru
+import PageHeader from '@/components/PageHeader'; 
+import Skeleton from '@/components/Skeleton'; 
+import { TrophyIcon, AlertIcon, FlashIcon } from '@/components/DashboardIcons';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
 
-// --- KONFIGURASI CACHE (HEMAT BIAYA) ---
+// --- KONFIGURASI CACHE (Tidak ada perubahan) ---
 const CACHE_MASTER_KEY = 'lumina_dash_master_v3'; 
 const CACHE_SALES_PREFIX = 'lumina_dash_sales_v3_'; 
-const CACHE_DURATION_MASTER = 30 * 60 * 1000; // 30 Menit
-const CACHE_DURATION_SALES = 5 * 60 * 1000;   // 5 Menit
+const CACHE_DURATION_MASTER = 30 * 60 * 1000; 
+const CACHE_DURATION_SALES = 5 * 60 * 1000;   
 
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
@@ -30,6 +33,8 @@ export default function Dashboard() {
     const [topProducts, setTopProducts] = useState([]);
     const [lowStockItems, setLowStockItems] = useState([]);
     const [recentSales, setRecentSales] = useState([]);
+
+    // [... Logika fetchMasterData dan fetchSalesData (Dihilangkan untuk keringkasan) ...]
 
     // 1. Fetch Master Data (Optimized: Aggregation + LocalStorage)
     const fetchMasterData = async () => {
@@ -230,14 +235,40 @@ export default function Dashboard() {
         setChartTrendData({
             labels: Object.keys(days),
             datasets: [
-                { label: 'Omzet', data: Object.values(days).map(x=>x.gross), borderColor: '#D4AF37', backgroundColor: 'rgba(212, 175, 55, 0.1)', fill: true, tension: 0.4 },
-                { label: 'Profit', data: Object.values(days).map(x=>x.profit), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }
+                { 
+                    label: 'Omzet', 
+                    data: Object.values(days).map(x=>x.gross), 
+                    // KOREKSI 1: Mengganti warna Gold dengan Primary (Biru Vibrant)
+                    borderColor: '#2563EB', 
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)', 
+                    fill: true, 
+                    tension: 0.4 
+                },
+                { 
+                    label: 'Profit', 
+                    data: Object.values(days).map(x=>x.profit), 
+                    // Tetap menggunakan warna hijau fungsional
+                    borderColor: '#10B981', 
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+                    fill: true, 
+                    tension: 0.4 
+                }
             ]
         });
 
         setChartChannelData({
             labels: Object.keys(channels),
-            datasets: [{ data: Object.values(channels), backgroundColor: ['#D4AF37', '#10B981', '#3B82F6', '#8B5CF6'], borderWidth: 0 }]
+            datasets: [{ 
+                data: Object.values(channels), 
+                // KOREKSI 2: Mengganti warna Doughnut (Gold -> Primary, Emerald, Accent, Amber)
+                backgroundColor: [
+                    '#2563EB',  // Primary (Omzet utama)
+                    '#844fc1',  // Accent (Ungu Premium)
+                    '#34E9E1',  // Secondary (Aqua Water)
+                    '#FFC857'   // Accent-Gold (Opsional)
+                ], 
+                borderWidth: 0 
+            }]
         });
 
         setTopProducts(Object.entries(prodStats).sort((a, b) => b[1] - a[1]).slice(0, 5));
@@ -246,41 +277,41 @@ export default function Dashboard() {
     };
 
     // --- UI COMPONENTS ---
+    // --- UI COMPONENTS ---
     const KpiCard = ({ title, value, sub, icon, color, loading }) => (
-        <div className="card-luxury p-6 relative overflow-hidden group hover:border-lumina-gold/30 transition-all">
+        <div className="card-luxury p-6 relative overflow-hidden group hover:border-primary/30 transition-all">
             <div className="flex justify-between items-start relative z-10">
                 <div>
-                    <p className="text-[10px] font-bold text-lumina-muted uppercase tracking-widest mb-1">{title}</p>
-                    <h3 className="text-2xl font-display font-bold text-lumina-text tracking-tight">
+                    <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mb-1">{title}</p>
+                    <h3 className="text-2xl font-display font-bold text-text-primary tracking-tight">
                         {loading ? <Skeleton className="h-8 w-32" /> : value}
                     </h3>
-                    <p className="text-xs text-lumina-muted mt-2 font-medium">{sub}</p>
+                    <p className="text-xs text-text-secondary mt-2 font-medium">{sub}</p>
                 </div>
-                <div className={`p-3 rounded-xl ${color === 'gold' ? 'bg-lumina-gold/10 text-lumina-gold' : 'bg-lumina-highlight text-lumina-text'}`}>
+                <div className={`p-3 rounded-xl ${color === 'gold' ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-text-primary'}`}>
                     {icon}
                 </div>
             </div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-lumina-gold/10 to-transparent rounded-full blur-2xl group-hover:bg-lumina-gold/20 transition-all duration-500"></div>
+            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl group-hover:bg-primary/20 transition-all duration-500"></div>
         </div>
     );
 
     return (
         <div className="space-y-8 fade-in pb-20">
             
-            {/* Header menggunakan Component Baru */}
             <PageHeader 
                 title="Executive Dashboard" 
                 subtitle="Real-time business intelligence & analytics."
             >
-                <div className="w-full md:w-auto bg-lumina-surface p-1 rounded-xl border border-lumina-border shadow-lg">
+                <div className="w-full md:w-auto bg-surface p-1 rounded-xl border border-border shadow-lg">
                     <select 
                         value={filterRange} 
                         onChange={(e) => setFilterRange(e.target.value)} 
-                        className="w-full md:w-auto text-sm bg-transparent text-lumina-text font-medium cursor-pointer py-2 px-4 outline-none appearance-none text-center"
+                        className="w-full md:w-auto text-sm bg-transparent text-text-primary font-medium cursor-pointer py-2 px-4 outline-none appearance-none text-center"
                     >
-                        <option value="today" className="bg-lumina-surface">Hari Ini</option>
-                        <option value="this_month" className="bg-lumina-surface">Bulan Ini</option>
-                        <option value="last_month" className="bg-lumina-surface">Bulan Lalu</option>
+                        <option value="today" className="bg-surface">Hari Ini</option>
+                        <option value="this_month" className="bg-surface">Bulan Ini</option>
+                        <option value="last_month" className="bg-surface">Bulan Lalu</option>
                     </select>
                 </div>
             </PageHeader>
@@ -296,15 +327,15 @@ export default function Dashboard() {
             {/* Charts Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 card-luxury p-6">
-                    <h3 className="font-bold text-lumina-text mb-6">Performance Trend</h3>
+                    <h3 className="font-bold text-text-primary mb-6">Performance Trend</h3>
                     <div className="h-72 w-full relative">
-                        {chartTrendData ? <Line data={chartTrendData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94A3B8' } } }, scales: { y: { grid: { color: '#2A2E3B' }, ticks: { color: '#94A3B8' } }, x: { grid: { display: false }, ticks: { color: '#94A3B8' } } } }} /> : <Skeleton className="h-full w-full" />}
+                        {chartTrendData ? <Line data={chartTrendData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#4B5563' } } }, scales: { y: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280' } }, x: { grid: { display: false }, ticks: { color: '#6B7280' } } } }} /> : <Skeleton className="h-full w-full" />}
                     </div>
                 </div>
                 <div className="card-luxury p-6 flex flex-col">
-                    <h3 className="font-bold text-lumina-text mb-6">Channel Mix</h3>
+                    <h3 className="font-bold text-text-primary mb-6">Channel Mix</h3>
                     <div className="h-64 w-full relative flex justify-center items-center flex-1">
-                         {chartChannelData ? <Doughnut data={chartChannelData} options={{ responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8' } } } }} /> : <Skeleton className="h-48 w-48 rounded-full" />}
+                         {chartChannelData ? <Doughnut data={chartChannelData} options={{ responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#6B7280' } } } }} /> : <Skeleton className="h-48 w-48 rounded-full" />}
                     </div>
                 </div>
             </div>
@@ -313,16 +344,18 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Top Products */}
                 <div className="card-luxury overflow-hidden">
-                    <div className="px-6 py-4 border-b border-lumina-border bg-[#12141C]">
-                        <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">🔥 Top Products</h3>
+                    <div className="px-6 py-4 border-b border-border bg-gray-100 flex items-center gap-2">
+                        {/* MENGGANTI 🔥 dengan SVG TrophyIcon, diimpor dari DashboardIcons */}
+                        <TrophyIcon className="w-4 h-4 text-primary" />
+                        <h3 className="font-bold text-text-primary text-sm uppercase tracking-wider">Top Products</h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="table-dark w-full">
                             <tbody>
                                 {topProducts.map(([sku, qty], i) => (
-                                    <tr key={i} className="hover:bg-lumina-highlight">
-                                        <td className="px-6 py-3 font-medium text-lumina-text">{sku}</td>
-                                        <td className="px-6 py-3 text-right font-bold text-lumina-gold">{qty}</td>
+                                    <tr key={i} className="hover:bg-gray-100">
+                                        <td className="px-6 py-3 font-medium text-text-primary">{sku}</td>
+                                        <td className="px-6 py-3 text-right font-bold text-primary">{qty}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -333,19 +366,23 @@ export default function Dashboard() {
                 {/* Low Stock */}
                 <div className="card-luxury overflow-hidden border-rose-900/30">
                     <div className="px-6 py-4 border-b border-rose-900/30 bg-rose-900/10 flex justify-between items-center">
-                        <h3 className="font-bold text-rose-400 text-sm uppercase tracking-wider">⚠️ Low Stock</h3>
+                        <div className="flex items-center gap-2">
+                             {/* MENGGANTI ⚠️ dengan SVG AlertIcon, diimpor dari DashboardIcons */}
+                             <AlertIcon className="w-4 h-4 text-rose-400" />
+                            <h3 className="font-bold text-rose-400 text-sm uppercase tracking-wider">Low Stock</h3>
+                        </div>
                         <span className="text-[10px] bg-rose-900/20 border border-rose-900/30 text-rose-400 px-2 py-0.5 rounded">{lowStockItems.length} Items</span>
                     </div>
-                    <div className="divide-y divide-lumina-border max-h-[300px] overflow-y-auto">
+                    <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
                         {lowStockItems.map((item, i) => (
-                            <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-lumina-highlight transition">
+                            <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-gray-100 transition">
                                 <div>
-                                    <p className="text-sm font-bold text-lumina-text">{item.sku}</p>
-                                    <p className="text-xs text-lumina-muted truncate w-32">{item.name}</p>
+                                    <p className="text-sm font-bold text-text-primary">{item.sku}</p>
+                                    <p className="text-xs text-text-secondary truncate w-32">{item.name}</p>
                                 </div>
                                 <div className="text-right">
                                     <span className="text-rose-500 font-bold text-sm">{item.qty}</span>
-                                    <span className="text-lumina-muted text-[10px] block">Min: {item.min}</span>
+                                    <span className="text-text-secondary text-[10px] block">Min: {item.min}</span>
                                 </div>
                             </div>
                         ))}
@@ -354,20 +391,22 @@ export default function Dashboard() {
 
                 {/* Recent Sales */}
                 <div className="card-luxury overflow-hidden">
-                    <div className="px-6 py-4 border-b border-lumina-border bg-[#12141C]">
-                        <h3 className="font-bold text-lumina-text text-sm uppercase tracking-wider">⚡ Recent Sales</h3>
+                    <div className="px-6 py-4 border-b border-border bg-gray-100 flex items-center gap-2">
+                        {/* MENGGANTI ⚡ dengan SVG FlashIcon, diimpor dari DashboardIcons */}
+                        <FlashIcon className="w-4 h-4 text-primary" />
+                        <h3 className="font-bold text-text-primary text-sm uppercase tracking-wider">Recent Sales</h3>
                     </div>
-                    <div className="divide-y divide-lumina-border max-h-[300px] overflow-y-auto">
+                    <div className="divide-y divide-border max-h-[300px] overflow-y-auto">
                         {recentSales.map((s, i) => (
-                            <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-lumina-highlight transition">
+                            <div key={i} className="px-6 py-3 flex justify-between items-center hover:bg-gray-100 transition">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <span className="font-bold text-lumina-text text-sm">{s.customer}</span>
-                                        <span className="text-[10px] bg-lumina-highlight text-lumina-muted px-1.5 rounded">{s.id}</span>
+                                        <span className="font-bold text-text-primary text-sm">{s.customer}</span>
+                                        <span className="text-[10px] bg-gray-100 text-text-secondary px-1.5 rounded">{s.id}</span>
                                     </div>
-                                    <p className="text-[10px] text-lumina-muted">{s.time ? s.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</p>
+                                    <p className="text-[10px] text-text-secondary">{s.time ? s.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</p>
                                 </div>
-                                <span className="font-bold text-lumina-gold text-sm">{formatRupiah(s.amount)}</span>
+                                <span className="font-bold text-primary text-sm">{formatRupiah(s.amount)}</span>
                             </div>
                         ))}
                     </div>

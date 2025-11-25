@@ -115,14 +115,14 @@ export default function ReportPLPage() {
             {/* Header & Filter */}
             <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4">
             <div>
-                <h2 className="text-xl md:text-3xl font-bold text-lumina-text font-display">Profit & Loss</h2>
-                <p className="text-sm text-lumina-muted font-light">Financial performance summary.</p>
+                <h2 className="text-xl md:text-3xl font-bold text-text-primary font-display">Profit & Loss</h2>
+                <p className="text-sm text-text-secondary font-light">Financial performance summary.</p>
             </div>
             {/* Filter & Refresh Button */}
-            <div className="flex items-center gap-2 bg-lumina-surface p-1 rounded-lg border border-lumina-border shadow-lg">
-                <input type="date" className="text-sm bg-transparent text-lumina-text border-none focus:ring-0 outline-none px-2" value={range.start} onChange={e=>setRange({...range, start:e.target.value})} />
-                <span className="text-lumina-muted">-</span>
-                <input type="date" className="text-sm bg-transparent text-lumina-text border-none focus:ring-0 outline-none px-2" value={range.end} onChange={e=>setRange({...range, end:e.target.value})} />
+            <div className="flex items-center gap-2 bg-surface p-1 rounded-lg border border-lumina-border shadow-lg">
+                <input type="date" className="text-sm bg-transparent text-text-primary border-none focus:ring-0 outline-none px-2" value={range.start} onChange={e=>setRange({...range, start:e.target.value})} />
+                <span className="text-text-secondary">-</span>
+                <input type="date" className="text-sm bg-transparent text-text-primary border-none focus:ring-0 outline-none px-2" value={range.end} onChange={e=>setRange({...range, end:e.target.value})} />
                 <button onClick={() => generateReport(false)} className="btn-gold px-4 py-1 text-xs">
                 {loading ? '...' : 'Filter'}
                 </button>
@@ -139,18 +139,18 @@ export default function ReportPLPage() {
 
                 {/* REVENUE */}
                 <div>
-                    <h3 className="text-xs font-bold text-lumina-muted uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Revenue</h3>
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Revenue</h3>
                     <div className="flex justify-between items-center">
-                        <span className="font-medium text-lumina-text">Net Sales</span>
-                        <span className="font-bold text-xl text-lumina-text font-display">{formatRupiah(data.revenue)}</span>
+                        <span className="font-medium text-text-primary">Net Sales</span>
+                        <span className="font-bold text-xl text-text-primary font-display">{formatRupiah(data.revenue)}</span>
                     </div>
                 </div>
 
                 {/* COGS */}
                 <div>
-                    <h3 className="text-xs font-bold text-lumina-muted uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Cost of Goods Sold</h3>
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Cost of Goods Sold</h3>
                     <div className="flex justify-between items-center">
-                        <span className="font-medium text-lumina-text">HPP Product</span>
+                        <span className="font-medium text-text-primary">HPP Product</span>
                         <span className="font-bold text-lg text-rose-400 font-mono">({formatRupiah(data.cogs)})</span>
                     </div>
                 </div>
@@ -158,23 +158,23 @@ export default function ReportPLPage() {
                 {/* GROSS PROFIT */}
                 <div className="bg-lumina-highlight/40 p-5 rounded-xl border border-lumina-border flex justify-between items-center">
                     <span className="font-bold text-lumina-gold text-sm uppercase tracking-widest">Gross Profit</span>
-                    <span className="font-extrabold text-2xl text-lumina-text font-display">{formatRupiah(gross)}</span>
+                    <span className="font-extrabold text-2xl text-text-primary font-display">{formatRupiah(gross)}</span>
                 </div>
 
                 {/* EXPENSES */}
                 <div>
-                    <h3 className="text-xs font-bold text-lumina-muted uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Operating Expenses</h3>
+                    <h3 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-3 border-b border-lumina-border pb-2">Operating Expenses</h3>
                     <div className="space-y-3 pl-2 mb-4">
                         {Object.entries(data.details).map(([k, v]) => (
                             <div key={k} className="flex justify-between text-sm">
-                                <span className="capitalize text-lumina-text opacity-80">{k}</span>
-                                <span className="font-mono text-lumina-text">{formatRupiah(v)}</span>
+                                <span className="capitalize text-text-primary opacity-80">{k}</span>
+                                <span className="font-mono text-text-primary">{formatRupiah(v)}</span>
                             </div>
                         ))}
-                        {data.expenses === 0 && <p className="text-sm text-lumina-muted italic">No expenses recorded.</p>}
+                        {data.expenses === 0 && <p className="text-sm text-text-secondary italic">No expenses recorded.</p>}
                     </div>
                     <div className="flex justify-between items-center border-t border-lumina-border pt-4 border-dashed">
-                        <span className="font-bold text-lumina-text text-sm">Total Expenses</span>
+                        <span className="font-bold text-text-primary text-sm">Total Expenses</span>
                         <span className="font-bold text-rose-400 font-mono">({formatRupiah(data.expenses)})</span>
                     </div>
                 </div>
@@ -182,11 +182,11 @@ export default function ReportPLPage() {
                 {/* NET PROFIT */}
                 <div className="bg-gradient-to-r from-lumina-surface to-lumina-highlight p-8 rounded-2xl shadow-2xl border border-lumina-border flex justify-between items-center relative overflow-hidden">
                     <div className="relative z-10">
-                        <span className="block text-lumina-muted text-xs font-bold uppercase tracking-widest mb-2">Net Profit</span>
+                        <span className="block text-text-secondary text-xs font-bold uppercase tracking-widest mb-2">Net Profit</span>
                         <span className={`text-4xl font-display font-extrabold tracking-tight ${net < 0 ? 'text-rose-500' : 'text-emerald-400'}`}>{formatRupiah(net)}</span>
                     </div>
                     <div className="relative z-10 text-right">
-                        <span className="block text-lumina-muted text-xs mb-1">Net Margin</span>
+                        <span className="block text-text-secondary text-xs mb-1">Net Margin</span>
                         <span className={`text-2xl font-bold font-mono ${margin >= 0 ? 'text-emerald-400' : 'text-rose-500'}`}>{margin.toFixed(1)}%</span>
                     </div>
                     

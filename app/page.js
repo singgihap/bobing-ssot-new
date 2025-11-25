@@ -27,27 +27,27 @@ export default function RootPage() {
     : "Redirecting to Login...";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-lumina-surface relative overflow-hidden font-sans">
+    <div className="flex min-h-screen items-center justify-center bg-surface relative overflow-hidden font-sans">
       
-      {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-lumina-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Background Ambient Glow: Mengganti bg-lumina-gold/5 menjadi bg-primary/5 */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
       <div className="text-center relative z-10">
         {/* Luxury Spinner */}
         <div className="mx-auto mb-8 flex items-center justify-center relative w-16 h-16">
-          {/* Track Ring */}
-          <div className="absolute inset-0 rounded-full border-4 border-lumina-surface"></div>
-          {/* Gold Spinner Ring */}
-          <div className="absolute inset-0 rounded-full border-t-4 border-lumina-gold animate-spin shadow-gold-glow"></div>
-          {/* Logo */}
-          <span className="font-display font-bold text-xl text-lumina-gold">B</span>
+          {/* Track Ring: Mengganti border-lumina-surface menjadi border-border */}
+          <div className="absolute inset-0 rounded-full border-4 border-border"></div>
+          {/* Primary Spinner Ring & Glow: Mengganti border-lumina-gold dan shadow-gold-glow */}
+          <div className="absolute inset-0 rounded-full border-t-4 border-primary animate-spin shadow-accent-glow"></div>
+          {/* Logo: Mengganti text-lumina-gold menjadi text-primary */}
+          <span className="font-display font-bold text-xl text-primary">B</span>
         </div>
 
         {/* Status Messages */}
-        <h2 className="text-lg font-medium text-lumina-text tracking-wide animate-pulse">
+        <h2 className="text-lg font-medium text-text-primary tracking-wide animate-pulse">
           {redirectMessage}
         </h2>
-        <p className="text-xs text-lumina-muted mt-2 font-mono opacity-70">
+        <p className="text-xs text-text-secondary mt-2 font-mono opacity-70">
           Please wait while we load your workspace...
         </p>
       </div>
