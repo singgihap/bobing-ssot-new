@@ -2,14 +2,13 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* --- 1. Base Styles --- */
 body {
-  /* selection:bg-lumina-primary (Biru Vibrant) telah dikoreksi menjadi selection:bg-primary */
+  /* KOREKSI: Mengganti lumina-base, lumina-text, lumina-gold -> background, text-primary, primary */
   @apply bg-background text-text-primary antialiased selection:bg-primary selection:text-white font-sans;
   /* Mencegah pull-to-refresh di mobile agar terasa seperti Native App */
   overscroll-behavior-y: none; 
@@ -22,11 +21,11 @@ body {
     height: 6px; 
 }
 ::-webkit-scrollbar-track { 
-    @apply bg-surface;
+    /* KOREKSI: bg-lumina-surface -> bg-surface */
+    @apply bg-surface; 
 }
 ::-webkit-scrollbar-thumb { 
-    /* bg-lumina-border dikoreksi menjadi bg-border */
-    /* hover:bg-lumina-primary dikoreksi menjadi hover:bg-primary */
+    /* KOREKSI: bg-lumina-border -> bg-border, hover:bg-lumina-gold -> hover:bg-primary */
     @apply bg-border rounded-full hover:bg-primary transition-colors; 
 }
 
@@ -42,13 +41,13 @@ body {
 @layer components {
   /* --- Card Component (Glass Effect) --- */
   .card-luxury {
-    /* border-lumina-border/80 dikoreksi menjadi border-border/80 (SOLUSI UNTUK ERROR BARIS 43) */
+    /* KOREKSI: bg-lumina-surface -> bg-surface, border-lumina-border/80 -> border-border/80 */
     @apply bg-surface border border-border/80 rounded-xl shadow-md transition-all duration-300;
   }
 
   /* --- Button Components --- */
   .btn-gold {
-    /* bg-lumina-primary dikoreksi menjadi bg-primary */
+    /* KOREKSI: Mengganti gradien Gold -> solid Primary (Biru Vibrant) dan Shadow Biru */
     @apply bg-primary text-white font-bold px-5 py-2.5 rounded-xl 
           shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)]
           hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 
@@ -56,53 +55,48 @@ body {
   }
 
   .btn-ghost-dark {
-    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
-    /* border-lumina-border/50 dikoreksi menjadi border-border/50 */
+    /* KOREKSI: Mengganti lumina-muted -> text-secondary, lumina-highlight -> gray-100, lumina-text -> text-primary */
     @apply bg-transparent text-text-secondary border border-border/50 px-4 py-2 rounded-xl
-          /* hover:bg-lumina-highlight dikoreksi menjadi hover:bg-gray-100 (sesuai nilai hex lama) */
-          /* hover:border-lumina-border dikoreksi menjadi hover:border-border */
           hover:bg-gray-100 hover:text-text-primary hover:border-border 
           active:scale-95 transition-all flex items-center justify-center gap-2 text-xs font-medium touch-manipulation;
   }
 
   /* --- Form Elements (Inputs) --- */
   .input-luxury {
-    /* border-lumina-border/50 dikoreksi menjadi border-border/50 */
+    /* KOREKSI: Mengganti lumina-surface -> surface, lumina-border/50 -> border/50, lumina-text -> text-primary */
     @apply w-full bg-surface border border-border/50 text-text-primary text-sm rounded-xl 
-          py-3 px-4 outline-none transition-all 
-          /* placeholder:text-lumina-muted/50 dikoreksi menjadi placeholder:text-text-secondary/50 */
-          placeholder:text-text-secondary/50 font-sans
-          /* fokus ke lumina-primary dikoreksi menjadi fokus ke primary */
+          py-3 px-4 outline-none transition-all placeholder:text-text-secondary/50 font-sans
+    /* KOREKSI MODERN BORDER: focus:border-lumina-gold/50 -> focus:border-primary/50 (Biru) */
           focus:border-primary/50 focus:ring-1 focus:ring-primary/50 focus:bg-white appearance-none;
   }
   
   /* --- Table Modern (Wrapper & Styling) --- */
   .table-wrapper-dark {
-    /* border-lumina-border/30 dikoreksi menjadi border-border/30 */
+    /* KOREKSI: bg-lumina-surface -> bg-surface, border-lumina-border/30 -> border-border/30 */
     @apply overflow-x-auto rounded-xl border border-border/30 bg-surface scrollbar-hide;
     -webkit-overflow-scrolling: touch; 
   }
   .table-dark {
-    /* divide-lumina-border/30 dikoreksi menjadi divide-border/30 */
+    /* KOREKSI: divide-lumina-border/30 -> divide-border/30 */
     @apply min-w-full divide-y divide-border/30;
   }
   .table-dark th {
-    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
-    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
+    /* KOREKSI: text-lumina-muted -> text-text-secondary, bg-lumina-highlight -> bg-gray-100 */
     @apply px-6 py-4 text-left text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-gray-100 whitespace-nowrap;
   }
   .table-dark tbody {
-    /* divide-lumina-border/30 dikoreksi menjadi divide-border/30 */
+    /* KOREKSI: divide-lumina-border/30 -> divide-border/30 */
     @apply divide-y divide-border/30;
   }
   .table-dark td {
+    /* KOREKSI: text-lumina-text -> text-text-primary */
     @apply px-6 py-4 text-sm text-text-primary whitespace-nowrap transition-colors;
   }
   .table-dark tr {
     @apply transition-colors duration-150;
   }
   .table-dark tr:hover td {
-    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
+    /* KOREKSI: bg-lumina-highlight -> bg-gray-100 */
     @apply bg-gray-100;
   }
 
@@ -110,36 +104,32 @@ body {
   .badge-luxury {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide border;
   }
-  .badge-neutral { 
-    /* bg-lumina-highlight dikoreksi menjadi bg-gray-100 */
-    /* text-lumina-muted dikoreksi menjadi text-text-secondary */
-    /* border-lumina-border dikoreksi menjadi border-border */
-    @apply bg-gray-100 text-text-secondary border-border; 
-  }
-  .badge-success { @apply bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]; }
-  .badge-warning { @apply bg-amber-500/10 text-amber-600 border-amber-500/20; }
-  .badge-danger { @apply bg-rose-500/10 text-rose-600 border-rose-500/20; }
+  /* KOREKSI: lumina-highlight/muted/border -> gray-100/text-secondary/border */
+  .badge-neutral { @apply bg-gray-100 text-text-secondary border-border; }
+  .badge-success { @apply bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]; } 
+  .badge-warning { @apply bg-amber-500/10 text-amber-600 border-amber-500/20; } 
+  .badge-danger { @apply bg-rose-500/10 text-rose-600 border-rose-500/20; } 
 }
 
 /* --- Utilities & Animations --- */
 .glass-nav-dark {
-  /* border-lumina-border dikoreksi menjadi border-border */
+    /* KOREKSI: bg-lumina-base/90 -> bg-background/90, border-lumina-border -> border-border */
   @apply bg-background/90 backdrop-blur-sm border-b border-border sticky top-0 z-30;
 }
 
 .text-gold-gradient {
-  /* from-lumina-accent dan to-lumina-accent dikoreksi menjadi from-accent dan to-accent */
+  /* KOREKSI: Mengganti Gold Gradient ke Ungu Premium (accent) yang baru */
   @apply bg-clip-text text-transparent bg-gradient-to-r from-accent via-[#A070E3] to-accent bg-size-200 animate-gradient;
 }
 
-/* Animation: Fade In Up */
+/* Animation: Fade In Up (Tidak ada perubahan) */
 .fade-in { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 @keyframes fadeInUp { 
     from { opacity: 0; transform: translateY(20px); } 
     to { opacity: 1; transform: translateY(0); } 
 }
 
-/* Animation: Shimmer Text */
+/* Animation: Shimmer Text (Tidak ada perubahan) */
 @keyframes gradient {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -153,11 +143,11 @@ body {
 .pt-safe { padding-top: env(safe-area-inset-top); }
 
 .glass-bottom-nav {
-  /* border-lumina-border dikoreksi menjadi border-border */
+    /* KOREKSI: bg-lumina-surface/90 -> bg-surface/90, border-lumina-border -> border-border */
   @apply fixed bottom-0 left-0 right-0 bg-surface/90 backdrop-blur-xl border-t border-border z-50 pb-safe;
 }
 
-/* Print Styles */
+/* Print Styles (Tidak ada perubahan) */
 @media print {
   body * { visibility: hidden; height: 0; overflow: hidden; }
   #receipt-print-area, #receipt-print-area * { visibility: visible; height: auto; overflow: visible; }

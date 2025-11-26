@@ -1,25 +1,9 @@
 {
-  "/(dashboard)/catalog/brands/page": "app/(dashboard)/catalog/brands/page.js",
-  "/(dashboard)/catalog/categories/page": "app/(dashboard)/catalog/categories/page.js",
-  "/(dashboard)/catalog/import/page": "app/(dashboard)/catalog/import/page.js",
-  "/(dashboard)/catalog/page": "app/(dashboard)/catalog/page.js",
-  "/(dashboard)/catalog/products/page": "app/(dashboard)/catalog/products/page.js",
-  "/(dashboard)/catalog/variants/page": "app/(dashboard)/catalog/variants/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/finance/accounts/page": "app/(dashboard)/finance/accounts/page.js",
+  "/(dashboard)/finance/balance/page": "app/(dashboard)/finance/balance/page.js",
   "/(dashboard)/finance/cash/page": "app/(dashboard)/finance/cash/page.js",
   "/(dashboard)/finance/page": "app/(dashboard)/finance/page.js",
   "/(dashboard)/finance/reports/page": "app/(dashboard)/finance/reports/page.js",
-  "/(dashboard)/purchases/page": "app/(dashboard)/purchases/page.js",
-  "/(dashboard)/purchases/suppliers/page": "app/(dashboard)/purchases/suppliers/page.js",
-  "/(dashboard)/sales/customers/page": "app/(dashboard)/sales/customers/page.js",
-  "/(dashboard)/sales/import/page": "app/(dashboard)/sales/import/page.js",
-  "/(dashboard)/sales/manual/page": "app/(dashboard)/sales/manual/page.js",
-  "/(dashboard)/sales/page": "app/(dashboard)/sales/page.js",
-  "/(dashboard)/sales/transactions/page": "app/(dashboard)/sales/transactions/page.js",
-  "/(dashboard)/settings/page": "app/(dashboard)/settings/page.js",
-  "/(dashboard)/stock/inventory/page": "app/(dashboard)/stock/inventory/page.js",
-  "/(dashboard)/stock/page": "app/(dashboard)/stock/page.js",
-  "/(dashboard)/stock/supplier-sessions/page": "app/(dashboard)/stock/supplier-sessions/page.js",
-  "/(dashboard)/stock/warehouses/page": "app/(dashboard)/stock/warehouses/page.js",
-  "/page": "app/page.js"
+  "/(dashboard)/purchases/suppliers/page": "app/(dashboard)/purchases/suppliers/page.js"
 }

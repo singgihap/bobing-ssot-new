@@ -1,31 +1,6 @@
 {
   "pages": {
-    "/_app": [
-      "static/chunks/b2b90_next_dist_compiled_b1fd20cd._.js",
-      "static/chunks/b2b90_next_dist_shared_lib_30756c09._.js",
-      "static/chunks/b2b90_next_dist_client_34197071._.js",
-      "static/chunks/b2b90_next_dist_b49f62d4._.js",
-      "static/chunks/b2b90_next_app_b4e5c9d1.js",
-      "static/chunks/[next]_entry_page-loader_ts_4b861b24._.js",
-      "static/chunks/b2b90_react-dom_151ecf2f._.js",
-      "static/chunks/b2b90_61709ee1._.js",
-      "static/chunks/[root-of-the-server]__809ba52f._.js",
-      "static/chunks/bobing-ssot-new_pages__app_2da965e7._.js",
-      "static/chunks/turbopack-bobing-ssot-new_pages__app_806572c7._.js"
-    ],
-    "/_error": [
-      "static/chunks/b2b90_next_dist_compiled_b1fd20cd._.js",
-      "static/chunks/b2b90_next_dist_shared_lib_59eabd96._.js",
-      "static/chunks/b2b90_next_dist_client_34197071._.js",
-      "static/chunks/b2b90_next_dist_c1abb9ea._.js",
-      "static/chunks/b2b90_next_error_b01da374.js",
-      "static/chunks/[next]_entry_page-loader_ts_52c2db0f._.js",
-      "static/chunks/b2b90_react-dom_151ecf2f._.js",
-      "static/chunks/b2b90_61709ee1._.js",
-      "static/chunks/[root-of-the-server]__5b0d7ae7._.js",
-      "static/chunks/bobing-ssot-new_pages__error_2da965e7._.js",
-      "static/chunks/turbopack-bobing-ssot-new_pages__error_cf54a3c3._.js"
-    ]
+    "/_app": []
   },
   "devFiles": [],
   "polyfillFiles": [
