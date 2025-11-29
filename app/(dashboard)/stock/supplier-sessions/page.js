@@ -1,421 +1,400 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { collection, getDocs, doc, runTransaction, query, orderBy, serverTimestamp, limit, where } from 'firebase/firestore';
-import { sortBySize } from '@/lib/utils';
-import Sortable from 'sortablejs';
+import { collection, getDocs, doc, runTransaction, query, orderBy, serverTimestamp, limit, where, updateDoc } from 'firebase/firestore';
+// UPDATE: Import sizeRank untuk sorting Header Group
+import { sortBySize, sizeRank } from '@/lib/utils';
 import { Portal } from '@/lib/usePortal';
+import toast from 'react-hot-toast';
 import React from 'react'; 
 
 // Cache Configuration
 const CACHE_KEY = 'lumina_virtual_stock_master';
-const CACHE_DURATION = 5 * 60 * 1000; 
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
 
 export default function VirtualStockPage() {
+    // Data State
     const [suppliers, setSuppliers] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [products, setProducts] = useState([]);
     const [variants, setVariants] = useState([]);
     
-    // Snapshot diload lazy (hanya saat supplier dipilih) untuk hemat biaya
+    // Snapshot diload lazy
     const [snapshots, setSnapshots] = useState({});
     const [loadingSnapshots, setLoadingSnapshots] = useState(false);
     
+    // UI State
     const [selectedSupplierId, setSelectedSupplierId] = useState('');
-    const [visibleProducts, setVisibleProducts] = useState([]);
-    const gridRef = useRef(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [isRackMode, setIsRackMode] = useState(true);
     
-    // Mobile State
-    const [expandedProductId, setExpandedProductId] = useState(null);
-    
+    // Modal State
     const [modalOpen, setModalOpen] = useState(false);
     const [currentModalProd, setCurrentModalProd] = useState(null);
-    const [modalUpdates, setModalUpdates] = useState({});
+    const [tempStock, setTempStock] = useState({}); 
     
-    // Grouping State for Modal
-    const [groupBy, setGroupBy] = useState('size'); // 'size' | 'color'
+    // Modal Sorting State (Default 'size')
+    const [modalSortMode, setModalSortMode] = useState('size'); 
 
-    useEffect(() => { fetchData(); }, []);
-
-    // Set default supplier (Mas Tohir)
+    // --- 1. INITIAL LOAD ---
     useEffect(() => {
-        if (suppliers.length > 0 && !selectedSupplierId) {
-            const masTohir = suppliers.find(s => s.name === 'Mas Tohir');
-            if (masTohir) {
-                handleSupplierChange({ target: { value: masTohir.id } });
-            }
-        }
-    }, [suppliers]);
+        const init = async () => {
+            setLoading(true);
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                let loaded = false;
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Date.now() - parsed.ts < CACHE_DURATION) {
+                        setSuppliers(parsed.suppliers);
+                        setWarehouses(parsed.warehouses);
+                        setProducts(parsed.products);
+                        setVariants(parsed.variants);
+                        const defWh = parsed.warehouses.find(w => w.name.toLowerCase().includes('kuning')) || parsed.warehouses[0];
+                        if (defWh && !selectedSupplierId) setSelectedSupplierId(defWh.id);
+                        loaded = true;
+                    }
+                }
 
+                if (!loaded) {
+                    const [whSnap, prodSnap, varSnap] = await Promise.all([
+                        getDocs(query(collection(db, "warehouses"), orderBy("created_at"))),
+                        getDocs(collection(db, "products")),
+                        getDocs(collection(db, "product_variants"))
+                    ]);
+
+                    const whList = [];
+                    whSnap.forEach(d => whList.push({ id: d.id, ...d.data() }));
+                    const prodList = []; prodSnap.forEach(d => prodList.push({id:d.id, ...d.data()}));
+                    const varList = []; varSnap.forEach(d => varList.push({id:d.id, ...d.data()}));
+
+                    setWarehouses(whList);
+                    setProducts(prodList);
+                    setVariants(varList);
+                    
+                    const defWh = whList.find(w => w.name.toLowerCase().includes('kuning')) || whList[0];
+                    if (defWh && !selectedSupplierId) setSelectedSupplierId(defWh.id);
+
+                    localStorage.setItem(CACHE_KEY, JSON.stringify({
+                        suppliers: [], warehouses: whList, products: prodList, variants: varList, ts: Date.now()
+                    }));
+                }
+            } catch(e) { console.error(e); } finally { setLoading(false); }
+        };
+        init();
+    }, []);
+
+    // --- 2. LOAD SNAPSHOTS ---
     useEffect(() => {
-        if (gridRef.current && visibleProducts.length > 0) {
-            new Sortable(gridRef.current, { animation: 150, ghostClass: 'opacity-50' });
-        }
-    }, [visibleProducts]);
+        if (!selectedSupplierId) return;
+        const loadStock = async () => {
+            setLoadingSnapshots(true);
+            try {
+                const q = query(collection(db, "stock_snapshots"), where("warehouse_id", "==", selectedSupplierId));
+                const snap = await getDocs(q);
+                const map = {};
+                snap.forEach(d => { map[d.data().variant_id] = d.data().qty || 0; });
+                setSnapshots(map);
+            } catch(e) { console.error(e); } finally { setLoadingSnapshots(false); }
+        };
+        loadStock();
+    }, [selectedSupplierId]);
 
-    const fetchData = async () => {
+    const handleUpdateRack = async (prodId, newRack) => {
+        const cleanRack = newRack.toUpperCase().trim();
+        setProducts(prev => prev.map(p => p.id === prodId ? { ...p, rack: cleanRack } : p));
         try {
-            // 1. Cek Cache (Master Data Only)
-            const cached = sessionStorage.getItem(CACHE_KEY);
+            await updateDoc(doc(db, "products", prodId), { rack: cleanRack });
+            toast.success(`Rak disimpan: ${cleanRack}`, { duration: 1000, icon: '📍' });
+            const cached = localStorage.getItem(CACHE_KEY);
             if (cached) {
-                const { suppliers, warehouses, products, variants, timestamp } = JSON.parse(cached);
-                if (Date.now() - timestamp < CACHE_DURATION) {
-                    setSuppliers(suppliers);
-                    setWarehouses(warehouses);
-                    setProducts(products);
-                    setVariants(variants);
-                    return;
-                }
+                const parsed = JSON.parse(cached);
+                parsed.products = parsed.products.map(p => p.id === prodId ? { ...p, rack: cleanRack } : p);
+                localStorage.setItem(CACHE_KEY, JSON.stringify(parsed));
             }
-
-            // 2. Fetch Fresh (Master Data Only - NO SNAPSHOTS YET)
-            const [sSupp, sWh, sProd, sVar] = await Promise.all([
-                getDocs(query(collection(db, "suppliers"), orderBy("name"))),
-                getDocs(collection(db, "warehouses")),
-                getDocs(query(collection(db, "products"), limit(100))), 
-                getDocs(query(collection(db, "product_variants"), orderBy("sku"))),
-            ]);
-
-            const supps = []; sSupp.forEach(d => supps.push({id: d.id, ...d.data()}));
-            const whs = []; sWh.forEach(d => whs.push({id: d.id, ...d.data()}));
-            const prods = []; sProd.forEach(d => prods.push({id: d.id, ...d.data()}));
-            const vars = []; sVar.forEach(d => vars.push({id: d.id, ...d.data()}));
-
-            setSuppliers(supps);
-            setWarehouses(whs);
-            setProducts(prods);
-            setVariants(vars);
-
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify({
-                suppliers: supps,
-                warehouses: whs,
-                products: prods,
-                variants: vars,
-                timestamp: Date.now()
-            }));
-
-        } catch (e) { console.error(e); }
+        } catch (e) { toast.error("Gagal simpan rak"); }
     };
 
-    const handleSupplierChange = async (e) => {
-        const suppId = e.target ? e.target.value : e; // Support event or direct value
-        setSelectedSupplierId(suppId);
-        
-        if (!suppId) { setVisibleProducts([]); return; }
-        
-        const wh = warehouses.find(w => w.type === 'virtual_supplier' && w.supplier_id === suppId);
-        if (!wh) { setVisibleProducts([]); return; }
+    // --- OPEN MODAL ---
+    const openScreening = (prod) => {
+        const prodVars = variants.filter(v => v.product_id === prod.id);
+        const initialTemp = {};
+        prodVars.forEach(v => { initialTemp[v.id] = snapshots[v.id] || 0; });
 
-        // --- OPTIMIZED: Fetch snapshots ONLY for this warehouse ---
-        setLoadingSnapshots(true);
-        try {
-            const qSnap = query(collection(db, "stock_snapshots"), where("warehouse_id", "==", wh.id));
-            const sSnap = await getDocs(qSnap);
-            const newSnaps = {};
-            sSnap.forEach(d => newSnaps[d.id] = d.data());
-            setSnapshots(newSnaps); // Replace local snapshots state with specific warehouse data
-
-            // Build Product List
-            const grouped = {};
-            variants.forEach(v => {
-                if (!grouped[v.product_id]) {
-                    const p = products.find(x => x.id === v.product_id);
-                    if(p) grouped[v.product_id] = { ...p, variants: [], totalStock: 0 };
-                }
-                if(grouped[v.product_id]) {
-                    grouped[v.product_id].variants.push(v);
-                    // Hitung total dari snapshot yang baru di-fetch
-                    grouped[v.product_id].totalStock += (newSnaps[`${v.id}_${wh.id}`]?.qty || 0);
-                }
-            });
-            setVisibleProducts(Object.values(grouped).sort((a,b) => (a.base_sku||'').localeCompare(b.base_sku||'')));
-        } catch(e) {
-            console.error("Error loading snapshots:", e);
-        } finally {
-            setLoadingSnapshots(false);
-        }
+        setCurrentModalProd({ ...prod, variants: prodVars });
+        setTempStock(initialTemp);
+        setModalSortMode('size'); // DEFAULT SORT BY SIZE
+        setModalOpen(true);
     };
 
-    const openModal = (prod) => { 
-        setCurrentModalProd(prod); 
-        setModalUpdates({}); 
-        setGroupBy('size'); 
-        setModalOpen(true); 
-    };
-
-    // Helper Actions
-    const quickSet = (variantId, value, mode = 'set') => {
-        setModalUpdates(prev => {
-            const currentVal = parseInt(prev[variantId] || 0);
-            let newVal = value;
-            if (mode === 'add') newVal = (isNaN(currentVal) ? 0 : currentVal) + value;
+    const updateTemp = (variantId, type) => {
+        setTempStock(prev => {
+            const current = prev[variantId] || 0;
+            let newVal = current;
+            if (type === 'zero') newVal = 0;
+            else if (type === 'add_5') newVal += 5;
+            else if (type === 'add_10') newVal += 10;
+            else if (type === 'min_1') newVal = Math.max(0, current - 1);
+            else if (type === 'plus_1') newVal += 1;
             return { ...prev, [variantId]: newVal };
         });
     };
 
-    const hasChanges = Object.keys(modalUpdates).length > 0;
-
     const saveModal = async () => {
-        if (!hasChanges) return;
+        if (!selectedSupplierId || !currentModalProd) return;
 
-        const wh = warehouses.find(w => w.type === 'virtual_supplier' && w.supplier_id === selectedSupplierId);
+        let hasChanges = false;
         const updates = [];
-        
-        Object.keys(modalUpdates).forEach(vid => {
-            const real = parseInt(modalUpdates[vid]);
-            const current = snapshots[`${vid}_${wh.id}`]?.qty || 0;
-            if (!isNaN(real) && real !== current) updates.push({ variantId: vid, real, diff: real - current });
+
+        currentModalProd.variants.forEach(v => {
+            const oldQty = snapshots[v.id] || 0;
+            const newQty = tempStock[v.id];
+            if (oldQty !== newQty) {
+                hasChanges = true;
+                updates.push({ variantId: v.id, diff: newQty - oldQty, newQty });
+            }
         });
-        
-        if(updates.length === 0) { setModalOpen(false); return; }
+
+        if (!hasChanges) { setModalOpen(false); return; }
 
         try {
-            await runTransaction(db, async (t) => {
-                const sessRef = doc(collection(db, "supplier_stock_sessions"));
-                t.set(sessRef, { supplier_id: selectedSupplierId, warehouse_id: wh.id, date: serverTimestamp(), created_by: user?.email, type: 'overwrite' });
-                
-                for(const up of updates) {
-                    const k = `${up.variantId}_${wh.id}`;
-                    const snapRef = doc(db, "stock_snapshots", k);
-                    const sDoc = await t.get(snapRef);
-                    
-                    t.set(doc(collection(db, "stock_movements")), { 
-                        variant_id: up.variantId, warehouse_id: wh.id, type: 'supplier_sync', 
-                        qty: up.diff, ref_id: sessRef.id, ref_type: 'supplier_session', date: serverTimestamp() 
+            await runTransaction(db, async (transaction) => {
+                updates.forEach(u => {
+                    const moveRef = doc(collection(db, "stock_movements"));
+                    transaction.set(moveRef, {
+                        variant_id: u.variantId, warehouse_id: selectedSupplierId,
+                        type: 'virtual_adjustment', qty: u.diff, date: serverTimestamp(),
+                        notes: 'Screening Gudang Supplier', created_by: 'app_user'
                     });
-                    
-                    if(sDoc.exists()) t.update(snapRef, { qty: up.real, updated_at: serverTimestamp() }); 
-                    else t.set(snapRef, { id: k, variant_id: up.variantId, warehouse_id: wh.id, qty: up.real, updated_at: serverTimestamp() });
-                }
+                    const snapRef = doc(db, "stock_snapshots", `${u.variantId}_${selectedSupplierId}`);
+                    transaction.set(snapRef, {
+                        id: `${u.variantId}_${selectedSupplierId}`, variant_id: u.variantId,
+                        warehouse_id: selectedSupplierId, qty: u.newQty, updated_at: serverTimestamp()
+                    }, { merge: true });
+                });
             });
-            
-            alert("Stok terupdate!"); 
-            setModalOpen(false); 
-            
-            // Update local snapshots optimistically or re-fetch
-            // Re-fetch is safer to sync with DB
-            handleSupplierChange(selectedSupplierId); 
-            
-            // Invalidate other caches
-            sessionStorage.removeItem('lumina_inventory_data'); 
 
-        } catch(e) { alert(e.message); }
+            setSnapshots(prev => {
+                const next = { ...prev };
+                updates.forEach(u => next[u.variantId] = u.newQty);
+                return next;
+            });
+
+            setModalOpen(false);
+            toast.success("Stok Terupdate!", { icon: '✅' });
+        } catch(e) {
+            console.error(e);
+            toast.error("Gagal menyimpan");
+        }
     };
 
-    const toggleAccordion = (id) => {
-        setExpandedProductId(expandedProductId === id ? null : id);
-    };
-
-    const getGroupedVariants = (variants) => {
-        const groups = {};
-        variants.forEach(v => {
-            const key = groupBy === 'size' ? (v.size || 'Other') : (v.color || 'Other');
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(v);
+    const filteredProducts = products
+        .filter(p => 
+            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.base_sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (p.rack || '').toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => {
+            if (isRackMode) {
+                const rackA = a.rack || 'ZZZ'; 
+                const rackB = b.rack || 'ZZZ';
+                if (rackA < rackB) return -1;
+                if (rackA > rackB) return 1;
+            }
+            return a.name.localeCompare(b.name);
         });
-        return groups;
-    };
+
+    // COMPONENT: QUICK CONTROL ROW
+    // mode='size' -> Header=SizeName, ItemText=ColorName
+    // mode='color' -> Header=ColorName, ItemText=SizeName
+    const QuickControlRow = ({ v, qty, mode }) => (
+        <div className="flex items-center justify-between mb-3 last:mb-0 bg-white p-2 rounded-lg border border-lumina-border shadow-sm">
+            <div className="w-1/3">
+                {/* Jika Group by Size, tampilkan Warna di sini. Sebaliknya jika Group by Color, tampilkan Size. */}
+                <div className="font-bold text-base text-text-primary">
+                    {mode === 'size' ? v.color : v.size}
+                </div>
+                <div className="text-[10px] text-text-secondary font-mono">{v.sku}</div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+                <button onClick={() => updateTemp(v.id, 'zero')} className="h-9 px-2 text-[10px] font-bold bg-rose-50 text-rose-600 rounded border border-rose-200 hover:bg-rose-100 active:scale-95">NOL</button>
+                
+                <div className="flex items-center bg-background border border-lumina-border rounded-lg h-9">
+                    <button onClick={() => updateTemp(v.id, 'min_1')} className="w-9 h-full flex items-center justify-center text-text-secondary hover:bg-gray-200 rounded-l-lg active:bg-gray-300 text-lg font-bold">-</button>
+                    <input 
+                        type="number" 
+                        className="w-10 text-center bg-transparent font-bold text-primary outline-none text-lg"
+                        value={qty}
+                        onChange={(e) => setTempStock({...tempStock, [v.id]: parseInt(e.target.value)||0})}
+                    />
+                    <button onClick={() => updateTemp(v.id, 'plus_1')} className="w-9 h-full flex items-center justify-center text-text-secondary hover:bg-gray-200 rounded-r-lg active:bg-gray-300 text-lg font-bold">+</button>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                    <button onClick={() => updateTemp(v.id, 'add_5')} className="px-2 py-0.5 text-[9px] font-bold bg-blue-50 border border-blue-200 text-blue-600 rounded hover:bg-blue-100 active:scale-95">+5</button>
+                    <button onClick={() => updateTemp(v.id, 'add_10')} className="px-2 py-0.5 text-[9px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-600 rounded hover:bg-emerald-100 active:scale-95">+10</button>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
-             {/* Header */}
-             <div className="sticky top-0 z-30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface -mx-4 px-4 md:-mx-8 md:px-8 py-4 border-b border-lumina-border/50 shadow-md">
-                <div>
-                    <h2 className="text-xl md:text-3xl font-display font-bold text-text-primary tracking-tight">Virtual Stock Map</h2>
-                    <p className="text-sm text-text-secondary mt-1 font-light hidden md:block">Drag & Drop cards to organize supplier products.</p>
+        <div className="max-w-2xl mx-auto pb-24 px-4 pt-4 bg-background min-h-screen">
+            {/* --- HEADER --- */}
+            <div className="sticky top-0 z-10 bg-background pb-4 space-y-3">
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-xl font-bold text-text-primary">Stok Virtual</h1>
+                        <p className="text-xs text-text-secondary">Screening & Belanja Cepat.</p>
+                    </div>
+                    <button onClick={() => setIsRackMode(!isRackMode)} className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-colors flex items-center gap-2 ${isRackMode ? 'bg-primary text-white border-primary' : 'bg-surface text-text-secondary border-lumina-border'}`}>
+                        {isRackMode ? '📍 Urut Rak' : '🔤 Urut Nama'}
+                    </button>
                 </div>
-                <select 
-                    className="input-luxury w-full md:w-64 font-medium" 
-                    value={selectedSupplierId} 
-                    onChange={handleSupplierChange}
-                >
-                    <option value="">-- Select Supplier --</option>
-                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+
+                <div className="bg-surface p-3 rounded-xl border border-lumina-border shadow-sm">
+                    <label className="text-[10px] font-bold text-text-secondary uppercase mb-1 block">Lokasi Belanja (Gudang)</label>
+                    <select className="w-full bg-background border border-lumina-border rounded-lg p-2 text-sm font-bold text-text-primary focus:outline-none focus:border-primary" value={selectedSupplierId} onChange={e => setSelectedSupplierId(e.target.value)}>
+                        <option value="">-- Pilih Supplier --</option>
+                        {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
+                    </select>
+                </div>
+
+                <div className="relative">
+                    <input type="text" className="w-full pl-10 pr-4 py-3 bg-surface border border-lumina-border rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Cari SKU / Nama / Rak..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <svg className="w-5 h-5 text-text-secondary absolute left-3 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
             </div>
 
-            {selectedSupplierId && (
-                <>
-                    {loadingSnapshots && <div className="text-center py-8 text-lumina-gold animate-pulse">Memuat Data Stok...</div>}
-                    
-                    {!loadingSnapshots && (
-                        <>
-                            {/* --- DESKTOP GRID VIEW --- */}
-                            <div ref={gridRef} className="hidden md:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {visibleProducts.map(p => (
-                                    <div key={p.id} className="card-luxury p-5 cursor-grab active:cursor-grabbing hover:border-lumina-gold/50 transition-all relative group" onClick={() => openModal(p)}>
-                                        <span className="text-[10px] font-bold bg-surface text-lumina-gold px-2 py-1 rounded uppercase tracking-wide border border-lumina-border">{p.base_sku}</span>
-                                        <h3 className="text-sm font-bold text-text-primary mt-3 mb-4 line-clamp-2 leading-relaxed group-hover:text-lumina-gold transition-colors">{p.name}</h3>
-                                        <div className="flex justify-between items-end border-t border-lumina-border pt-3">
-                                            <span className="text-xs text-text-secondary">{p.variants.length} Items</span>
-                                            <span className={`text-lg font-bold ${p.totalStock > 0 ? 'text-emerald-400' : 'text-lumina-border'}`}>{p.totalStock}</span>
-                                        </div>
+            {/* --- GRID PRODUK --- */}
+            {!selectedSupplierId ? (
+                <div className="text-center py-20 text-text-secondary opacity-50"><p>Pilih Gudang Supplier dulu di atas 👆</p></div>
+            ) : loadingSnapshots ? (
+                <div className="text-center py-20 text-primary animate-pulse">Memuat data stok...</div>
+            ) : (
+                <div className="grid grid-cols-1 gap-3">
+                    {filteredProducts.map(p => {
+                        const pVars = variants.filter(v => v.product_id === p.id);
+                        const totalStock = pVars.reduce((acc, v) => acc + (snapshots[v.id] || 0), 0);
+                        
+                        return (
+                            <div key={p.id} onClick={() => openScreening(p)} className="bg-surface p-4 rounded-xl border border-lumina-border shadow-sm active:scale-[0.98] transition-transform flex gap-3 cursor-pointer relative group">
+                                {/* RACK INPUT */}
+                                <div className="shrink-0 flex flex-col items-center justify-center gap-1 border-r border-dashed border-lumina-border pr-3 w-16" onClick={e => e.stopPropagation()}>
+                                    <span className="text-[9px] text-text-secondary uppercase font-bold">RAK</span>
+                                    <input type="text" className="w-full text-center font-mono font-bold text-lg bg-gray-50 border border-lumina-border rounded p-1 uppercase focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-primary" placeholder="--" defaultValue={p.rack || ''} onBlur={(e) => handleUpdateRack(p.id, e.target.value)} onKeyDown={(e) => { if(e.key === 'Enter') e.target.blur(); }} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        {/* SKU BASE: HIGHLIGHTED */}
+                                        <span className="font-mono text-sm font-black bg-blue-600 text-white px-2 py-0.5 rounded shadow-sm tracking-wide">{p.base_sku}</span>
+                                        {totalStock > 0 && <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">{totalStock} pcs</span>}
                                     </div>
-                                ))}
+                                    <h3 className="font-bold text-text-primary text-sm leading-tight line-clamp-2">{p.name}</h3>
+                                    <p className="text-xs text-text-secondary mt-1">{pVars.length} Varian</p>
+                                </div>
+                                <div className="self-center w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary shrink-0"><svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg></div>
                             </div>
-
-                            {/* --- MOBILE LIST VIEW (ACCORDION) --- */}
-                            <div className="md:hidden grid grid-cols-1 gap-4">
-                                {visibleProducts.map(p => {
-                                    const isExpanded = expandedProductId === p.id;
-                                    return (
-                                        <div key={p.id} onClick={() => openModal(p)} className="card-luxury p-4 active:scale-[0.98] transition-transform cursor-pointer">
-                                            <div className="flex gap-4 items-start">
-                                                <div className="w-16 h-16 rounded-lg bg-surface border border-lumina-border flex-shrink-0 overflow-hidden">
-                                                    {p.image_url ? (
-                                                        <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-text-secondary"><span className="text-xs">IMG</span></div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start">
-                                                        <span className="text-xs font-mono font-bold text-lumina-gold bg-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
-                                                        <span className={`text-sm font-bold font-mono ${p.totalStock > 0 ? 'text-emerald-400' : 'text-text-secondary/50'}`}>
-                                                            {p.totalStock} <span className="text-[10px] font-normal">qty</span>
-                                                        </span>
-                                                    </div>
-                                                    <h3 className="text-sm font-bold text-text-primary mt-1 truncate">{p.name}</h3>
-                                                    <div className="flex items-center justify-between mt-1">
-                                                        <span className="text-[10px] text-text-secondary">{p.variants.length} Varian</span>
-                                                        <span className="badge-luxury badge-neutral text-[9px]">{p.category}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </>
-                    )}
-                </>
+                        );
+                    })}
+                </div>
             )}
 
-            {/* Update Stock Modal */}
+            {/* --- SCREENING MODAL --- */}
             <Portal>
             {modalOpen && currentModalProd && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-surface border border-lumina-border rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col ring-1 ring-lumina-gold/20">
+                <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/60 backdrop-blur-sm p-0 sm:p-4 animate-slide-up">
+                    <div className="bg-surface w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
                         
-                        {/* MODAL HEADER COMPACT */}
-                        <div className="p-4 border-b border-lumina-border bg-surface rounded-t-2xl flex flex-col gap-3 shrink-0">
-                            <div className="flex justify-between items-start gap-4">
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="text-lg font-bold text-text-primary font-mono tracking-wide">{currentModalProd.base_sku}</h3>
-                                    <p className="text-sm text-text-secondary truncate mt-0.5">{currentModalProd.name}</p>
+                        {/* MODAL HEADER */}
+                        <div className="p-4 border-b border-lumina-border bg-surface rounded-t-2xl flex justify-between items-start shadow-sm z-10">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">RAK: {currentModalProd.rack || '-'}</span>
+                                    <span className="font-mono text-sm font-extrabold text-primary">{currentModalProd.base_sku}</span>
                                 </div>
-                                
-                                <div className="flex flex-col items-end gap-2">
-                                    <button onClick={() => setModalOpen(false)} className="text-xl text-text-secondary hover:text-text-primary transition-colors px-2 -mr-2">&times;</button>
-                                    {/* Grouping Controls */}
-                                    <div className="flex items-center bg-surface/50 rounded-lg border border-lumina-border/30 p-0.5">
-                                        <button 
-                                            onClick={() => setGroupBy('size')} 
-                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='size' ? 'bg-primary text-black' : 'text-text-secondary hover:text-text-primary'}`}
-                                        >
-                                            Size
-                                        </button>
-                                        <button 
-                                            onClick={() => setGroupBy('color')} 
-                                            className={`px-3 py-1 text-[10px] font-bold rounded transition-all ${groupBy==='color' ? 'bg-primary text-black' : 'text-text-secondary hover:text-text-primary'}`}
-                                        >
-                                            Color
-                                        </button>
-                                    </div>
-                                </div>
+                                <h3 className="font-bold text-lg text-text-primary leading-tight line-clamp-1">{currentModalProd.name}</h3>
+                            </div>
+                            
+                            {/* SORT TOGGLE */}
+                            <div className="flex flex-col items-end gap-2">
+                                <button onClick={() => setModalOpen(false)} className="text-text-secondary p-1 bg-gray-100 rounded-full hover:bg-gray-200">✕</button>
+                                <button onClick={() => setModalSortMode(modalSortMode === 'size' ? 'color' : 'size')} className="text-[10px] font-bold px-2 py-1 rounded border border-lumina-border bg-gray-50 hover:bg-gray-100 transition-colors flex items-center gap-1">
+                                    <span>Group:</span><span className="text-primary uppercase">{modalSortMode}</span>
+                                </button>
                             </div>
                         </div>
-                        
-                        {/* MODAL BODY (SCROLLABLE) */}
-                        <div className="flex-1 overflow-y-auto p-0 bg-surface custom-scrollbar">
-                            {(() => {
-                                const groups = getGroupedVariants(currentModalProd.variants);
-                                const sortedKeys = Object.keys(groups).sort((a,b) => {
-                                     if(groupBy === 'size') {
-                                         const sizes = ['XXS','XS','S','M','L','XL','XXL','2XL','3XL','ALL','STD'];
-                                         const iA = sizes.indexOf(a.toUpperCase());
-                                         const iB = sizes.indexOf(b.toUpperCase());
-                                         if(iA !== -1 && iB !== -1) return iA - iB;
-                                         return a.localeCompare(b);
-                                     }
-                                     return a.localeCompare(b);
-                                });
 
-                                return (
-                                    <div className="divide-y divide-lumina-border/30">
-                                        {sortedKeys.map(key => (
-                                            <div key={key}>
-                                                {/* Group Header */}
-                                                <div className="bg-surface/50 px-4 py-2 text-[10px] font-extrabold text-lumina-gold uppercase tracking-widest border-y border-lumina-border/50 sticky top-0 z-10">
-                                                    {groupBy === 'size' ? `Size: ${key}` : `Color: ${key}`}
-                                                </div>
-
-                                                {/* Variants in Group */}
-                                                {groups[key]
-                                                    .sort((a,b) => groupBy === 'size' ? a.color.localeCompare(b.color) : sortBySize(a, b))
-                                                    .map(v => {
-                                                        const whId = warehouses.find(w => w.supplier_id === selectedSupplierId)?.id;
-                                                        const sysQty = snapshots[`${v.id}_${whId}`]?.qty || 0;
-                                                        const inputVal = modalUpdates[v.id];
-                                                        const isUpdated = inputVal !== undefined && inputVal !== "" && parseInt(inputVal) !== sysQty;
-                                                        
-                                                        return (
-                                                            <div key={v.id} className={`p-4 flex flex-col gap-3 transition-colors border-b border-lumina-border/10 last:border-0 ${isUpdated ? 'bg-primary/5' : ''}`}>
-                                                                <div className="flex justify-between items-center">
-                                                                    <div className="flex flex-col">
-                                                                        <span className="text-sm font-bold text-text-primary">
-                                                                            {groupBy === 'size' ? v.color : v.size} 
-                                                                            <span className="text-text-secondary font-normal ml-1 text-xs">/ {groupBy === 'size' ? v.size : v.color}</span>
-                                                                        </span>
-                                                                        <span className="text-[10px] font-mono text-text-secondary mt-0.5">{v.sku}</span>
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <span className="text-[10px] text-text-secondary block uppercase">System</span>
-                                                                        <span className="font-mono text-sm font-bold text-text-primary">{sysQty}</span>
-                                                                    </div>
-                                                                </div>
-                                                                
-                                                                {/* Input & Quick Actions */}
-                                                                <div className="flex items-center gap-2">
-                                                                    <input 
-                                                                        type="number" 
-                                                                        className={`flex-1 text-center bg-surface border rounded-lg py-2 font-bold text-lg focus:ring-2 outline-none transition-all ${
-                                                                            isUpdated 
-                                                                            ? 'border-lumina-gold text-lumina-gold ring-lumina-gold/30' 
-                                                                            : 'border-lumina-border text-text-primary ring-transparent focus:border-lumina-gold'
-                                                                        }`} 
-                                                                        placeholder={sysQty}
-                                                                        value={modalUpdates[v.id] || ''}
-                                                                        onChange={(e) => setModalUpdates({...modalUpdates, [v.id]: e.target.value})} 
-                                                                    />
-                                                                    
-                                                                    {/* Helper Buttons */}
-                                                                    <div className="flex gap-1">
-                                                                        <button onClick={() => quickSet(v.id, sysQty)} className="px-3 py-2 bg-surface border border-lumina-border rounded text-[10px] font-bold hover:bg-lumina-highlight text-text-secondary">=</button>
-                                                                        <button onClick={() => quickSet(v.id, 0)} className="px-3 py-2 bg-surface border border-lumina-border rounded text-[10px] font-bold hover:bg-lumina-highlight text-text-secondary">0</button>
-                                                                        <button onClick={() => quickSet(v.id, 1, 'add')} className="px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded text-[10px] font-bold hover:bg-emerald-500/20 text-emerald-400">+1</button>
-                                                                        <button onClick={() => quickSet(v.id, 5, 'add')} className="px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded text-[10px] font-bold hover:bg-emerald-500/20 text-emerald-400">+5</button>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                })}
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
-                            })()}
+                        {/* VARIANT LIST (DYNAMIC GROUPING) */}
+                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50 custom-scrollbar">
+                            {modalSortMode === 'size' ? (
+                                // --- MODE 1: GROUP BY SIZE (DEFAULT) ---
+                                <div className="space-y-4">
+                                    {Object.entries(
+                                        currentModalProd.variants.reduce((acc, v) => {
+                                            const k = (v.size || 'No Size').toUpperCase();
+                                            if(!acc[k]) acc[k] = [];
+                                            acc[k].push(v);
+                                            return acc;
+                                        }, {})
+                                    ).sort((a, b) => {
+                                        // Sort Group Headers (Size) Using sizeRank
+                                        const idxA = sizeRank.indexOf(a[0]);
+                                        const idxB = sizeRank.indexOf(b[0]);
+                                        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                                        if (idxA !== -1) return -1;
+                                        if (idxB !== -1) return 1;
+                                        return a[0].localeCompare(b[0]);
+                                    }).map(([size, vars]) => (
+                                        <div key={size} className="bg-surface p-3 rounded-xl border border-lumina-border shadow-sm">
+                                            <h4 className="text-xs font-bold text-text-secondary uppercase mb-3 border-b border-dashed border-lumina-border pb-1 flex justify-between">
+                                                <span>{size}</span>
+                                                <span className="text-[10px] bg-gray-100 px-1.5 rounded">{vars.length} Item</span>
+                                            </h4>
+                                            {/* Items: Sorted by Color */}
+                                            {vars.sort((a,b) => (a.color||'').localeCompare(b.color||'')).map(v => (
+                                                <QuickControlRow key={v.id} v={v} qty={tempStock[v.id] || 0} mode="size" />
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                // --- MODE 2: GROUP BY COLOR ---
+                                <div className="space-y-4">
+                                    {Object.entries(
+                                        currentModalProd.variants.reduce((acc, v) => {
+                                            const k = v.color || 'General';
+                                            if(!acc[k]) acc[k] = [];
+                                            acc[k].push(v);
+                                            return acc;
+                                        }, {})
+                                    ).sort().map(([color, vars]) => (
+                                        <div key={color} className="bg-surface p-3 rounded-xl border border-lumina-border shadow-sm">
+                                            <h4 className="text-xs font-bold text-text-secondary uppercase mb-3 border-b border-dashed border-lumina-border pb-1 flex justify-between">
+                                                <span>{color}</span>
+                                                <span className="text-[10px] bg-gray-100 px-1.5 rounded">{vars.length} Item</span>
+                                            </h4>
+                                            {/* Items: Sorted by Size (Custom Logic) */}
+                                            {vars.sort(sortBySize).map(v => (
+                                                <QuickControlRow key={v.id} v={v} qty={tempStock[v.id] || 0} mode="color" />
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         
-                        <div className="p-4 border-t border-lumina-border bg-surface rounded-b-2xl flex justify-end gap-3 shrink-0">
-                             <button onClick={() => setModalOpen(false)} className="btn-ghost-dark flex-1 md:flex-none">Batal</button>
-                            <button 
-                                onClick={saveModal} 
-                                disabled={!hasChanges}
-                                className={`btn-gold flex-1 md:flex-none shadow-gold-glow transition-all ${!hasChanges ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
-                            >
-                                Simpan Perubahan
-                            </button>
+                        {/* Footer Actions */}
+                        <div className="p-4 border-t border-lumina-border bg-surface rounded-b-2xl flex justify-between items-center shrink-0">
+                            <div className="text-xs text-text-secondary">
+                                Total: <span className="font-bold text-xl text-primary ml-1">{Object.values(tempStock).reduce((a,b)=>a+b,0)}</span>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setModalOpen(false)} className="btn-ghost-dark px-4 py-2 text-sm">Batal</button>
+                                <button onClick={saveModal} className="btn-gold px-6 py-2 text-sm shadow-lg">SIMPAN</button>
+                            </div>
                         </div>
                     </div>
                 </div>

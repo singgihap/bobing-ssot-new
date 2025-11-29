@@ -4,10 +4,18 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, writeBatch, limit } from 'firebase/firestore';
 import { Portal } from '@/lib/usePortal';
 import toast from 'react-hot-toast';
+import PageHeader from '@/components/PageHeader';
 
-// --- KONFIGURASI CACHE (OPTIMIZED) ---
+// --- MODERN UI IMPORTS ---
+import { 
+    Users, Plus, Search, Trash2, Edit2, ScanLine, X, 
+    Phone, MapPin, User, CheckCircle, AlertCircle 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- KONFIGURASI CACHE ---
 const CACHE_KEY = 'lumina_customers_v2';
-const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit (Data customer jarang berubah drastis)
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Menit
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState([]);
@@ -15,10 +23,11 @@ export default function CustomersPage() {
     const [modalOpen, setModalOpen] = useState(false);
     const [formData, setFormData] = useState({});
     const [scanning, setScanning] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => { fetchData(); }, []);
 
-    // 1. Fetch Data (Optimized with LocalStorage)
+    // 1. Fetch Data
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
@@ -35,7 +44,7 @@ export default function CustomersPage() {
                 }
             }
 
-            // B. Fetch Firebase (Limit 100)
+            // B. Fetch Firebase
             const q = query(collection(db, "customers"), orderBy("name", "asc"), limit(100));
             const snap = await getDocs(q);
             const data = [];
@@ -43,7 +52,6 @@ export default function CustomersPage() {
             
             setCustomers(data);
             
-            // C. Simpan Cache LocalStorage
             if (typeof window !== 'undefined') {
                 localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
             }
@@ -56,41 +64,34 @@ export default function CustomersPage() {
         }
     };
 
+    // 2. Scan Logic
     const scanFromSales = async () => {
         if(!confirm("Scan 500 transaksi terakhir untuk pelanggan baru?")) return;
         setScanning(true);
         const scanPromise = new Promise(async (resolve, reject) => {
             try {
-                // Query Heavy: 500 Reads (Hanya dijalankan manual oleh user)
                 const qSales = query(collection(db, "sales_orders"), orderBy("order_date", "desc"), limit(500));
                 const snapSales = await getDocs(qSales);
                 const newCandidates = {};
                 
-                // Process Data in Memory
                 snapSales.forEach(doc => {
                     const s = doc.data();
-                    const name = s.customer_name || '';
-                    const phone = s.customer_phone || ''; // Pastikan field ini ada di sales order atau sesuaikan logic
+                    const name = s.customer_name || s.buyer_name || '';
+                    const phone = s.customer_phone || s.buyer_phone || ''; 
                     
-                    // Basic validation untuk nomor hp valid dan bukan tamu (*)
                     if (name && !name.toLowerCase().includes('guest') && !name.includes('*')) {
-                        // Gunakan Nama sebagai key unik jika phone tidak ada, atau phone jika ada
                         const key = phone.length > 5 ? phone : name.toLowerCase();
-                        
                         if (!newCandidates[key]) {
                             newCandidates[key] = { 
                                 name, 
                                 phone, 
-                                address: s.shipping_address || '', 
+                                address: s.shipping_address || s.buyer_address || '', 
                                 type: 'end_customer' 
                             };
                         }
                     }
                 });
 
-                // Filter Duplikat dari State (Client Side)
-                // Note: Ini hanya membandingkan dengan 100 customer yang terload. 
-                // Idealnya cek ke DB, tapi demi hemat cost, kita filter based on cache dulu.
                 const existingNames = new Set(customers.map(c => c.name.toLowerCase()));
                 const existingPhones = new Set(customers.map(c => c.phone));
 
@@ -101,11 +102,9 @@ export default function CustomersPage() {
                 });
 
                 if (finalToAdd.length === 0) {
-                    resolve("Tidak ditemukan pelanggan baru yang belum tersimpan.");
+                    resolve("Tidak ditemukan pelanggan baru.");
                 } else {
-                    // Batch Write (Max 500 operations)
                     const batch = writeBatch(db);
-                    // Limit batch to 400 to be safe
                     const batchList = finalToAdd.slice(0, 400);
                     
                     batchList.forEach(c => {
@@ -114,18 +113,12 @@ export default function CustomersPage() {
                     });
                     
                     await batch.commit();
-                    
-                    // Invalidate Cache
                     if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
                     fetchData(true);
                     
                     resolve(`Berhasil menyimpan ${batchList.length} pelanggan baru!`);
                 }
-            } catch (e) { 
-                reject(e); 
-            } finally { 
-                setScanning(false); 
-            }
+            } catch (e) { reject(e); } finally { setScanning(false); }
         });
 
         toast.promise(scanPromise, {
@@ -135,6 +128,7 @@ export default function CustomersPage() {
         });
     };
 
+    // 3. Actions
     const openModal = (cust = null) => {
         setFormData(cust ? { ...cust } : { name: '', type: 'end_customer', phone: '', address: '' });
         setModalOpen(true);
@@ -159,7 +153,6 @@ export default function CustomersPage() {
                     await addDoc(collection(db, "customers"), payload); 
                 }
                 
-                // Refresh Cache
                 if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
                 setModalOpen(false); 
                 fetchData(true);
@@ -187,95 +180,183 @@ export default function CustomersPage() {
         }
     };
 
+    // Filter Logic Client Side
+    const filteredData = customers.filter(c => 
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (c.phone && c.phone.includes(searchTerm))
+    );
+
     return (
-        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h2 className="text-xl md:text-3xl font-bold text-text-primary font-display">Customers</h2>
-                <p className="text-sm text-text-secondary mt-1 font-light">CRM database for resellers and loyal customers.</p>
-            </div>
-            <div className="flex gap-2">
-                <button onClick={scanFromSales} disabled={scanning} className="btn-ghost-dark text-xs">
-                {scanning ? 'Scanning...' : 'Scan Recent Sales'}
-                </button>
-                <button onClick={() => openModal()} className="btn-gold">
-                New Customer
-                </button>
-            </div>
+        <div className="max-w-full mx-auto space-y-6 fade-in pb-20 px-4 md:px-8 pt-6 bg-background min-h-screen text-text-primary">
+            
+            <PageHeader 
+                title="Customers CRM" 
+                subtitle="Database pelanggan, reseller, dan kontak VIP."
+                actions={
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={scanFromSales} 
+                            disabled={scanning} 
+                            className="btn-ghost-dark text-xs flex items-center gap-2 border-border bg-white shadow-sm"
+                        >
+                            <ScanLine className={`w-4 h-4 ${scanning ? 'animate-spin' : ''}`} />
+                            {scanning ? 'Scanning...' : 'Scan Sales'}
+                        </button>
+                       <button
+                            onClick={() => openModal()}
+                            className="btn-gold inline-flex items-center gap-2 px-4 py-2 text-sm font-medium shadow-lg hover:shadow-xl"
+                            >
+                            <Plus className="w-4 h-4 stroke-[2.5]" />
+                            <span>New Customer</span>
+                        </button>
+                    </div>
+                }
+            />
+
+            {/* SEARCH & FILTERS */}
+            <div className="relative max-w-md">
+                <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+                <input 
+                    type="text" 
+                    placeholder="Cari nama atau nomor HP..." 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="input-luxury pl-10 py-2.5"
+                />
             </div>
 
-
-            <div className="card-luxury overflow-hidden">
-                <div className="table-wrapper-dark border-none shadow-none rounded-none">
-                    <table className="table-dark">
+            {/* TABLE CARD */}
+            <div className="card-luxury overflow-hidden border border-border">
+                <div className="overflow-x-auto min-h-[400px]">
+                    <table className="table-modern w-full">
                         <thead>
                             <tr>
-                                <th className="pl-6">Name</th>
-                                <th>Type</th>
-                                <th>Phone</th>
+                                <th className="pl-6 w-1/3">Name & Type</th>
+                                <th>Contact Info</th>
                                 <th>Location</th>
                                 <th className="text-right pr-6">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {loading ? <tr><td colSpan="5" className="text-center py-12 text-text-secondary">Loading...</td></tr> : customers.map(c => (
-                                <tr key={c.id}>
-                                    <td className="pl-6 font-medium text-text-primary">{c.name}</td>
-                                    <td><span className="badge-luxury badge-neutral">{c.type?.replace('_', ' ')}</span></td>
-                                    <td className="font-mono text-text-secondary text-xs">{c.phone || '-'}</td>
-                                    <td className="text-text-secondary truncate max-w-xs text-xs">{c.address || '-'}</td>
-                                    <td className="text-right pr-6">
-                                        <div className="flex justify-end gap-3">
-                                            <button onClick={() => openModal(c)} className="text-xs font-bold text-text-secondary hover:text-text-primary transition-colors">Edit</button>
-                                            <button onClick={() => deleteItem(c.id)} className="text-xs font-bold text-rose-500 hover:text-rose-400 transition-colors">Del</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
+                        <tbody className="divide-y divide-border/60">
+                            {loading ? (
+                                <tr><td colSpan="4" className="text-center py-20 text-text-secondary animate-pulse">Loading Customers...</td></tr>
+                            ) : filteredData.length === 0 ? (
+                                <tr><td colSpan="4" className="text-center py-20 text-text-secondary">Tidak ada data ditemukan.</td></tr>
+                            ) : (
+                                filteredData.map(c => (
+                                    <tr key={c.id} className="group hover:bg-gray-50/50 transition-colors">
+                                        <td className="pl-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shadow-sm">
+                                                    {c.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-text-primary text-sm">{c.name}</div>
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wide border ${
+                                                        c.type === 'vip' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                        c.type === 'reseller' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' :
+                                                        'bg-gray-100 text-gray-600 border-gray-200'
+                                                    }`}>
+                                                        {c.type?.replace('_', ' ')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="py-4">
+                                            <div className="flex items-center gap-2 text-sm text-text-secondary">
+                                                <Phone className="w-3.5 h-3.5" />
+                                                <span className="font-mono">{c.phone || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="py-4">
+                                            <div className="flex items-start gap-2 text-sm text-text-secondary max-w-xs">
+                                                <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                                                <span className="truncate">{c.address || '-'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="pr-6 py-4 text-right">
+                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => openModal(c)} className="p-2 bg-white border border-border rounded-lg text-text-secondary hover:text-primary hover:border-primary shadow-sm transition-all">
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button onClick={() => deleteItem(c.id)} className="p-2 bg-white border border-border rounded-lg text-rose-400 hover:text-rose-600 hover:border-rose-200 shadow-sm transition-all">
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
+            {/* MODAL */}
             <Portal>
-            {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-surface border border-lumina-border rounded-2xl shadow-2xl max-w-lg w-full p-6 ring-1 ring-lumina-gold/20">
-                        <div className="flex justify-between items-center mb-6 pb-4 border-b border-lumina-border">
-                            <h3 className="text-lg font-bold text-text-primary">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
-                            <button onClick={() => setModalOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
+                <AnimatePresence>
+                    {modalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="bg-white border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+                            >
+                                <div className="px-6 py-5 border-b border-border bg-gray-50 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-text-primary">{formData.id ? 'Edit Customer' : 'New Customer'}</h3>
+                                        <p className="text-xs text-text-secondary mt-0.5">Manage details and classification.</p>
+                                    </div>
+                                    <button onClick={() => setModalOpen(false)} className="bg-white p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 transition-all shadow-sm">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                
+                                <form onSubmit={handleSubmit} className="p-6 space-y-5 bg-white">
+                                    <div className="space-y-4">
+                                        <div className="group">
+                                            <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 block group-focus-within:text-primary transition-colors">Nama Lengkap</label>
+                                            <div className="relative">
+                                                <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                                                <input required className="input-luxury pl-10" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Nama Pelanggan" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="group">
+                                                <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 block group-focus-within:text-primary transition-colors">Tipe</label>
+                                                <select className="input-luxury cursor-pointer" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
+                                                    <option value="end_customer">Umum</option>
+                                                    <option value="reseller">Reseller</option>
+                                                    <option value="vip">VIP</option>
+                                                </select>
+                                            </div>
+                                            <div className="group">
+                                                <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 block group-focus-within:text-primary transition-colors">No. HP</label>
+                                                <input className="input-luxury font-mono" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
+                                            </div>
+                                        </div>
+
+                                        <div className="group">
+                                            <label className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1.5 block group-focus-within:text-primary transition-colors">Alamat Lengkap</label>
+                                            <textarea rows="3" className="input-luxury resize-none" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Alamat pengiriman..."></textarea>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-2">
+                                        <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 rounded-xl text-xs font-bold text-text-secondary hover:bg-gray-50 border border-transparent hover:border-border transition-all">
+                                            Batal
+                                        </button>
+                                        <button type="submit" className="btn-gold px-6 py-2.5 shadow-md">
+                                            Simpan Data
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Name</label>
-                                    <input required className="input-luxury" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Type</label>
-                                    <select className="input-luxury" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
-                                        <option value="end_customer">Customer Umum</option>
-                                        <option value="reseller">Reseller / Agen</option>
-                                        <option value="vip">VIP</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Phone / WA</label>
-                                <input className="input-luxury" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="08..." />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-text-secondary uppercase mb-1">Address</label>
-                                <textarea rows="3" className="input-luxury" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Complete address..."></textarea>
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4 border-t border-lumina-border">
-                                <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost-dark">Cancel</button>
-                                <button type="submit" className="btn-gold">Save Customer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                    )}
+                </AnimatePresence>
             </Portal>
         </div>
     );

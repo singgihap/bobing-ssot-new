@@ -6,9 +6,11 @@ import { formatRupiah } from '@/lib/utils';
 import Skeleton from '@/components/Skeleton';
 import CashTransactionsTable from '@/components/finance/CashTransactionsTable'; 
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 menit
+// UI
+import { ArrowUpCircle, ArrowDownCircle, Wallet, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// Helpers for cache
+const CACHE_DURATION = 5 * 60 * 1000;
 const cacheKey = 'cash-transactions-cache';
 
 const getCache = () => {
@@ -18,16 +20,11 @@ const getCache = () => {
     const {now, transactions, metrics} = JSON.parse(data);
     if (Date.now() - now > CACHE_DURATION) return null;
     return {transactions, metrics};
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 };
 
 const setCache = (transactions, metrics) => {
-  localStorage.setItem(
-    cacheKey,
-    JSON.stringify({ now: Date.now(), transactions, metrics })
-  );
+  localStorage.setItem(cacheKey, JSON.stringify({ now: Date.now(), transactions, metrics }));
 };
 
 export default function CashTransactionsPage() {
@@ -49,16 +46,10 @@ export default function CashTransactionsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch Transactions
-      const qTrans = query(
-        collection(db, "cash_transactions"),
-        orderBy("date", "desc"),
-        limit(200)
-      );
+      const qTrans = query(collection(db, "cash_transactions"), orderBy("date", "desc"), limit(200));
       const snapTrans = await getDocs(qTrans);
       const transList = snapTrans.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-      // Aggregated Metrics
       const qAgg = collection(db, "cash_transactions");
       const aggSnap = await getAggregateFromServer(qAgg, {
         totalIn: sum('amount', where('type', '==', 'IN')),
@@ -71,36 +62,54 @@ export default function CashTransactionsPage() {
       setTransactions(transList);
       setMetrics({ totalIn, totalOut, netBalance });
       setCache(transList, { totalIn, totalOut, netBalance });
-
-    } catch (e) {
-      console.error("Error fetching cash data:", e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); } finally { setLoading(false); }
   };
 
-  // KPI Card Reusable
-  const KpiCard = ({ title, value, colorClass }) => (
-    <div className={`card-luxury p-6 ${colorClass.startsWith('border-') ? colorClass : ''}`}>
-      <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-2">{title}</p>
-      <h3 className={`text-3xl font-display font-bold ${colorClass.startsWith('text-') ? colorClass : 'text-text-primary'}`}>
-        {loading ? <Skeleton className="h-8 w-32" /> : value}
-      </h3>
-    </div>
-  );
+  // Modern Metric Card
+  const MetricCard = ({ title, value, icon: Icon, color, delay }) => {
+      const colors = {
+          emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+          rose: 'text-rose-600 bg-rose-50 border-rose-100',
+          blue: 'text-blue-600 bg-blue-50 border-blue-100',
+      };
+      const theme = colors[color] || colors.blue;
+
+      return (
+        <motion.div 
+            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay }}
+            className="bg-white p-6 rounded-2xl border border-border shadow-sm flex items-center justify-between"
+        >
+            <div>
+                <p className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-1">{title}</p>
+                <h3 className={`text-2xl font-display font-bold ${theme.split(' ')[0]}`}>
+                    {loading ? <Skeleton className="h-8 w-32" /> : value}
+                </h3>
+            </div>
+            <div className={`p-3 rounded-xl border ${theme}`}>
+                <Icon className="w-6 h-6" />
+            </div>
+        </motion.div>
+      );
+  };
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KpiCard title="Total Income (IN)" value={formatRupiah(metrics.totalIn)} colorClass="text-emerald-600 border-emerald-300/50" />
-        <KpiCard title="Total Expense (OUT)" value={formatRupiah(metrics.totalOut)} colorClass="text-rose-600 border-rose-300/50" />
-        <KpiCard title="Net Cash Balance" value={formatRupiah(metrics.netBalance)} colorClass="text-primary border-primary/50" />
+    <div className="space-y-8 fade-in pb-20">
+      <div className="flex justify-end">
+          <button onClick={fetchData} className="text-xs font-bold text-text-secondary flex items-center gap-2 hover:text-primary bg-white px-3 py-2 rounded-lg border border-border shadow-sm transition-all active:scale-95">
+              <RefreshCw className={`w-3.5 h-3.5 ${loading?'animate-spin':''}`}/> Refresh Data
+          </button>
       </div>
-      <CashTransactionsTable 
-        transactions={transactions} 
-        loading={loading} 
-        fetchData={fetchData} 
-      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard title="Total Income (IN)" value={formatRupiah(metrics.totalIn)} color="emerald" icon={ArrowUpCircle} delay={0.1} />
+        <MetricCard title="Total Expense (OUT)" value={formatRupiah(metrics.totalOut)} color="rose" icon={ArrowDownCircle} delay={0.2} />
+        <MetricCard title="Net Cash Balance" value={formatRupiah(metrics.netBalance)} color="blue" icon={Wallet} delay={0.3} />
+      </div>
+
+      {/* Table Container - memastikan table komponen external terlihat bagus */}
+      <div className="border border-border rounded-2xl overflow-hidden shadow-sm bg-white">
+          <CashTransactionsTable transactions={transactions} loading={loading} fetchData={fetchData} />
+      </div>
     </div>
   );
 }

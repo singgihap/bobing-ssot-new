@@ -4,38 +4,39 @@ import { db, auth } from '@/lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, getDocs, collection } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
-import Skeleton from '@/components/Skeleton'; // Import Skeleton
+import Skeleton from '@/components/Skeleton';
+import PageHeader from '@/components/PageHeader';
 
-// Konfigurasi Cache
+// --- MODERN UI IMPORTS ---
+import { 
+    Store, Receipt, Shield, Settings, Save, RefreshCw, 
+    HardDrive, AlertTriangle, Check, Smartphone, MapPin, 
+    Printer, Percent, Lock, User
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
 const CACHE_KEY = 'lumina_settings_v2';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
 
 export default function SettingsPage() {
     const { user } = useAuth();
     const [activeTab, setActiveTab] = useState('store');
-    const [loading, setLoading] = useState(true); // Default loading true agar skeleton muncul
+    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
     // State Default
     const [storeProfile, setStoreProfile] = useState({
-        name: '',
-        address: '',
-        phone: '',
-        footerMsg: ''
+        name: '', address: '', phone: '', footerMsg: ''
     });
 
     const [posConfig, setPosConfig] = useState({
-        paperSize: '58mm',
-        enableTax: false,
-        taxRate: 11,
-        autoPrint: true
+        paperSize: '58mm', enableTax: false, taxRate: 11, autoPrint: true
     });
 
-    // Load Settings
     useEffect(() => {
         const fetchSettings = async () => {
             setLoading(true);
-            // 1. Cek Cache LocalStorage
+            // 1. Cek Cache
             if (typeof window !== 'undefined') {
                 const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
@@ -55,13 +56,10 @@ export default function SettingsPage() {
             try {
                 const docRef = doc(db, "settings", "general");
                 const docSnap = await getDoc(docRef);
-                
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     setStoreProfile(data.storeProfile || storeProfile);
                     setPosConfig(data.posConfig || posConfig);
-
-                    // Update Cache
                     if (typeof window !== 'undefined') {
                         localStorage.setItem(CACHE_KEY, JSON.stringify({
                             storeProfile: data.storeProfile,
@@ -70,12 +68,8 @@ export default function SettingsPage() {
                         }));
                     }
                 }
-            } catch (e) {
-                console.error("Gagal memuat pengaturan:", e);
-                toast.error("Gagal memuat data");
-            } finally {
-                setLoading(false);
-            }
+            } catch (e) { console.error(e); toast.error("Gagal memuat pengaturan"); } 
+            finally { setLoading(false); }
         };
         fetchSettings();
     }, []);
@@ -85,317 +79,294 @@ export default function SettingsPage() {
         const toastId = toast.loading("Menyimpan pengaturan...");
         try {
             await setDoc(doc(db, "settings", "general"), { 
-                storeProfile, 
-                posConfig, 
-                updated_at: serverTimestamp(),
-                updated_by: user?.email
+                storeProfile, posConfig, updated_at: serverTimestamp(), updated_by: user?.email
             }, { merge: true });
 
             if (typeof window !== 'undefined') {
                 localStorage.setItem(CACHE_KEY, JSON.stringify({ 
-                    storeProfile, 
-                    posConfig,
-                    timestamp: Date.now() 
+                    storeProfile, posConfig, timestamp: Date.now() 
                 }));
             }
-
-            toast.success("Pengaturan berhasil disimpan!", { id: toastId });
-        } catch (e) {
-            console.error(e);
-            toast.error(`Gagal: ${e.message}`, { id: toastId });
-        } finally {
-            setSaving(false);
-        }
+            toast.success("Berhasil disimpan!", { id: toastId });
+        } catch (e) { toast.error(`Gagal: ${e.message}`, { id: toastId }); } 
+        finally { setSaving(false); }
     };
 
     const handleRecalculateInventory = async () => {
         if(!confirm("Hitung ulang total aset? Ini akan membaca semua data stok (Heavy Operation).")) return;
-        
-        const tId = toast.loading("Menghitung ulang total aset...");
+        const tId = toast.loading("Menghitung ulang...");
         try {
             const varSnap = await getDocs(collection(db, "product_variants"));
-            const costMap = {};
-            varSnap.forEach(d => { costMap[d.id] = d.data().cost || 0; });
+            const costMap = {}; varSnap.forEach(d => { costMap[d.id] = d.data().cost || 0; });
 
             const stockSnap = await getDocs(collection(db, "stock_snapshots"));
-            let totalQty = 0;
-            let totalValue = 0;
-
+            let totalQty = 0; let totalValue = 0;
             stockSnap.forEach(d => {
-                const s = d.data();
-                const qty = s.qty || 0;
-                const cost = costMap[s.variant_id] || 0;
-                totalQty += qty;
-                totalValue += (qty * cost);
+                const s = d.data(); const qty = s.qty || 0;
+                totalQty += qty; totalValue += (qty * (costMap[s.variant_id] || 0));
             });
 
             await setDoc(doc(db, "stats_inventory", "general"), {
-                total_qty: totalQty,
-                total_value: totalValue,
-                last_calculated: serverTimestamp(),
-                updated_by: user?.email
+                total_qty: totalQty, total_value: totalValue, last_calculated: serverTimestamp(), updated_by: user?.email
             });
-
-            toast.success(`Selesai! Total Qty: ${totalQty}, Value: ${totalValue}`, { id: tId });
             localStorage.removeItem('lumina_dash_master_v3');
-        } catch (e) {
-            toast.error("Gagal: " + e.message, { id: tId });
-        }
+            toast.success(`Selesai! Qty: ${totalQty}, Value: ${totalValue}`, { id: tId });
+        } catch (e) { toast.error(e.message, { id: tId }); }
     };
 
-    // --- COMPONENTS ---
-    const TabButton = ({ id, label, icon, description }) => (
+    // --- SUB-COMPONENTS ---
+    const MenuButton = ({ id, label, icon: Icon, desc }) => (
         <button 
             onClick={() => setActiveTab(id)}
-            className={`w-full flex items-start gap-4 p-4 rounded-xl transition-all duration-300 text-left border ${
+            className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all text-left border ${
                 activeTab === id 
-                ? 'bg-lumina-highlight/80 border-lumina-gold/50 shadow-[0_0_15px_rgba(212,175,55,0.1)]' 
-                : 'bg-transparent border-transparent hover:bg-grey/5 hover:border-grey/10'
+                ? 'bg-white border-primary/20 shadow-md ring-1 ring-primary/5' 
+                : 'bg-transparent border-transparent hover:bg-white/60 hover:shadow-sm'
             }`}
         >
-            <div className={`p-2 rounded-lg ${activeTab === id ? 'bg-lumina-gold text-black' : 'bg-grey/10 text-text-secondary'}`}>
-                {icon}
+            <div className={`p-2.5 rounded-lg shrink-0 ${activeTab === id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-gray-100 text-text-secondary'}`}>
+                <Icon className="w-5 h-5" />
             </div>
             <div>
-                <span className={`block text-sm font-bold ${activeTab === id ? 'text-text-primary' : 'text-text-primary'}`}>{label}</span>
-                <span className="text-[10px] text-text-secondary line-clamp-1">{description}</span>
+                <span className={`block text-sm font-bold ${activeTab === id ? 'text-primary' : 'text-text-primary'}`}>{label}</span>
+                <span className="text-[10px] text-text-secondary line-clamp-1 opacity-80">{desc}</span>
             </div>
+            {activeTab === id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>}
         </button>
     );
 
+    const SectionTitle = ({ title, desc }) => (
+        <div className="mb-6">
+            <h3 className="text-xl font-display font-bold text-text-primary">{title}</h3>
+            <p className="text-sm text-text-secondary mt-1">{desc}</p>
+        </div>
+    );
+
     return (
-        <div className="max-w-6xl mx-auto space-y-8 fade-in pb-24">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4 border-b border-lumina-border/50 pb-6">
-                <div>
-                    <h2 className="text-3xl font-display font-bold text-text-primary tracking-tight">Settings</h2>
-                    <p className="text-sm text-text-secondary mt-1 font-light">Manage your store preferences and system configuration.</p>
-                </div>
-                <button onClick={handleSave} className="btn-gold w-full md:w-auto min-w-[140px]" disabled={saving || loading}>
-                    {saving ? (
-                        <div className="flex items-center gap-2">
-                             <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                             Saving...
-                        </div>
-                    ) : 'Save Changes'}
-                </button>
-            </div>
+        <div className="max-w-6xl mx-auto space-y-6 fade-in pb-24 text-text-primary bg-background min-h-screen">
+            
+            <PageHeader 
+                title="System Settings" 
+                subtitle="Manage store identity, POS configuration, and system maintenance."
+                actions={
+                    <button 
+                        onClick={handleSave} 
+                        disabled={saving || loading}
+                        className="btn-gold flex items-center gap-2 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed px-6 py-2.5"
+                    >
+                        {saving ? <RefreshCw className="w-4 h-4 animate-spin"/> : <Save className="w-4 h-4"/>}
+                        <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+                    </button>
+                }
+            />
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* SIDEBAR */}
-                <div className="col-span-1 space-y-2">
-                    <TabButton 
-                        id="store" 
-                        label="Store Profile" 
-                        description="Address, Phone, Receipt Header"
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>} 
-                    />
-                    <TabButton 
-                        id="pos" 
-                        label="POS Config" 
-                        description="Printer, Tax, Auto-print"
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>} 
-                    />
-                    <TabButton 
-                        id="account" 
-                        label="Account" 
-                        description="Profile & Security"
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>} 
-                    />
-                    <TabButton 
-                        id="system" 
-                        label="System & Data" 
-                        description="Backup, Reset, Recalculate"
-                        icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>} 
-                    />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* --- LEFT SIDEBAR MENU --- */}
+                <div className="lg:col-span-3 space-y-2">
+                    <MenuButton id="store" label="Store Identity" icon={Store} desc="Name, Address, Footer" />
+                    <MenuButton id="pos" label="POS Config" icon={Receipt} desc="Printer & Tax Settings" />
+                    <MenuButton id="account" label="Account Security" icon={Shield} desc="Password & Access" />
+                    <MenuButton id="system" label="System Data" icon={Settings} desc="Backup & Maintenance" />
                 </div>
 
-                {/* CONTENT AREA */}
-                <div className="col-span-1 lg:col-span-3">
-                    <div className="card-luxury p-8 min-h-[500px]">
+                {/* --- RIGHT CONTENT AREA --- */}
+                <div className="lg:col-span-9">
+                    <motion.div 
+                        key={activeTab}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white border border-border rounded-2xl shadow-sm p-8 min-h-[500px]"
+                    >
                         
                         {/* TAB 1: STORE PROFILE */}
                         {activeTab === 'store' && (
-                            <div className="space-y-8 animate-fade-in">
-                                <div>
-                                    <h3 className="text-lg font-bold text-text-primary">Store Identity</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Information that appears on your receipts.</p>
-                                </div>
-                                <div className="grid grid-cols-1 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">Store Name</label>
-                                        {loading ? <Skeleton className="h-12 w-full" /> : (
-                                            <input className="input-luxury" value={storeProfile.name} onChange={e => setStoreProfile({...storeProfile, name: e.target.value})} placeholder="e.g. Bobing Store" />
-                                        )}
+                            <>
+                                <SectionTitle title="Store Identity" desc="Informasi ini akan muncul pada struk belanja pelanggan." />
+                                <div className="space-y-6 max-w-2xl">
+                                    <div>
+                                        <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 flex items-center gap-2"><Store className="w-3.5 h-3.5"/> Store Name</label>
+                                        {loading ? <Skeleton className="h-10 w-full"/> : 
+                                            <input className="input-luxury" value={storeProfile.name} onChange={e=>setStoreProfile({...storeProfile, name:e.target.value})} placeholder="Nama Toko Anda" />
+                                        }
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">Full Address</label>
-                                        {loading ? <Skeleton className="h-24 w-full" /> : (
-                                            <textarea rows="3" className="input-luxury" value={storeProfile.address} onChange={e => setStoreProfile({...storeProfile, address: e.target.value})} placeholder="Complete store address..." />
-                                        )}
+                                    <div>
+                                        <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 flex items-center gap-2"><MapPin className="w-3.5 h-3.5"/> Address</label>
+                                        {loading ? <Skeleton className="h-24 w-full"/> : 
+                                            <textarea rows="3" className="input-luxury resize-none" value={storeProfile.address} onChange={e=>setStoreProfile({...storeProfile, address:e.target.value})} placeholder="Alamat lengkap..." />
+                                        }
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">Phone / WhatsApp</label>
-                                            {loading ? <Skeleton className="h-12 w-full" /> : (
-                                                <input className="input-luxury" value={storeProfile.phone} onChange={e => setStoreProfile({...storeProfile, phone: e.target.value})} placeholder="08..." />
-                                            )}
+                                        <div>
+                                            <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 flex items-center gap-2"><Smartphone className="w-3.5 h-3.5"/> Phone / WA</label>
+                                            {loading ? <Skeleton className="h-10 w-full"/> : 
+                                                <input className="input-luxury" value={storeProfile.phone} onChange={e=>setStoreProfile({...storeProfile, phone:e.target.value})} placeholder="08..." />
+                                            }
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-xs font-bold text-text-secondary uppercase tracking-wider">Receipt Footer Message</label>
-                                            {loading ? <Skeleton className="h-12 w-full" /> : (
-                                                <input className="input-luxury" value={storeProfile.footerMsg} onChange={e => setStoreProfile({...storeProfile, footerMsg: e.target.value})} placeholder="e.g. No Refund / Exchange" />
-                                            )}
+                                        <div>
+                                            <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 flex items-center gap-2"><Receipt className="w-3.5 h-3.5"/> Receipt Footer</label>
+                                            {loading ? <Skeleton className="h-10 w-full"/> : 
+                                                <input className="input-luxury" value={storeProfile.footerMsg} onChange={e=>setStoreProfile({...storeProfile, footerMsg:e.target.value})} placeholder="e.g. Terimakasih!" />
+                                            }
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {/* TAB 2: POS CONFIG */}
                         {activeTab === 'pos' && (
-                            <div className="space-y-8 animate-fade-in">
-                                <div>
-                                    <h3 className="text-lg font-bold text-text-primary">POS Configuration</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Tailor the checkout experience.</p>
-                                </div>
-                                
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between bg-surface/20 p-4 rounded-xl border border-lumina-border/30">
-                                        <div>
-                                            <div className="text-sm font-bold text-text-primary">Receipt Paper Size</div>
-                                            <div className="text-xs text-text-secondary mt-0.5">Match your thermal printer width.</div>
-                                        </div>
-                                        {loading ? <Skeleton className="h-10 w-32" /> : (
-                                            <select className="input-luxury w-32 py-2" value={posConfig.paperSize} onChange={e => setPosConfig({...posConfig, paperSize: e.target.value})}>
-                                                <option value="58mm">58mm (Small)</option>
-                                                <option value="80mm">80mm (Large)</option>
-                                            </select>
-                                        )}
-                                    </div>
-
-                                    <div className="flex items-center justify-between bg-surface/20 p-4 rounded-xl border border-lumina-border/30">
-                                        <div>
-                                            <div className="text-sm font-bold text-text-primary">Enable Tax (PPN)</div>
-                                            <div className="text-xs text-text-secondary mt-0.5">Automatically calculate tax at checkout.</div>
-                                        </div>
-                                        <div className="flex items-center gap-4">
-                                            {loading ? <Skeleton className="h-6 w-12" /> : (
-                                                <>
-                                                    {posConfig.enableTax && (
-                                                        <div className="flex items-center bg-surface rounded-lg border border-lumina-border overflow-hidden">
-                                                            <input type="number" className="bg-transparent w-12 py-1 px-2 text-center text-sm text-text-primary outline-none" value={posConfig.taxRate} onChange={e => setPosConfig({...posConfig, taxRate: e.target.value})} />
-                                                            <span className="text-xs text-text-secondary pr-2">%</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                                        <input type="checkbox" name="toggle" id="tax-toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" checked={posConfig.enableTax} onChange={e => setPosConfig({...posConfig, enableTax: e.target.checked})} style={{ right: posConfig.enableTax ? '0' : 'auto', left: posConfig.enableTax ? 'auto' : '0', borderColor: posConfig.enableTax ? '#D4AF37' : '#2A2E3B' }}/>
-                                                        <label htmlFor="tax-toggle" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${posConfig.enableTax ? 'bg-lumina-gold' : 'bg-gray-700'}`}></label>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between bg-surface/20 p-4 rounded-xl border border-lumina-border/30">
-                                        <div>
-                                            <div className="text-sm font-bold text-text-primary">Auto-Print Receipt</div>
-                                            <div className="text-xs text-text-secondary mt-0.5">Open print dialog immediately after payment.</div>
-                                        </div>
-                                        {loading ? <Skeleton className="h-6 w-12" /> : (
-                                            <div className="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                                                <input type="checkbox" name="toggle" id="print-toggle" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" checked={posConfig.autoPrint} onChange={e => setPosConfig({...posConfig, autoPrint: e.target.checked})} style={{ right: posConfig.autoPrint ? '0' : 'auto', left: posConfig.autoPrint ? 'auto' : '0', borderColor: posConfig.autoPrint ? '#D4AF37' : '#2A2E3B' }}/>
-                                                <label htmlFor="print-toggle" className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${posConfig.autoPrint ? 'bg-lumina-gold' : 'bg-gray-700'}`}></label>
+                            <>
+                                <SectionTitle title="POS Configuration" desc="Atur preferensi kasir dan printer struk." />
+                                <div className="space-y-4 max-w-2xl">
+                                    <div className="p-4 rounded-xl border border-border bg-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-white rounded-lg border border-border"><Printer className="w-5 h-5 text-text-secondary"/></div>
+                                            <div>
+                                                <p className="text-sm font-bold text-text-primary">Receipt Paper Size</p>
+                                                <p className="text-xs text-text-secondary">Ukuran kertas printer thermal.</p>
                                             </div>
-                                        )}
+                                        </div>
+                                        <select className="input-luxury w-32 py-1.5 text-xs bg-white" value={posConfig.paperSize} onChange={e=>setPosConfig({...posConfig, paperSize:e.target.value})}>
+                                            <option value="58mm">58mm (Small)</option>
+                                            <option value="80mm">80mm (Large)</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="p-4 rounded-xl border border-border bg-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-white rounded-lg border border-border"><Percent className="w-5 h-5 text-text-secondary"/></div>
+                                            <div>
+                                                <p className="text-sm font-bold text-text-primary">Enable Tax (PPN)</p>
+                                                <p className="text-xs text-text-secondary">Hitung pajak otomatis saat checkout.</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {posConfig.enableTax && (
+                                                <div className="flex items-center bg-white rounded-lg border border-border overflow-hidden w-20">
+                                                    <input type="number" className="w-full py-1.5 px-2 text-center text-xs font-bold outline-none" value={posConfig.taxRate} onChange={e=>setPosConfig({...posConfig, taxRate:e.target.value})} />
+                                                    <span className="text-xs text-text-secondary pr-2 bg-gray-50 h-full flex items-center border-l border-border">%</span>
+                                                </div>
+                                            )}
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" className="sr-only peer" checked={posConfig.enableTax} onChange={e=>setPosConfig({...posConfig, enableTax:e.target.checked})} />
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 rounded-xl border border-border bg-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-white rounded-lg border border-border"><Receipt className="w-5 h-5 text-text-secondary"/></div>
+                                            <div>
+                                                <p className="text-sm font-bold text-text-primary">Auto-Print Receipt</p>
+                                                <p className="text-xs text-text-secondary">Buka dialog print otomatis setelah bayar.</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" className="sr-only peer" checked={posConfig.autoPrint} onChange={e=>setPosConfig({...posConfig, autoPrint:e.target.checked})} />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        </label>
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {/* TAB 3: ACCOUNT */}
                         {activeTab === 'account' && (
-                            <div className="space-y-8 animate-fade-in">
-                                <div>
-                                    <h3 className="text-lg font-bold text-text-primary">Admin Account</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Security settings for current session.</p>
-                                </div>
+                            <>
+                                <SectionTitle title="Account Security" desc="Kelola akses keamanan akun admin." />
                                 
-                                <div className="flex items-center gap-5 p-6 bg-gradient-to-r from-lumina-gold/10 to-transparent rounded-2xl border border-lumina-gold/20">
-                                    <div className="w-20 h-20 bg-lumina-gold rounded-full flex items-center justify-center text-black font-bold text-3xl shadow-gold-glow">
+                                <div className="flex items-center gap-5 p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl border border-primary/10 mb-8">
+                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary font-bold text-2xl shadow-lg shadow-primary/10">
                                         {user?.email?.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-xl font-bold text-text-primary">{user?.email}</p>
+                                        <p className="text-lg font-bold text-text-primary">{user?.email}</p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="badge-luxury badge-success bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Super Admin</span>
-                                            <span className="text-xs text-text-secondary">Last login: Today</span>
+                                            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                                                <Check className="w-3 h-3"/> Active
+                                            </span>
+                                            <span className="text-xs text-text-secondary">Super Admin</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="max-w-md space-y-4 pt-4">
-                                    <h4 className="text-sm font-bold text-text-primary uppercase tracking-wider">Change Password</h4>
+                                <div className="max-w-md space-y-4">
+                                    <h4 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-2 mb-4">
+                                        <Lock className="w-4 h-4"/> Change Password
+                                    </h4>
                                     <div>
                                         <input type="password" className="input-luxury" placeholder="New Password" />
                                     </div>
                                     <div>
                                         <input type="password" className="input-luxury" placeholder="Confirm New Password" />
                                     </div>
-                                    <button className="btn-ghost-dark w-full border-grey/10 hover:bg-grey/5">Update Security Credentials</button>
+                                    <button className="btn-ghost-dark w-full border-border hover:bg-gray-50 text-text-secondary hover:text-text-primary">
+                                        Update Credentials
+                                    </button>
                                 </div>
-                            </div>
+                            </>
                         )}
 
                         {/* TAB 4: SYSTEM */}
                         {activeTab === 'system' && (
-                            <div className="space-y-8 animate-fade-in">
-                                <div>
-                                    <h3 className="text-lg font-bold text-text-primary">System Maintenance</h3>
-                                    <p className="text-xs text-text-secondary mt-1">Manage data integrity and backups.</p>
-                                </div>
+                            <>
+                                <SectionTitle title="System Maintenance" desc="Tools untuk integritas data dan backup." />
                                 
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div className="p-5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 flex justify-between items-center hover:bg-indigo-500/10 transition-colors">
-                                        <div>
-                                            <h4 className="text-indigo-400 font-bold text-sm mb-1">Recalculate Inventory Assets</h4>
-                                            <p className="text-xs text-text-secondary max-w-md">
-                                                Force recalculation of total inventory value and quantity from all stock snapshots. Use this if dashboard numbers seem out of sync.
-                                            </p>
+                                <div className="space-y-4 max-w-2xl">
+                                    {/* Recalculate */}
+                                    <div className="p-5 rounded-xl bg-blue-50 border border-blue-100 flex justify-between items-center hover:shadow-sm transition-shadow">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-2 bg-white rounded-lg text-blue-600 shadow-sm"><RefreshCw className="w-5 h-5"/></div>
+                                            <div>
+                                                <h4 className="text-blue-900 font-bold text-sm mb-1">Recalculate Inventory Assets</h4>
+                                                <p className="text-xs text-blue-700/70 max-w-xs">
+                                                    Hitung ulang total nilai aset dari snapshot stok. Gunakan jika dashboard tidak sinkron.
+                                                </p>
+                                            </div>
                                         </div>
-                                        <button onClick={handleRecalculateInventory} className="px-4 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/30 hover:text-text-primary text-xs font-bold transition-all">
-                                            Run Calculation
+                                        <button onClick={handleRecalculateInventory} className="px-4 py-2 rounded-lg bg-white text-blue-700 border border-blue-200 hover:bg-blue-50 text-xs font-bold transition-all shadow-sm">
+                                            Run Tool
                                         </button>
                                     </div>
 
-                                    <div className="p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex justify-between items-center hover:bg-emerald-500/10 transition-colors">
-                                        <div>
-                                            <h4 className="text-emerald-400 font-bold text-sm mb-1">Data Backup</h4>
-                                            <p className="text-xs text-text-secondary max-w-md">
-                                                Export all transactions, products, and customer data to a local JSON file for safekeeping.
-                                            </p>
+                                    {/* Backup */}
+                                    <div className="p-5 rounded-xl bg-emerald-50 border border-emerald-100 flex justify-between items-center hover:shadow-sm transition-shadow">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-2 bg-white rounded-lg text-emerald-600 shadow-sm"><HardDrive className="w-5 h-5"/></div>
+                                            <div>
+                                                <h4 className="text-emerald-900 font-bold text-sm mb-1">Data Backup</h4>
+                                                <p className="text-xs text-emerald-700/70 max-w-xs">
+                                                    Download semua data transaksi dan produk dalam format JSON.
+                                                </p>
+                                            </div>
                                         </div>
-                                        <button className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 hover:text-text-primary text-xs font-bold transition-all">
-                                            Download Backup
+                                        <button className="px-4 py-2 rounded-lg bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 text-xs font-bold transition-all shadow-sm">
+                                            Download
                                         </button>
                                     </div>
 
-                                    <div className="p-5 rounded-xl bg-rose-500/5 border border-rose-500/20 flex justify-between items-center hover:bg-rose-500/10 transition-colors mt-8">
-                                        <div>
-                                            <h4 className="text-rose-400 font-bold text-sm mb-1">Factory Reset</h4>
-                                            <p className="text-xs text-text-secondary max-w-md">
-                                                <span className="text-rose-500 font-bold">DANGER ZONE:</span> Permanently delete all transactions and reset stock counts to zero.
-                                            </p>
+                                    {/* Reset */}
+                                    <div className="p-5 rounded-xl bg-rose-50 border border-rose-100 flex justify-between items-center hover:shadow-sm transition-shadow mt-8">
+                                        <div className="flex items-start gap-4">
+                                            <div className="p-2 bg-white rounded-lg text-rose-600 shadow-sm"><AlertTriangle className="w-5 h-5"/></div>
+                                            <div>
+                                                <h4 className="text-rose-900 font-bold text-sm mb-1">Factory Reset</h4>
+                                                <p className="text-xs text-rose-700/70 max-w-xs">
+                                                    <span className="font-bold">DANGER ZONE:</span> Menghapus permanen semua data transaksi & stok.
+                                                </p>
+                                            </div>
                                         </div>
-                                        <button className="px-4 py-2 rounded-lg bg-rose-600 text-text-primary hover:bg-rose-700 shadow-lg shadow-rose-900/20 text-xs font-bold transition-all">
+                                        <button className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-200 text-xs font-bold transition-all">
                                             Reset All Data
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

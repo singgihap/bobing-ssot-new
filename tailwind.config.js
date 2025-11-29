@@ -39,7 +39,18 @@ module.exports = {
             'accent-glow': '0 0 10px rgba(132, 79, 193, 0.2)', // Berbasis Ungu (#844fc1)
             // PERUBAHAN 2: Pertahankan shadow glass netral.
             'glass': '0 4px 12px 0 rgba(0, 0, 0, 0.05)',          
-         }
+         },
+         // --- ANIMASI SHIMMER DITAMBAHKAN DI SINI ---
+         keyframes: {
+            shimmer: {
+               '100%': {
+                  transform: 'translateX(100%)',
+               },
+            },
+         },
+         animation: {
+            shimmer: 'shimmer 1.5s infinite',
+         },
       },
    },
    plugins: [],

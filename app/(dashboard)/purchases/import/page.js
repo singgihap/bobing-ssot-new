@@ -254,7 +254,7 @@ export default function ImportPurchasesPage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 fade-in pb-20">
+        <div className="max-w-full mx-auto space-y-6 fade-in pb-20 px-4 md:px-8 pt-6 bg-background min-h-screen text-text-primary">
             <div className="card-luxury p-8 bg-surface border-lumina-border">
                 <h2 className="text-xl md:text-3xl font-display font-bold text-text-primary mb-6">
                     Import Purchase Orders (Stock In)

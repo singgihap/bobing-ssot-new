@@ -1,381 +1,492 @@
+// app/(dashboard)/stock/inventory/page.js
 "use client";
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, getDocs, doc, runTransaction, query, orderBy, where, limit, serverTimestamp } from 'firebase/firestore';
-import { sortBySize } from '@/lib/utils';
+import { sortBySize, formatRupiah } from '@/lib/utils';
 import { Portal } from '@/lib/usePortal';
 import toast from 'react-hot-toast';
+import PageHeader from '@/components/PageHeader';
 
-// --- KONFIGURASI CACHE ---
-const CACHE_KEY = 'lumina_inventory_v2'; // Key baru untuk versi optimized
-const CACHE_DURATION = 15 * 60 * 1000; // 15 Menit (Data stok inventory tidak perlu realtime detik-an untuk list view)
+// --- MODERN UI IMPORTS ---
+import { 
+    Search, RotateCcw, ChevronRight, ChevronDown, 
+    Plus, History, ClipboardList, Warehouse, Package, 
+    ShoppingCart, Trash2, X, FileText, AlertCircle 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const CACHE_KEY = 'lumina_inventory_v2';
+const CACHE_DURATION = 15 * 60 * 1000;
 
 export default function InventoryPage() {
-    // --- STATE ---
+    // Data State
     const [products, setProducts] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
-    const [snapshots, setSnapshots] = useState({}); // Map: variantId_warehouseId -> qty
+    const [suppliers, setSuppliers] = useState([]); 
+    const [snapshots, setSnapshots] = useState({}); 
     const [loading, setLoading] = useState(true);
+    const [lastRefresh, setLastRefresh] = useState(null);
     
+    // UI State
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterWarehouse, setFilterWarehouse] = useState('all');
     const [expandedProductId, setExpandedProductId] = useState(null); 
+    
+    // Cart PO State
+    const [poCart, setPoCart] = useState([]);
+    const [isCartOpen, setIsCartOpen] = useState(false);
     
     // Modals State
     const [modalAdjOpen, setModalAdjOpen] = useState(false);
     const [modalCardOpen, setModalCardOpen] = useState(false);
+    const [modalFinalizeOpen, setModalFinalizeOpen] = useState(false); 
     
-    // Selected Data for Modals
-    const [adjData, setAdjData] = useState({});
-    const [cardData, setCardData] = useState([]);
+    // Forms Data
+    const [selectedVariant, setSelectedVariant] = useState(null);
+    const [adjForm, setAdjForm] = useState({ qty: 0, notes: '', type: 'opname' });
+    const [poForm, setPoForm] = useState({ supplier_id: '', warehouse_id: '', date: new Date().toISOString().split('T')[0] });
+    const [cardData, setCardData] = useState([]); 
 
-    useEffect(() => { 
-        fetchData(); 
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
-    // Helper untuk chunking query "IN" (Firestore limit 30 per batch)
-    const fetchInBatches = async (collectionName, fieldName, values) => {
-        const results = [];
-        const chunks = [];
-        const chunkSize = 30; // Aman di bawah limit 30 Firestore
-
-        for (let i = 0; i < values.length; i += chunkSize) {
-            chunks.push(values.slice(i, i + chunkSize));
-        }
-
-        await Promise.all(chunks.map(async (chunk) => {
-            if (chunk.length === 0) return;
-            const q = query(collection(db, collectionName), where(fieldName, 'in', chunk));
-            const snap = await getDocs(q);
-            snap.forEach(d => results.push({ id: d.id, ...d.data() }));
-        }));
-
-        return results;
-    };
-
-    // --- FETCH DATA (Highly Optimized) ---
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache LocalStorage (Bukan Session)
-            if (!forceRefresh && typeof window !== 'undefined') {
+            if (!forceRefresh) {
                 const cached = localStorage.getItem(CACHE_KEY);
                 if (cached) {
-                    const { products, warehouses, snapshots, timestamp } = JSON.parse(cached);
+                    const { products: cp, warehouses: cw, snapshots: cs, timestamp } = JSON.parse(cached);
                     if (Date.now() - timestamp < CACHE_DURATION) {
-                        setProducts(products);
-                        setWarehouses(warehouses);
-                        setSnapshots(snapshots);
+                        setProducts(cp);
+                        setWarehouses(cw);
+                        setSnapshots(cs);
+                        setLastRefresh(new Date(timestamp)); 
                         setLoading(false);
+                        fetchSuppliers();
                         return;
                     }
                 }
             }
 
-            // 2. Fetch Data Ringan (Warehouses & Products Limit)
-            const [snapWh, snapProd] = await Promise.all([
-                getDocs(query(collection(db, "warehouses"), orderBy("created_at", "asc"))),
-                getDocs(query(collection(db, "products"), orderBy("name", "asc"), limit(50))) // Limit 50: Hemat Biaya
+            const [prodSnap, whSnap, snapSnap, varSnap] = await Promise.all([
+                getDocs(collection(db, "products")),
+                getDocs(query(collection(db, "warehouses"), orderBy("created_at"))),
+                getDocs(collection(db, "stock_snapshots")),
+                getDocs(collection(db, "product_variants"))
             ]);
 
-            const whList = []; 
-            snapWh.forEach(d => whList.push({id: d.id, ...d.data()}));
-            setWarehouses(whList);
+            const variantsMap = {}; 
+            varSnap.forEach(d => {
+                const v = { id: d.id, ...d.data() };
+                if (!variantsMap[v.product_id]) variantsMap[v.product_id] = [];
+                variantsMap[v.product_id].push(v);
+            });
 
-            const prodMap = {};
-            const productIds = [];
-            snapProd.forEach(d => {
+            const prods = [];
+            prodSnap.forEach(d => {
                 const p = d.data();
-                prodMap[d.id] = { id: d.id, ...p, variants: [], totalStock: 0 };
-                productIds.push(d.id);
+                const pVars = variantsMap[d.id] || [];
+                if (pVars.length > 0) {
+                    prods.push({ id: d.id, ...p, variants: pVars });
+                }
             });
 
-            // 3. Targeted Fetching (Hanya data terkait produk yang diambil)
-            let vars = [];
-            let shots = {};
+            const whs = [];
+            whSnap.forEach(d => {
+                whs.push({ id: d.id, ...d.data() });
+            });
 
-            if (productIds.length > 0) {
-                // Hanya ambil variants milik 50 produk ini
-                vars = await fetchInBatches("product_variants", "product_id", productIds);
-                
-                const variantIds = vars.map(v => v.id);
-                
-                if (variantIds.length > 0) {
-                    // Hanya ambil snapshots milik variants ini
-                    const snapshotList = await fetchInBatches("stock_snapshots", "variant_id", variantIds);
-                    snapshotList.forEach(s => {
-                        shots[`${s.variant_id}_${s.warehouse_id}`] = s.qty || 0; // Mapping ID manual jika perlu, atau pakai ID dokumen
-                        shots[s.id] = s.qty || 0; // Fallback access
-                    });
-                }
-            }
+            const snapMap = {};
+            snapSnap.forEach(d => { snapMap[d.id] = d.data().qty || 0; });
+
+            setProducts(prods);
+            setWarehouses(whs);
+            setSnapshots(snapMap);
+            setLastRefresh(new Date()); 
             
-            setSnapshots(shots);
+            await fetchSuppliers();
 
-            // Mapping Logic
-            vars.forEach(v => {
-                if (prodMap[v.product_id]) {
-                    let total = 0;
-                    whList.forEach(w => {
-                        // Coba akses pakai ID komposit standar
-                        const key = `${v.id}_${w.id}`;
-                        total += (shots[key] || 0);
-                    });
-                    prodMap[v.product_id].variants.push(v);
-                    prodMap[v.product_id].totalStock += total;
-                }
-            });
+            localStorage.setItem(CACHE_KEY, JSON.stringify({
+                products: prods, warehouses: whs, snapshots: snapMap, timestamp: Date.now()
+            }));
 
-            const sorted = Object.values(prodMap).sort((a,b) => b.totalStock - a.totalStock);
-            setProducts(sorted);
-
-            // 4. Simpan Cache
-            if (typeof window !== 'undefined') {
-                localStorage.setItem(CACHE_KEY, JSON.stringify({
-                    products: sorted,
-                    warehouses: whList,
-                    snapshots: shots,
-                    timestamp: Date.now()
-                }));
-            }
-
-        } catch (e) { 
-            console.error("Inventory Fetch Error:", e); 
-            toast.error("Gagal memuat stok");
-        } finally { 
-            setLoading(false); 
+        } catch (e) {
+            console.error(e);
+            toast.error("Gagal memuat inventory");
+        } finally {
+            setLoading(false);
         }
     };
 
-    // --- SEARCH LOGIC (Client Side Filter for Cached Data) ---
-    // Note: Untuk dataset besar (>1000), sebaiknya buat fungsi search khusus ke server
-    const filteredProducts = products.filter(p => 
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        p.base_sku.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const toggleAccordion = (id) => {
-        setExpandedProductId(expandedProductId === id ? null : id);
+    const fetchSuppliers = async () => {
+        const snap = await getDocs(query(collection(db, "suppliers"), orderBy("name")));
+        const s = [];
+        snap.forEach(d => s.push({id: d.id, ...d.data()}));
+        setSuppliers(s);
     };
 
-    // --- ACTIONS ---
-    const openOpname = (v, prodName) => {
-        setAdjData({ 
-            variantId: v.id, sku: v.sku, productName: prodName, 
-            warehouseId: warehouses[0]?.id, 
-            currentQty: snapshots[`${v.id}_${warehouses[0]?.id}`] || 0, 
-            realQty: '', note: ''
+    const handleRefresh = () => {
+        const t = toast.loading("Menyegarkan data...");
+        fetchData(true).then(() => toast.success("Inventory Terupdate!", { id: t }));
+    };
+
+    // --- CART LOGIC (With Toast) ---
+    const addToPoCart = (variant, product) => {
+        setPoCart(prev => {
+            const existing = prev.find(i => i.variant_id === variant.id);
+            if (existing) {
+                // Update Qty
+                toast.success(
+                    <div className="text-xs">
+                        <b>{product.name}</b><br/>
+                        Qty Updated: {variant.sku}
+                    </div>, 
+                    { icon: '➕', duration: 2000 }
+                );
+                return prev.map(i => i.variant_id === variant.id ? { ...i, qty: i.qty + 1 } : i);
+            }
+            
+            // Add New
+            toast.success(
+                <div className="text-xs">
+                    <b>{product.name}</b><br/>
+                    Ditambahkan ke Draft PO
+                </div>, 
+                { icon: '🛒', duration: 2000 }
+            );
+            return [...prev, {
+                variant_id: variant.id,
+                sku: variant.sku,
+                product_name: product.name,
+                variant_name: `${variant.color} / ${variant.size}`,
+                qty: 1,
+                cost: variant.cost || 0
+            }];
         });
+    };
+
+    const removeFromCart = (idx) => {
+        setPoCart(prev => prev.filter((_, i) => i !== idx));
+    };
+
+    const handleFinalizePO = async () => {
+        if(!poForm.supplier_id || !poForm.warehouse_id) return toast.error("Pilih Supplier & Gudang!");
+        if(poCart.length === 0) return toast.error("Keranjang kosong!");
+
+        const tId = toast.loading("Membuat Purchase Order...");
+        try {
+            const totalAmount = poCart.reduce((a, b) => a + (b.qty * b.cost), 0);
+            const totalQty = poCart.reduce((a, b) => a + b.qty, 0);
+            const supplierName = suppliers.find(s => s.id === poForm.supplier_id)?.name || 'Unknown';
+
+            await runTransaction(db, async (t) => {
+                const poRef = doc(collection(db, "purchase_orders"));
+                t.set(poRef, {
+                    supplier_name: supplierName,
+                    warehouse_id: poForm.warehouse_id,
+                    order_date: new Date(poForm.date),
+                    status: 'received_full', 
+                    total_amount: totalAmount,
+                    total_qty: totalQty,
+                    payment_status: 'unpaid',
+                    created_at: serverTimestamp(),
+                    source: 'inventory_quick_po'
+                });
+
+                for (const item of poCart) {
+                    const itemRef = doc(collection(db, `purchase_orders/${poRef.id}/items`));
+                    t.set(itemRef, {
+                        variant_id: item.variant_id,
+                        qty: item.qty,
+                        unit_cost: item.cost,
+                        subtotal: item.qty * item.cost
+                    });
+
+                    const moveRef = doc(collection(db, "stock_movements"));
+                    t.set(moveRef, {
+                        variant_id: item.variant_id,
+                        warehouse_id: poForm.warehouse_id,
+                        type: 'purchase_in',
+                        qty: item.qty,
+                        ref_id: poRef.id,
+                        date: serverTimestamp(),
+                        notes: `Quick PO ${supplierName}`
+                    });
+
+                    const snapId = `${item.variant_id}_${poForm.warehouse_id}`;
+                    const snapRef = doc(db, "stock_snapshots", snapId);
+                    const snapDoc = await t.get(snapRef);
+                    if (snapDoc.exists()) {
+                        t.update(snapRef, { qty: (snapDoc.data().qty || 0) + item.qty });
+                    } else {
+                        t.set(snapRef, { id: snapId, variant_id: item.variant_id, warehouse_id: poForm.warehouse_id, qty: item.qty });
+                    }
+                }
+            });
+
+            setPoCart([]);
+            setModalFinalizeOpen(false);
+            setIsCartOpen(false);
+            
+            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem('lumina_purchases_history_v2');
+            
+            toast.success("PO Berhasil Dibuat!", { id: tId });
+            fetchData(true);
+
+        } catch (e) {
+            console.error(e);
+            toast.error("Gagal membuat PO", { id: tId });
+        }
+    };
+
+    // --- EXISTING HELPERS ---
+    const getProductTotalStock = (product, whId) => {
+        return product.variants.reduce((acc, v) => acc + (snapshots[`${v.id}_${whId}`] || 0), 0);
+    };
+
+    const getProductGlobalStock = (product) => {
+        let total = 0;
+        warehouses.forEach(w => { total += getProductTotalStock(product, w.id); });
+        return total;
+    };
+
+    const openAdjustment = (variant, whId) => {
+        const currentQty = snapshots[`${variant.id}_${whId}`] || 0;
+        setSelectedVariant({ ...variant, warehouse_id: whId, current_qty: currentQty });
+        setAdjForm({ qty: currentQty, notes: '', type: 'opname' });
         setModalAdjOpen(true);
     };
 
-    const handleAdjWarehouseChange = (e) => {
-        const whId = e.target.value;
-        setAdjData(prev => ({ ...prev, warehouseId: whId, currentQty: snapshots[`${prev.variantId}_${whId}`] || 0 }));
+    const handleSaveAdjustment = async () => {
+        if (!selectedVariant) return;
+        const tId = toast.loading("Menyimpan...");
+        try {
+            const { id: variantId, warehouse_id } = selectedVariant;
+            const targetQty = parseInt(adjForm.qty);
+            const diff = targetQty - selectedVariant.current_qty;
+
+            await runTransaction(db, async (transaction) => {
+                const moveRef = doc(collection(db, "stock_movements"));
+                transaction.set(moveRef, {
+                    variant_id: variantId, warehouse_id: warehouse_id,
+                    type: adjForm.type === 'opname' ? 'adjustment_opname' : 'adjustment_in',
+                    qty: diff, date: serverTimestamp(), notes: adjForm.notes || 'Manual Adj',
+                    created_by: 'admin'
+                });
+                const snapRef = doc(db, "stock_snapshots", `${variantId}_${warehouse_id}`);
+                transaction.set(snapRef, {
+                    id: `${variantId}_${warehouse_id}`, variant_id: variantId, warehouse_id: warehouse_id,
+                    qty: targetQty, updated_at: serverTimestamp()
+                }, { merge: true });
+            });
+
+            const newSnaps = { ...snapshots, [`${variantId}_${warehouse_id}`]: targetQty };
+            setSnapshots(newSnaps);
+            localStorage.setItem(CACHE_KEY, JSON.stringify({ products, warehouses, snapshots: newSnaps, timestamp: Date.now() }));
+            
+            toast.success("Stok diperbarui!", { id: tId });
+            setModalAdjOpen(false);
+        } catch (e) { toast.error(e.message, { id: tId }); }
     };
 
-    const submitOpname = async (e) => {
-        e.preventDefault();
-        const diff = parseInt(adjData.realQty) - adjData.currentQty;
-        if (isNaN(diff) || diff === 0) return toast.error("Tidak ada perubahan.");
-
-        const toastId = toast.loading("Mengupdate stok...");
+    const openStockCard = async (variant, whId) => {
+        setCardData(null); // Set loading state
+        setModalCardOpen(true);
+        setSelectedVariant({ ...variant, warehouse_id: whId });
         try {
-            await runTransaction(db, async (t) => {
-                // 1. Catat Movement
-                const mRef = doc(collection(db, "stock_movements"));
-                t.set(mRef, { 
-                    variant_id: adjData.variantId, warehouse_id: adjData.warehouseId, type: 'adjustment', 
-                    qty: diff, ref_id: mRef.id, ref_type: 'opname', date: serverTimestamp(), 
-                    notes: adjData.note, created_by: auth.currentUser?.email || 'system'
-                });
-
-                // 2. Update Snapshot (Pakai ID Composite variantId_warehouseId)
-                const snapshotId = `${adjData.variantId}_${adjData.warehouseId}`;
-                const sRef = doc(db, "stock_snapshots", snapshotId);
-                const sDoc = await t.get(sRef);
-                
-                if(sDoc.exists()) {
-                    t.update(sRef, { qty: parseInt(adjData.realQty) });
-                } else {
-                    t.set(sRef, { 
-                        id: snapshotId, 
-                        variant_id: adjData.variantId, 
-                        warehouse_id: adjData.warehouseId, 
-                        qty: parseInt(adjData.realQty) 
-                    });
-                }
-            });
-            
-            toast.success("Stok berhasil diupdate!", { id: toastId });
-            
-            // Invalidate Cache & Refresh
-            if (typeof window !== 'undefined') localStorage.removeItem(CACHE_KEY);
-            setModalAdjOpen(false);
-            fetchData(true);
-
+            const q = query(
+                collection(db, "stock_movements"),
+                where("variant_id", "==", variant.id),
+                where("warehouse_id", "==", whId),
+                orderBy("date", "desc"),
+                limit(20)
+            );
+            const snap = await getDocs(q);
+            setCardData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
         } catch (e) { 
-            console.error(e);
-            toast.error(`Gagal: ${e.message}`, { id: toastId });
+            toast.error("Gagal load history"); 
+            setCardData([]); 
         }
     };
 
-    const openCard = async (vId, sku) => {
-        setModalCardOpen(true); setCardData(null);
-        try {
-            // Query history tetap on-demand (tidak di-cache agresif karena realtime)
-            const q = query(collection(db, "stock_movements"), where("variant_id", "==", vId), orderBy("date", "desc"), limit(20));
-            const snap = await getDocs(q);
-            setCardData(snap.docs.map(d => ({id: d.id, ...d.data()})));
-        } catch (e) { setCardData([]); }
-    };
+    const filteredProducts = products.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        p.base_sku?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const displayedWarehouses = filterWarehouse === 'all' 
+        ? warehouses 
+        : warehouses.filter(w => w.id === filterWarehouse);
 
     return (
-        <div className="space-y-6 fade-in pb-20">
-            {/* --- HEADER SECTION (FIXED & SOLID) --- */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-surface px-4 md:px-8 py-4 border-b border-lumina-border/50 shadow-md sticky top-0 z-30 md:static">
-                <div>
-                    <h2 className="text-xl md:text-3xl font-display font-semibold text-text-primary tracking-tight">
-                    Inventory Control
-                    </h2>
-                    <p className="text-sm text-text-secondary mt-1 font-light hidden md:block">
-                    Monitor stok fisik & virtual secara real-time.
-                    </p>
-                </div>
-                {/* Search input */}
-                <div className="w-full md:w-80 bg-surface p-1.5 rounded-xl border border-lumina-border shadow-lg flex items-center focus-within:ring-1 focus-within:ring-lumina-gold transition-all">
-                    <div className="pl-3 text-text-secondary">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </div>
-                    <input 
-                    type="text" 
-                    placeholder="Search Product or SKU..." 
-                    className="w-full bg-transparent text-text-primary text-sm px-3 py-2 outline-none placeholder:text-text-secondary/50 font-mono"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
+        <div className="max-w-full mx-auto space-y-6 fade-in pb-20 text-text-primary bg-background min-h-screen relative">
+            
+            {/* HEADER */}
+            <PageHeader 
+                title="Inventory Management" 
+                subtitle="Real-time stock monitoring & procurement." 
+                actions={
+                    <div className="flex gap-3 items-center">
+                        <div className="relative w-64 md:w-80 group">
+                            <Search className="w-4 h-4 text-text-secondary absolute left-3 top-3 group-focus-within:text-primary transition-colors" />
+                            <input 
+                                type="text" 
+                                className="w-full pl-10 py-2.5 text-sm bg-white border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-text-primary placeholder:text-text-secondary transition-all shadow-sm"
+                                placeholder="Cari Produk / SKU..." 
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        
+                        {/* Header Cart Button (Desktop) */}
+                        <button 
+                            onClick={() => setIsCartOpen(true)}
+                            className="bg-white border border-border text-text-primary p-2.5 rounded-xl shadow-sm hover:bg-gray-50 relative group hidden md:flex"
+                            title="Open Draft PO"
+                        >
+                            <ShoppingCart className="w-5 h-5" />
+                            {poCart.length > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm animate-bounce">
+                                    {poCart.length}
+                                </span>
+                            )}
+                        </button>
 
-            {/* --- DESKTOP VIEW (TABLE) --- */}
-            <div className="hidden md:block card-luxury overflow-hidden min-h-[500px]">
-                <div className="table-wrapper-dark border-none shadow-none rounded-none">
-                    <table className="table-dark">
-                        <thead>
+                        <button onClick={handleRefresh} className="bg-white border border-border p-2.5 rounded-xl shadow-sm hover:bg-gray-50 text-text-secondary hover:text-primary">
+                            <RotateCcw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
+                }
+            />
+
+            {/* INVENTORY TABLE MATRIX */}
+            <div className="bg-white border border-border rounded-2xl shadow-sm overflow-hidden">
+                <div className="overflow-x-auto min-h-[500px]">
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-50/80 sticky top-0 z-10 text-[11px] font-bold text-text-secondary uppercase tracking-wider backdrop-blur-sm border-b border-border">
                             <tr>
-                                <th className="w-16 pl-6">Img</th>
-                                <th>Product Name</th>
-                                <th>Base SKU</th>
-                                <th className="text-center">Category</th>
-                                <th className="text-right pr-8">Total Stock</th>
-                                <th className="w-10"></th>
+                                <th className="py-4 pl-6 w-[350px]">Produk / SKU</th>
+                                {/* DYNAMIC WAREHOUSE COLUMNS */}
+                                {displayedWarehouses.map(w => (
+                                    <th key={w.id} className="py-4 px-2 text-center min-w-[120px] border-l border-border/50">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <div className="flex items-center gap-1">
+                                                <Warehouse className="w-3.5 h-3.5 opacity-50" />
+                                                <span>{w.name}</span>
+                                            </div>
+                                        </div>
+                                    </th>
+                                ))}
+                                {/* TOTAL COLUMN */}
+                                {filterWarehouse === 'all' && (
+                                    <th className="py-4 px-4 text-center min-w-[100px] border-l border-border/50 bg-gray-100/50">
+                                        Total Asset
+                                    </th>
+                                )}
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-sm text-text-primary divide-y divide-border/60">
                             {loading ? (
-                                <tr><td colSpan="6" className="px-6 py-12 text-center text-text-secondary animate-pulse">Loading Inventory Data...</td></tr>
+                                <tr><td colSpan={warehouses.length + 2} className="p-12 text-center text-text-secondary animate-pulse">Memuat data stok...</td></tr>
                             ) : filteredProducts.length === 0 ? (
-                                <tr><td colSpan="6" className="px-6 py-12 text-center text-text-secondary">No products found.</td></tr>
+                                <tr>
+                                    <td colSpan={warehouses.length + 2} className="p-12 text-center text-text-secondary flex flex-col items-center justify-center opacity-60">
+                                        <Package className="w-12 h-12 mb-3" />
+                                        <p>Tidak ada produk ditemukan.</p>
+                                    </td>
+                                </tr>
                             ) : (
-                                filteredProducts.map(p => {
-                                    const isExpanded = expandedProductId === p.id;
-                                    const isLowStock = p.totalStock <= 10;
-                                    
-                                    return (
-                                        <React.Fragment key={p.id}>
-                                            {/* PARENT ROW */}
-                                            <tr 
-                                                onClick={() => toggleAccordion(p.id)}
-                                                className={`group cursor-pointer transition-all duration-200 ${isExpanded ? 'bg-lumina-highlight/30 border-l-4 border-l-lumina-gold' : 'hover:bg-lumina-highlight/20 border-l-4 border-l-transparent'}`}
-                                            >
-                                                <td className="pl-6 py-4">
-                                                    <div className="w-12 h-12 rounded-lg bg-surface border border-lumina-border flex items-center justify-center overflow-hidden shadow-inner">
-                                                        {p.image_url ? (
-                                                            <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <svg className="w-5 h-5 text-text-secondary opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-display font-medium text-text-primary text-base group-hover:text-lumina-gold transition-colors">{p.name}</div>
-                                                    <div className="text-xs text-text-secondary mt-1">{p.variants.length} Variants</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="font-mono text-sm text-text-secondary group-hover:text-text-primary transition-colors">{p.base_sku}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className="badge-luxury badge-neutral">{p.category}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right pr-8">
-                                                    <span className={`text-lg font-mono font-bold ${p.totalStock === 0 ? 'text-rose-500' : (isLowStock ? 'text-amber-500' : 'text-emerald-400')}`}>
-                                                        {p.totalStock}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <span className={`transform transition-transform duration-300 text-lumina-gold inline-block ${isExpanded ? 'rotate-180' : 'rotate-0'}`}>
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
-                                                    </span>
-                                                </td>
-                                            </tr>
+                                filteredProducts.map(prod => {
+                                    const isExpanded = expandedProductId === prod.id;
+                                    const globalTotal = getProductGlobalStock(prod);
 
-                                            {/* EXPANDED CONTENT */}
-                                            {isExpanded && (
-                                                <tr className="bg-[#0F1115] shadow-inner border-b border-lumina-border">
-                                                    <td colSpan="6" className="p-0">
-                                                        <div className="p-6 fade-in">
-                                                            <div className="border border-lumina-border rounded-lg overflow-hidden w-full bg-surface">
-                                                                <table className="w-full text-sm text-left">
-                                                                    <thead className="bg-surface text-[10px] text-text-secondary uppercase tracking-wider font-semibold border-b border-lumina-border">
-                                                                        <tr>
-                                                                            <th className="px-4 py-3 w-48">Variant SKU</th>
-                                                                            <th className="px-4 py-3 w-32">Spec</th>
-                                                                            {warehouses.map(w => (
-                                                                                <th key={w.id} className={`px-4 py-3 text-center border-l border-lumina-border ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-emerald-500'}`}>
-                                                                                    {w.name}
-                                                                                </th>
-                                                                            ))}
-                                                                            <th className="px-4 py-3 text-right">Actions</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-lumina-border">
-                                                                        {p.variants.sort(sortBySize).map(v => (
-                                                                            <tr key={v.id} className="hover:bg-lumina-highlight/20 transition-colors">
-                                                                                <td className="px-4 py-3 font-mono text-lumina-gold text-xs font-bold">{v.sku}</td>
-                                                                                <td className="px-4 py-3 text-text-primary">
-                                                                                    <div className="flex gap-2">
-                                                                                        <span className="badge-luxury badge-neutral">{v.color}</span>
-                                                                                        <span className="badge-luxury badge-neutral">{v.size}</span>
-                                                                                    </div>
-                                                                                </td>
-                                                                                {warehouses.map(w => {
-                                                                                    const qty = snapshots[`${v.id}_${w.id}`] || 0;
-                                                                                    return (
-                                                                                        <td key={w.id} className="px-4 py-3 text-center border-l border-lumina-border/30">
-                                                                                            <span className={`font-mono font-medium ${qty > 0 ? 'text-text-primary' : 'text-lumina-border'}`}>
-                                                                                                {qty}
-                                                                                            </span>
-                                                                                        </td>
-                                                                                    )
-                                                                                })}
-                                                                                <td className="px-4 py-3 text-right">
-                                                                                    <div className="flex justify-end gap-2">
-                                                                                        <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="text-[10px] uppercase font-bold text-text-secondary hover:text-lumina-gold border border-lumina-border hover:border-lumina-gold rounded px-2 py-1 transition-colors">
-                                                                                            Opname
-                                                                                        </button>
-                                                                                        <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="text-[10px] uppercase font-bold text-text-secondary hover:text-text-primary border border-lumina-border hover:border-white rounded px-2 py-1 transition-colors">
-                                                                                            History
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))}
-                                                                    </tbody>
-                                                                </table>
+                                    return (
+                                        <React.Fragment key={prod.id}>
+                                            <tr 
+                                                className={`cursor-pointer transition-all hover:bg-gray-50/80 ${isExpanded ? 'bg-blue-50/40 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}
+                                                onClick={() => setExpandedProductId(isExpanded ? null : prod.id)}
+                                            >
+                                                <td className="py-3 pl-4 pr-2">
+                                                    <div className="flex items-start gap-3">
+                                                        <div className={`mt-1 transition-transform ${isExpanded ? 'rotate-90 text-primary' : 'text-text-secondary'}`}>
+                                                            <ChevronRight className="w-4 h-4"/>
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-text-primary text-sm line-clamp-1">{prod.name}</div>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-[10px] font-mono text-text-secondary bg-gray-100 px-1.5 py-0.5 rounded border border-border">{prod.base_sku}</span>
+                                                                <span className="text-[10px] text-text-secondary">{prod.variants.length} Varian</span>
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                </td>
+                                                {displayedWarehouses.map(w => {
+                                                    const totalWh = getProductTotalStock(prod, w.id);
+                                                    return (
+                                                        <td key={w.id} className="py-3 px-2 text-center border-l border-border/50">
+                                                            <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${totalWh > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-400'}`}>
+                                                                {totalWh}
+                                                            </span>
+                                                        </td>
+                                                    );
+                                                })}
+                                                {filterWarehouse === 'all' && (
+                                                    <td className="py-3 px-4 text-center border-l border-border/50 bg-gray-50/30">
+                                                        <span className="font-bold text-sm text-text-primary">{globalTotal}</span>
                                                     </td>
-                                                </tr>
-                                            )}
+                                                )}
+                                            </tr>
+
+                                            <AnimatePresence>
+                                                {isExpanded && prod.variants.sort(sortBySize).map(v => (
+                                                    <motion.tr 
+                                                        key={v.id} 
+                                                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                                        className="bg-gray-50/30 border-b border-border/30 hover:bg-blue-50/20 group"
+                                                    >
+                                                        <td className="py-2 pl-12 pr-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-1 h-8 bg-border/50 rounded-full"></div>
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-mono text-[11px] font-bold text-primary">{v.sku}</span>
+                                                                        <span className="text-xs text-text-secondary">{v.color} / {v.size}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <button 
+                                                                    onClick={(e) => { e.stopPropagation(); addToPoCart(v, prod); }} 
+                                                                    className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-[10px] flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded hover:bg-amber-100 font-bold shadow-sm"
+                                                                >
+                                                                    <Plus className="w-3 h-3"/> PO
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                        {displayedWarehouses.map(w => {
+                                                            const qty = snapshots[`${v.id}_${w.id}`] || 0;
+                                                            return (
+                                                                <td key={w.id} className="py-2 px-2 text-center border-l border-border/30 relative group/cell">
+                                                                    <span className={`text-sm font-mono font-bold ${qty < 0 ? 'text-rose-500' : qty === 0 ? 'text-gray-300' : 'text-emerald-600'}`}>
+                                                                        {qty}
+                                                                    </span>
+                                                                    <div className="opacity-0 group-hover/cell:opacity-100 absolute inset-0 flex items-center justify-center bg-white/95 gap-1 transition-opacity border-l border-border/30 backdrop-blur-[1px]">
+                                                                        <button onClick={(e) => { e.stopPropagation(); openAdjustment(v, w.id); }} className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition-colors shadow-sm" title="Adjust"><ClipboardList className="w-3.5 h-3.5"/></button>
+                                                                        <button onClick={(e) => { e.stopPropagation(); openStockCard(v, w.id); }} className="p-1.5 rounded-lg bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100 transition-colors shadow-sm" title="History"><History className="w-3.5 h-3.5"/></button>
+                                                                    </div>
+                                                                </td>
+                                                            );
+                                                        })}
+                                                        {filterWarehouse === 'all' && (
+                                                            <td className="py-2 px-4 text-center border-l border-border/30 bg-gray-50/20">
+                                                                <span className="text-xs text-text-secondary font-mono">
+                                                                    {displayedWarehouses.reduce((acc, w) => acc + (snapshots[`${v.id}_${w.id}`] || 0), 0)}
+                                                                </span>
+                                                            </td>
+                                                        )}
+                                                    </motion.tr>
+                                                ))}
+                                            </AnimatePresence>
                                         </React.Fragment>
                                     );
                                 })
@@ -385,165 +496,197 @@ export default function InventoryPage() {
                 </div>
             </div>
 
-             {/* --- MOBILE VIEW (CARDS) --- */}
-             <div className="md:hidden grid grid-cols-1 gap-4">
-                {loading ? (
-                    <div className="text-center py-10 text-text-secondary animate-pulse">Loading Inventory...</div>
-                ) : filteredProducts.length === 0 ? (
-                     <div className="text-center py-10 text-text-secondary">No products found.</div>
-                ) : (
-                    filteredProducts.map(p => {
-                         const isExpanded = expandedProductId === p.id;
-                         const isLowStock = p.totalStock <= 10;
-
-                         return (
-                             <div key={p.id} onClick={() => toggleAccordion(p.id)} className="card-luxury p-4 active:scale-[0.98] transition-transform">
-                                {/* Card Header */}
-                                <div className="flex gap-4 items-start">
-                                    <div className="w-16 h-16 rounded-lg bg-surface border border-lumina-border flex-shrink-0 overflow-hidden">
-                                         {p.image_url ? (
-                                            <img src={p.image_url} alt="Product" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-text-secondary"><span className="text-xs">IMG</span></div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start">
-                                             <span className="text-xs font-mono font-bold text-lumina-gold bg-surface px-1.5 py-0.5 rounded border border-lumina-border">{p.base_sku}</span>
-                                             <span className={`text-sm font-bold font-mono ${p.totalStock === 0 ? 'text-rose-500' : (isLowStock ? 'text-amber-500' : 'text-emerald-400')}`}>
-                                                {p.totalStock} <span className="text-[10px] text-text-secondary font-normal">qty</span>
-                                             </span>
-                                        </div>
-                                        <h3 className="text-sm font-bold text-text-primary mt-1 truncate">{p.name}</h3>
-                                        <div className="flex items-center justify-between mt-1">
-                                            <span className="text-[10px] text-text-secondary">{p.variants.length} Varian</span>
-                                            <span className="badge-luxury badge-neutral text-[9px]">{p.category}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Expanded Content (Variants) */}
-                                {isExpanded && (
-                                    <div className="mt-4 border-t border-lumina-border pt-3 space-y-4 animate-fade-in">
-                                            {p.variants.sort(sortBySize).map(v => (
-                                                <div key={v.id} className="bg-surface/50 rounded-lg p-3 border border-lumina-border/50">
-                                                    <div className="flex justify-between items-center mb-2">
-                                                         <div>
-                                                            <div className="text-xs font-mono text-lumina-gold">{v.sku}</div>
-                                                            <div className="text-[10px] text-text-primary">{v.color} / {v.size}</div>
-                                                         </div>
-                                                         <div className="flex gap-2">
-                                                             <button onClick={(e) => { e.stopPropagation(); openOpname(v, p.name); }} className="px-2 py-1 bg-surface border border-lumina-border rounded text-[10px] hover:border-lumina-gold text-text-secondary hover:text-lumina-gold">Opname</button>
-                                                             <button onClick={(e) => { e.stopPropagation(); openCard(v.id, v.sku); }} className="px-2 py-1 bg-surface border border-lumina-border rounded text-[10px] hover:border-white text-text-secondary hover:text-text-primary">History</button>
-                                                         </div>
-                                                    </div>
-                                                    
-                                                    {/* Warehouse Breakdown (Mobile Grid) */}
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        {warehouses.map(w => {
-                                                            const qty = snapshots[`${v.id}_${w.id}`] || 0;
-                                                            if(w.type === 'virtual_supplier' && qty === 0) return null; 
-                                                            return (
-                                                                <div key={w.id} className="flex justify-between items-center text-[10px] bg-surface px-2 py-1 rounded border border-lumina-border/30">
-                                                                    <span className={`truncate max-w-[80px] ${w.type==='virtual_supplier' ? 'text-indigo-400' : 'text-text-secondary'}`}>{w.name}</span>
-                                                                    <span className={`font-mono font-bold ${qty > 0 ? 'text-text-primary' : 'text-text-secondary/30'}`}>{qty}</span>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                    </div>
-                                )}
-                             </div>
-                         );
-                    })
+            {/* --- FLOATING CART BUTTON (PINNED) --- */}
+            <AnimatePresence>
+                {poCart.length > 0 && (
+                    <motion.button
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        onClick={() => setIsCartOpen(true)}
+                        className="fixed bottom-6 right-6 z-40 bg-primary text-white p-4 rounded-full shadow-2xl hover:bg-blue-600 hover:scale-105 transition-all flex items-center justify-center group"
+                    >
+                        <ShoppingCart className="w-6 h-6" />
+                        <span className="absolute -top-2 -right-2 bg-rose-500 text-white text-xs w-6 h-6 flex items-center justify-center rounded-full border-2 border-white font-bold animate-bounce">
+                            {poCart.length}
+                        </span>
+                    </motion.button>
                 )}
-            </div>
+            </AnimatePresence>
 
-            {/* --- STOCK OPNAME MODAL (FIXED) --- */}
-            <Portal>
-            {modalAdjOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-md flex flex-col max-h-[90vh] overflow-hidden ring-1 ring-lumina-gold/20">
-                        <div className="px-6 py-5 border-b border-lumina-border bg-surface rounded-t-2xl">
-                            <h3 className="text-lg font-display font-bold text-text-primary">Stock Opname</h3>
-                            <p className="text-xs text-text-secondary mt-1">Adjust stock discrepancy.</p>
-                        </div>
-                        
-                        {/* SCROLLABLE FORM */}
-                        <div className="p-6 space-y-5 overflow-y-auto flex-1">
-                            <div className="bg-surface p-4 rounded-lg border border-lumina-border flex justify-between items-center">
-                                <div>
-                                    <p className="font-mono font-bold text-lumina-gold text-sm">{adjData.sku}</p>
-                                    <p className="text-xs text-text-primary mt-0.5">{adjData.productName}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] text-text-secondary uppercase">System Qty</p>
-                                    <p className="text-lg font-bold text-text-primary font-mono">{adjData.currentQty}</p>
-                                </div>
+            {/* --- CART DRAWER --- */}
+            <AnimatePresence>
+                {isCartOpen && (
+                    <>
+                        <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40" onClick={()=>setIsCartOpen(false)} />
+                        <motion.div initial={{x:'100%'}} animate={{x:0}} exit={{x:'100%'}} className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col border-l border-border">
+                            <div className="p-5 border-b border-border flex justify-between items-center bg-gray-50">
+                                <h3 className="font-bold text-lg flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-primary"/> Draft Purchase Order</h3>
+                                <button onClick={()=>setIsCartOpen(false)}><X className="w-6 h-6 text-text-secondary"/></button>
                             </div>
-                            
-                            <form onSubmit={submitOpname} className="space-y-4">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                {poCart.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-64 text-text-secondary opacity-50">
+                                        <Package className="w-12 h-12 mb-2"/>
+                                        <p>Keranjang kosong. Tambahkan item (+ PO).</p>
+                                    </div>
+                                ) : poCart.map((item, i) => (
+                                    <div key={i} className="bg-white p-3 rounded-xl border border-border shadow-sm flex justify-between items-center">
+                                        <div>
+                                            <div className="font-bold text-sm text-text-primary">{item.product_name}</div>
+                                            <div className="text-xs text-text-secondary flex items-center gap-2">
+                                                <span className="font-mono bg-gray-100 px-1 rounded">{item.sku}</span>
+                                                <span>{item.variant_name}</span>
+                                            </div>
+                                            <div className="text-xs font-mono mt-1 text-emerald-600">Est. Cost: {formatRupiah(item.cost)}</div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center border rounded-lg bg-gray-50">
+                                                <button onClick={()=>{const n=[...poCart]; if(n[i].qty>1) n[i].qty--; else n.splice(i,1); setPoCart(n)}} className="px-2 py-1 text-sm font-bold hover:bg-gray-200 rounded-l-lg">-</button>
+                                                <span className="px-2 text-sm font-bold bg-white border-x h-full flex items-center">{item.qty}</span>
+                                                <button onClick={()=>{const n=[...poCart]; n[i].qty++; setPoCart(n)}} className="px-2 py-1 text-sm font-bold hover:bg-gray-200 rounded-r-lg">+</button>
+                                            </div>
+                                            <button onClick={()=>removeFromCart(i)} className="text-rose-500 p-1 hover:bg-rose-50 rounded"><Trash2 className="w-4 h-4"/></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-5 border-t border-border bg-gray-50">
+                                <div className="flex justify-between mb-4 text-sm font-bold">
+                                    <span>Total Estimasi</span>
+                                    <span>{formatRupiah(poCart.reduce((a,b)=>a+(b.qty*b.cost),0))}</span>
+                                </div>
+                                <button onClick={()=>{setIsCartOpen(false); setModalFinalizeOpen(true)}} disabled={poCart.length===0} className="w-full btn-gold py-3 shadow-lg disabled:opacity-50">
+                                    Finalize PO
+                                </button>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
+            {/* --- MODAL FINALIZE PO --- */}
+            <Portal>
+                {modalFinalizeOpen && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                        <motion.div initial={{scale:0.95}} animate={{scale:1}} className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 border border-border">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-text-primary">Create Purchase Order</h3>
+                                <button onClick={()=>setModalFinalizeOpen(false)}><X className="w-6 h-6 text-text-secondary"/></button>
+                            </div>
+                            <div className="space-y-4">
                                 <div>
-                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Warehouse</label>
-                                    <select className="input-luxury" value={adjData.warehouseId} onChange={handleAdjWarehouseChange}>
+                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Supplier</label>
+                                    <select className="input-luxury" value={poForm.supplier_id} onChange={e=>setPoForm({...poForm, supplier_id:e.target.value})}>
+                                        <option value="">-- Pilih Supplier --</option>
+                                        {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Gudang Tujuan</label>
+                                    <select className="input-luxury" value={poForm.warehouse_id} onChange={e=>setPoForm({...poForm, warehouse_id:e.target.value})}>
+                                        <option value="">-- Pilih Gudang --</option>
                                         {warehouses.map(w => <option key={w.id} value={w.id}>{w.name}</option>)}
                                     </select>
                                 </div>
-                                
                                 <div>
-                                    <label className="text-xs font-bold text-lumina-gold uppercase mb-1 block">New Physical Quantity</label>
-                                    <input type="number" required className="input-luxury border-lumina-gold text-center font-bold text-text-primary bg-primary/10 focus:ring-lumina-gold text-lg py-3" value={adjData.realQty} onChange={e => setAdjData({...adjData, realQty: e.target.value})} autoFocus placeholder="0" />
+                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Tanggal Order</label>
+                                    <input type="date" className="input-luxury" value={poForm.date} onChange={e=>setPoForm({...poForm, date:e.target.value})} />
                                 </div>
-                                
-                                <div>
-                                    <label className="text-xs font-bold text-text-secondary uppercase mb-1 block">Reason / Notes</label>
-                                    <textarea required className="input-luxury" rows="2" value={adjData.note} onChange={e => setAdjData({...adjData, note: e.target.value})} placeholder="E.g. Broken goods, Found item..."></textarea>
+                                <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-start gap-2">
+                                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5"/>
+                                    <div className="text-xs text-amber-800">
+                                        <p className="font-bold">Konfirmasi Stok Masuk?</p>
+                                        <p>Stok akan langsung ditambahkan ke gudang terpilih dengan status <b>Received</b>.</p>
+                                    </div>
                                 </div>
-                                
-                                {/* FOOTER */}
-                                <div className="flex justify-end gap-3 pt-2 border-t border-lumina-border mt-4">
-                                    <button type="button" onClick={() => setModalAdjOpen(false)} className="btn-ghost-dark">Cancel</button>
-                                    <button type="submit" className="btn-gold">Save Adjustment</button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+                                <button onClick={()=>setModalFinalizeOpen(false)} className="btn-ghost-dark">Batal</button>
+                                <button onClick={handleFinalizePO} className="btn-primary text-white hover:bg-blue-600 px-6 py-2.5 rounded-xl font-bold shadow-lg flex items-center gap-2">
+                                    <FileText className="w-4 h-4"/> Create PO
+                                </button>
+                            </div>
+                        </motion.div>
                     </div>
-                </div>
-            )}
+                )}
             </Portal>
 
-            {/* --- STOCK CARD MODAL (FIXED) --- */}
+            {/* --- MODAL ADJUSTMENT --- */}
             <Portal>
-            {modalCardOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 backdrop-blur-sm p-4 fade-in">
-                    <div className="bg-surface rounded-2xl shadow-2xl border border-lumina-border w-full max-w-2xl flex flex-col max-h-[80vh] overflow-hidden">
-                        <div className="px-6 py-5 border-b border-lumina-border flex justify-between items-center bg-surface">
-                            <h3 className="text-lg font-display font-bold text-text-primary">Stock History</h3>
-                            <button onClick={() => setModalCardOpen(false)} className="text-text-secondary hover:text-text-primary text-xl">✕</button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto custom-scrollbar bg-surface">
-                            <table className="table-dark w-full">
-                                <thead className="sticky top-0 z-10 bg-surface border-b border-lumina-border">
-                                    <tr><th className="pl-6">Date</th><th>Type</th><th>Warehouse</th><th className="text-right">Qty</th><th>Note</th></tr>
-                                </thead>
-                                <tbody>
-                                    {!cardData ? <tr><td colSpan="5" className="text-center p-6 text-text-secondary">Loading...</td></tr> : cardData.length === 0 ? <tr><td colSpan="5" className="text-center p-6 italic text-text-secondary">No history found.</td></tr> : cardData.map(m => (
-                                        <tr key={m.id}>
-                                            <td className="pl-6 text-xs text-text-secondary font-mono">{new Date(m.date.toDate()).toLocaleDateString()}</td>
-                                            <td><span className="badge-luxury badge-neutral">{m.type}</span></td>
-                                            <td className="text-xs text-text-primary">{warehouses.find(w => w.id === m.warehouse_id)?.name}</td>
-                                            <td className={`text-right font-mono font-bold ${m.qty > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{m.qty > 0 ? `+${m.qty}` : m.qty}</td>
-                                            <td className="text-xs text-text-secondary truncate max-w-[150px]">{m.notes}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                {modalAdjOpen && selectedVariant && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                        <motion.div initial={{scale:0.95}} animate={{scale:1}} className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 border border-border">
+                            <h3 className="text-lg font-bold text-text-primary mb-1">Stok Opname</h3>
+                            <p className="text-xs text-text-secondary mb-4 font-mono">{selectedVariant.sku}</p>
+                            <div className="space-y-4">
+                                <div className="flex justify-between bg-gray-50 p-3 rounded-xl border border-border">
+                                    <span className="text-xs font-bold text-text-secondary uppercase">Sistem</span>
+                                    <span className="text-sm font-mono font-bold text-text-primary">{selectedVariant.current_qty}</span>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-emerald-600 block mb-1">Real Qty (Fisik)</label>
+                                    <input type="number" className="w-full text-center text-3xl font-bold border-2 border-emerald-500/50 rounded-xl py-3 focus:outline-none text-emerald-600" value={adjForm.qty} onChange={e => setAdjForm({ ...adjForm, qty: e.target.value })} autoFocus />
+                                </div>
+                                <textarea className="w-full border border-border rounded-xl p-3 text-sm focus:outline-none" rows="2" value={adjForm.notes} onChange={e => setAdjForm({ ...adjForm, notes: e.target.value })} placeholder="Catatan..."></textarea>
+                            </div>
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button onClick={() => setModalAdjOpen(false)} className="btn-ghost-dark px-4 py-2 text-xs">Batal</button>
+                                <button onClick={handleSaveAdjustment} className="btn-primary text-white hover:bg-blue-600 px-6 py-2 rounded-xl text-xs font-bold shadow-lg">Simpan</button>
+                            </div>
+                        </motion.div>
                     </div>
-                </div>
-            )}
+                )}
+            </Portal>
+
+            {/* --- MODAL 2: LOG --- */}
+            <Portal>
+                {modalCardOpen && selectedVariant && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                        <motion.div initial={{y:20, opacity:0}} animate={{y:0, opacity:1}} className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-border flex flex-col max-h-[80vh] overflow-hidden">
+                            <div className="p-5 border-b border-border flex justify-between items-center bg-gray-50/50">
+                                <div>
+                                    <h3 className="font-bold text-lg text-text-primary">Kartu Stok</h3>
+                                    <p className="text-xs text-text-secondary font-mono mt-0.5">{selectedVariant.sku}</p>
+                                </div>
+                                <button onClick={() => setModalCardOpen(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-border hover:bg-gray-100 transition-colors text-text-secondary">
+                                    <ChevronDown className="w-4 h-4"/>
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                <table className="w-full text-left">
+                                    <thead className="bg-white text-xs font-bold text-text-secondary uppercase sticky top-0 border-b border-border shadow-sm z-10">
+                                        <tr><th className="p-4 pl-6">Tanggal</th><th className="p-4">Tipe</th><th className="p-4 text-right">Qty</th><th className="p-4">Note</th></tr>
+                                    </thead>
+                                    <tbody className="text-sm">
+                                        {!cardData ? (
+                                            <tr><td colSpan="4" className="text-center p-8 text-text-secondary animate-pulse">Loading history...</td></tr>
+                                        ) : cardData.length === 0 ? (
+                                            <tr><td colSpan="4" className="text-center p-8 text-text-secondary italic">Belum ada riwayat pergerakan.</td></tr>
+                                        ) : (
+                                            cardData.map((m, idx) => (
+                                                <tr key={m.id || idx} className="hover:bg-gray-50 border-b border-border/50 last:border-0 transition-colors">
+                                                    <td className="pl-6 p-4 text-xs text-text-secondary font-mono">
+                                                        {m.date ? new Date(m.date.toDate()).toLocaleDateString() + ' ' + new Date(m.date.toDate()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '-'}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="bg-gray-100 text-text-primary px-2 py-1 rounded text-[10px] uppercase font-bold border border-border">
+                                                            {m.type?.replace(/_/g, ' ')}
+                                                        </span>
+                                                    </td>
+                                                    <td className={`p-4 text-right font-mono font-bold ${m.qty > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                        {m.qty > 0 ? `+${m.qty}` : m.qty}
+                                                    </td>
+                                                    <td className="p-4 text-xs text-text-secondary truncate max-w-[200px]">{m.notes || '-'}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
             </Portal>
         </div>
     );

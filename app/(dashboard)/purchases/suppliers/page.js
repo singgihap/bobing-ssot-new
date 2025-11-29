@@ -151,7 +151,7 @@ export default function SuppliersPage() {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6 fade-in pb-20">
+        <div className="max-w-full mx-auto space-y-6 fade-in pb-20 px-4 md:px-8 pt-6 bg-background min-h-screen text-text-primary">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 className="text-xl md:text-3xl font-display font-bold text-text-primary tracking-tight">Suppliers</h2>
@@ -165,7 +165,7 @@ export default function SuppliersPage() {
 
             <div className="card-luxury overflow-hidden">
                 <div className="table-wrapper-dark border-none shadow-none rounded-none">
-                    <table className="table-dark">
+                    <table className="table-modern">
                         <thead>
                             <tr>
                                 <th className="pl-6">Name</th>
