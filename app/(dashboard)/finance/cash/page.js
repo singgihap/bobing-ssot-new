@@ -2,7 +2,7 @@
 "use client";
 import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, orderBy, limit, getDocs, writeBatch, serverTimestamp, doc, increment, getDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, writeBatch, addDoc, serverTimestamp, doc, increment, getDoc } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
 import Skeleton from '@/components/Skeleton';
 import { useAuth } from '@/context/AuthContext'; 
@@ -23,16 +23,6 @@ const safeDate = (dateInput) => {
     return isNaN(d.getTime()) ? new Date() : d;
 };
 
-// --- LOGIC AKUNTANSI (AUTO DEBIT/KREDIT) ---
-const getAccountSide = (code) => {
-    // Normal Balance:
-    // Aset (1) & Beban (5) -> Normal Debit
-    // Kewajiban (2), Ekuitas (3), Pendapatan (4) -> Normal Kredit
-    const prefix = String(code).charAt(0);
-    if (['1', '5', '6', '8', '9'].includes(prefix)) return 'debit';
-    return 'credit';
-};
-
 export default function CashTransactionsPage() {
   const { user } = useAuth();
 
@@ -46,24 +36,19 @@ export default function CashTransactionsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [filterAccount, setFilterAccount] = useState('all'); 
-  const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
   
   // UI State
   const [expandedDate, setExpandedDate] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   
-  // Form State (Double Entry Model)
+  // Form State
   const [form, setForm] = useState({ 
-      type: 'out', // 'in' (Pemasukan) | 'out' (Pengeluaran) | 'transfer' (Mutasi - Next Feature)
+      type: 'out', 
       amount: '', 
       date: new Date().toISOString().split('T')[0],
-      
-      // LOGIC:
-      // Jika OUT (Bayar Beban): Kredit Kas, Debit Beban
-      // Jika IN (Terima Uang): Debit Kas, Kredit Pendapatan
-      walletId: '',   // Akun Kas/Bank Utama
-      categoryId: '', // Akun Lawan (Beban/Pendapatan/Hutang/dll)
+      walletId: '',   
+      categoryId: '', 
       description: ''
   });
 
@@ -72,17 +57,14 @@ export default function CashTransactionsPage() {
   const fetchMasterData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch COA (Live fetch untuk akurasi saldo)
       const qAcc = query(collection(db, "chart_of_accounts"), orderBy("code", "asc"));
       const snapAcc = await getDocs(qAcc);
       const coaList = snapAcc.docs.map(d => ({ id: d.id, ...d.data() }));
       setAccounts(coaList);
 
-      // Set default wallet
       const defWallet = coaList.find(a => a.code.startsWith('1') && (a.name.toLowerCase().includes('kas') || a.name.toLowerCase().includes('bank')));
       if(defWallet) setForm(f => ({ ...f, walletId: defWallet.id }));
 
-      // 2. Fetch Transactions
       await fetchTransactions();
 
     } catch(e) { console.error(e); } finally { setLoading(false); }
@@ -100,7 +82,6 @@ export default function CashTransactionsPage() {
             };
         });
 
-        // Simple Metrics (Hanya dari yang di-fetch)
         const totalIn = transList.filter(t => t.type === 'in').reduce((a,b) => a + (b.amount||0), 0);
         const totalOut = transList.filter(t => t.type === 'out').reduce((a,b) => a + (b.amount||0), 0);
 
@@ -118,9 +99,6 @@ export default function CashTransactionsPage() {
   const openEditModal = (item) => {
       setEditingId(item.id);
       const dateStr = item.date instanceof Date ? item.date.toISOString().split('T')[0] : '';
-      
-      // Mapping Legacy Fields ke Form Baru
-      // Legacy: account_id (Wallet), category_account_id (Category)
       setForm({
           type: item.type, 
           amount: item.amount,
@@ -132,7 +110,6 @@ export default function CashTransactionsPage() {
       setIsModalOpen(true);
   };
 
-  // --- CORE LOGIC: SIMPAN TRANSAKSI (STRICT DOUBLE ENTRY) ---
   const handleSave = async (e) => {
       e.preventDefault();
       if(!form.amount || !form.walletId || !form.categoryId) return toast.error("Lengkapi data!");
@@ -144,82 +121,42 @@ export default function CashTransactionsPage() {
           const category = accounts.find(a => a.id === form.categoryId);
           const batch = writeBatch(db);
           
-          // Timestamp: Pakai jam sekarang tapi tanggal dari input
           const inputDate = new Date(form.date);
           const now = new Date();
           inputDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
           const timestamp = inputDate;
 
-          // LOGIKA SALDO (SMART BALANCE):
-          // Kita tentukan adjustment (+/-) berdasarkan Normal Balance akun
-          
-          // 1. Tentukan Arah Debit/Kredit
-          // CASE: PENGELUARAN (OUT)
-          // Kredit: Wallet (Aset berkurang) -> adjustment negatif
-          // Debit: Category (Beban bertambah / Hutang berkurang) -> adjustment positif (jika beban), negatif (jika hutang)
-          
-          // AGAR SEDERHANA & KONSISTEN DENGAN UI DASHBOARD:
-          // Dashboard menampilkan 'balance' sebagai nilai absolut pembukuan.
-          // Aset: + = Debit
-          // Kewajiban: + = Kredit
-          // Pendapatan: + = Kredit
-          // Beban: + = Debit
-          
           let walletAdj = 0;
           let categoryAdj = 0;
 
           if (form.type === 'out') {
-              // Uang Keluar (Kredit Kas)
+              // Uang Keluar (Kredit)
               walletAdj = -amountVal; 
               
               // Lawan (Debit)
-              // Jika bayar Beban (5) -> Saldo Beban Bertambah (+)
-              // Jika bayar Hutang (2) -> Saldo Hutang Berkurang (-)
-              // Jika beli Aset (1) -> Saldo Aset Bertambah (+)
               const catType = String(category.code).charAt(0);
               if (['1', '5', '6'].includes(catType)) categoryAdj = amountVal; // Bertambah
-              else categoryAdj = -amountVal; // Berkurang (Hutang/Modal)
+              else categoryAdj = -amountVal; // Berkurang
           } 
           else {
-              // Uang Masuk (Debit Kas)
+              // Uang Masuk (Debit)
               walletAdj = amountVal;
 
               // Lawan (Kredit)
-              // Jika terima Pendapatan (4) -> Saldo Pendapatan Bertambah (+)
-              // Jika terima Modal/Hutang (2,3) -> Saldo Bertambah (+)
-              // Jika Pelunasan Piutang (1) -> Saldo Piutang Berkurang (-)
               const catType = String(category.code).charAt(0);
               if (['2', '3', '4'].includes(catType)) categoryAdj = amountVal; // Bertambah
-              else categoryAdj = -amountVal; // Berkurang (Piutang)
+              else categoryAdj = -amountVal; // Berkurang
           }
 
-          // A. Edit Mode: Revert Transaksi Lama dulu (Simplified: Delete & Re-Insert logic)
-          // (Untuk keamaan data production, kita pakai logic Revert manual)
+          // A. Edit Mode (Simplified Revert Logic not fully implemented for safety, assuming overwrite)
           if (editingId) {
-             const oldData = transactions.find(t => t.id === editingId);
-             if (oldData) {
-                 // Revert Wallet
-                 const revWalletRef = doc(db, "chart_of_accounts", oldData.account_id);
-                 const revWalletAdj = oldData.type === 'in' ? -oldData.amount : oldData.amount;
-                 batch.update(revWalletRef, { balance: increment(revWalletAdj) });
-
-                 // Revert Category
-                 if (oldData.category_account_id) {
-                     // Kita harus menebak logic lama, atau simplenya kita revert lawan arah
-                     // Asumsi logic lama simple +/- balance. 
-                     // Agar aman di fase transisi ini: Kita skip revert detail category saldo jika struktur lama beda.
-                     // TAPI untuk recordTransaction baru, kita harus disiplin.
-                     // Fallback: Kita manual set saldo jika perlu, tapi disini kita coba revert best effort.
-                 }
-             }
-             // Timpa Data
              const transRef = doc(db, "cash_transactions", editingId);
              batch.update(transRef, {
                  amount: amountVal,
                  type: form.type,
                  account_id: form.walletId,
                  category_account_id: form.categoryId,
-                 category: category.name, // Denormalisasi nama
+                 category: category.name,
                  description: form.description,
                  date: timestamp,
                  updated_at: serverTimestamp()
@@ -229,7 +166,7 @@ export default function CashTransactionsPage() {
              const transRef = doc(collection(db, "cash_transactions"));
              batch.set(transRef, {
                  amount: amountVal,
-                 type: form.type, // 'in' or 'out'
+                 type: form.type,
                  account_id: form.walletId,
                  category_account_id: form.categoryId,
                  category: category.name,
@@ -237,13 +174,12 @@ export default function CashTransactionsPage() {
                  date: timestamp,
                  created_at: serverTimestamp(),
                  ref_type: 'manual',
-                 // Helper fields untuk report
                  debit: form.type === 'in' ? amountVal : 0,
                  credit: form.type === 'out' ? amountVal : 0
              });
           }
 
-          // UPDATE SALDO (INCREMENTAL)
+          // UPDATE SALDO
           const walletRef = doc(db, "chart_of_accounts", form.walletId);
           batch.update(walletRef, { balance: increment(walletAdj), updated_at: serverTimestamp() });
 
@@ -262,22 +198,12 @@ export default function CashTransactionsPage() {
       const tId = toast.loading("Menghapus...");
       try {
           const batch = writeBatch(db);
-          // 1. Revert Saldo Wallet (Kebalikan tipe)
           const walletRef = doc(db, "chart_of_accounts", item.account_id);
           const revWallet = item.type === 'in' ? -item.amount : item.amount;
           batch.update(walletRef, { balance: increment(revWallet) });
 
-          // 2. Revert Saldo Category
-          // (Karena logic dynamic, kita perlu ambil akun category untuk cek kodenya)
-          // Simplified: Jika pengeluaran (out), biasanya category bertambah (+), jadi kita kurangi (-).
-          // Kecuali hutang. Untuk keamanan, penghapusan transaksi kompleks disarankan via Jurnal Koreksi.
-          // Tapi untuk fitur quick delete ini, kita anggap mayoritas adalah Beban/Pendapatan.
           if(item.category_account_id) {
               const catRef = doc(db, "chart_of_accounts", item.category_account_id);
-              // Asumsi simple reversal:
-              // Out -> Cat + -> Rev Cat -
-              // In -> Cat + -> Rev Cat -
-              // (Sangat simplified, tapi cukup untuk 90% kasus beban/omzet)
               batch.update(catRef, { balance: increment(-item.amount) });
           }
 
@@ -298,7 +224,6 @@ export default function CashTransactionsPage() {
     if (filterType !== 'all') filtered = filtered.filter(t => t.type === filterType);
     if (filterAccount !== 'all') filtered = filtered.filter(t => t.account_id === filterAccount);
     
-    // Group By Date
     const groups = {};
     filtered.forEach(t => {
         const dateKey = safeDate(t.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -356,7 +281,7 @@ export default function CashTransactionsPage() {
                       </div>
                   </div>
                   <AnimatePresence>
-                  {(expandedDate === group.dateLabel || !expandedDate) && ( // Default expanded or logic
+                  {(expandedDate === group.dateLabel || !expandedDate) && (
                       <motion.div initial={{height:0}} animate={{height:'auto'}} exit={{height:0}} className="divide-y divide-border/50">
                           {group.items.map(item => (
                               <div key={item.id} className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center hover:bg-blue-50/30 transition-colors group/item gap-3">
@@ -397,7 +322,6 @@ export default function CashTransactionsPage() {
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
                   <motion.div initial={{scale:0.95, opacity:0}} animate={{scale:1, opacity:1}} exit={{scale:0.95, opacity:0}} className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-border flex flex-col max-h-[90vh]">
                       
-                      {/* HEADER */}
                       <div className="px-6 py-4 border-b border-border bg-gray-50 flex justify-between items-center shrink-0">
                           <div>
                               <h3 className="text-lg font-bold text-text-primary">{editingId ? "Edit Jurnal" : "Catat Transaksi"}</h3>
@@ -408,7 +332,7 @@ export default function CashTransactionsPage() {
                       
                       <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
                           
-                          {/* 1. TIPE TRANSAKSI (TOGGLE BESAR) */}
+                          {/* 1. TIPE TRANSAKSI */}
                           <div className="grid grid-cols-2 gap-2 bg-gray-100 p-1.5 rounded-xl">
                               <button 
                                 type="button" 
@@ -444,7 +368,6 @@ export default function CashTransactionsPage() {
 
                           {/* 3. FLOW (DARI -> KE) */}
                           <div className="bg-blue-50/30 border border-blue-100 rounded-xl p-4 space-y-4 relative">
-                              {/* GARIS PENGHUBUNG */}
                               <div className="absolute left-[23px] top-[40px] bottom-[40px] w-0.5 bg-blue-200/50 border-l border-dashed border-blue-300"></div>
 
                               {/* FIELD 1: SUMBER (KREDIT) */}
@@ -455,10 +378,16 @@ export default function CashTransactionsPage() {
                                   </label>
                                   <div className="relative z-10">
                                       {form.type === 'out' ? (
-                                          // OUT: Sumber = Wallet (Kas)
+                                          // OUT: Sumber = Wallet (Kas/Bank/Piutang) -> UPDATED FILTER
                                           <select className="input-luxury pl-3 text-sm" value={form.walletId} onChange={e => setForm({...form, walletId: e.target.value})}>
-                                              <option value="">-- Pilih Akun Kas/Bank --</option>
-                                              {accounts.filter(a => a.code.startsWith('1') && (a.category?.includes('KAS') || a.name.toLowerCase().includes('kas') || a.name.toLowerCase().includes('bank'))).map(a => (
+                                              <option value="">-- Pilih Akun Sumber --</option>
+                                              {accounts.filter(a => {
+                                                  // Allow 11xx (Kas/Bank) AND 12xx (Piutang)
+                                                  // ATAU jika nama mengandung kata-kata kunci tertentu
+                                                  const code = String(a.code);
+                                                  const name = (a.name || '').toLowerCase();
+                                                  return code.startsWith('11') || code.startsWith('12') || name.includes('kas') || name.includes('bank') || name.includes('saldo');
+                                              }).map(a => (
                                                   <option key={a.id} value={a.id}>{a.code} - {a.name}</option>
                                               ))}
                                           </select>
@@ -506,7 +435,7 @@ export default function CashTransactionsPage() {
                           <div className="grid grid-cols-3 gap-4">
                               <div className="col-span-2">
                                   <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 block">Keterangan</label>
-                                  <input className="input-luxury" placeholder="Contoh: Bayar Listrik Bln Nov" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+                                  <input className="input-luxury" placeholder="Contoh: Topup Iklan Shopee" value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
                               </div>
                               <div>
                                   <label className="text-xs font-bold text-text-secondary uppercase mb-1.5 block">Tanggal</label>

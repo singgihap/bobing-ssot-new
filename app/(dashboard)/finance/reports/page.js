@@ -25,7 +25,7 @@ export default function ProfitLossPage() {
         grossProfit: 0, netProfit: 0
     });
 
-    const [details, setDetails] = useState({}); // Breakdown per akun
+    const [details, setDetails] = useState({ revenue: {}, cogs: {}, expense: {} });
 
     useEffect(() => {
         fetchProfitLoss();
@@ -65,37 +65,43 @@ export default function ProfitLossPage() {
             snap.forEach(doc => {
                 const t = doc.data();
                 
-                // Logic: Cek 'category_account_id' (Akun Lawan)
-                if (t.category_account_id && accMap[t.category_account_id]) {
-                    const acc = accMap[t.category_account_id];
+                // [FIXED] Gunakan 'account_id' langsung (Logic Jurnal Murni)
+                if (t.account_id && accMap[t.account_id]) {
+                    const acc = accMap[t.account_id];
                     const code = String(acc.code);
-                    const amount = t.amount || 0;
+                    
+                    // Ambil nilai Debit/Kredit
+                    // Fallback ke t.amount jika field debit/credit belum ada (data lama)
+                    const debit = t.debit || (t.type === 'in' ? t.amount : 0) || 0;
+                    const credit = t.credit || (t.type === 'out' ? t.amount : 0) || 0;
 
                     // 1. PENDAPATAN (Kepala 4)
+                    // Normal Balance: Kredit (+)
                     if (code.startsWith('4')) {
-                        // Kredit = Tambah Revenue
-                        if(t.type === 'in' || t.credit > 0) { 
-                            revenue += amount;
-                            addBreakdown(acc.name, amount, 'revenue');
-                        } else { // Debit (Retur)
-                            revenue -= amount;
-                            addBreakdown(acc.name, -amount, 'revenue');
+                        const netAmount = credit - debit; // Kredit menambah, Debit mengurangi (Retur)
+                        if (netAmount !== 0) {
+                            revenue += netAmount;
+                            addBreakdown(acc.name, netAmount, 'revenue');
                         }
                     }
 
                     // 2. HPP (Kepala 5 + Nama mengandung 'HPP')
+                    // Normal Balance: Debit (+)
                     else if (code.startsWith('5') && acc.name.toLowerCase().includes('hpp')) {
-                        if(t.type === 'out' || t.debit > 0) {
-                            cogs += amount;
-                            addBreakdown(acc.name, amount, 'cogs');
+                        const netAmount = debit - credit; // Debit menambah, Kredit mengurangi
+                        if (netAmount !== 0) {
+                            cogs += netAmount;
+                            addBreakdown(acc.name, netAmount, 'cogs');
                         }
                     }
 
                     // 3. BEBAN OPERASIONAL (Kepala 5 Lainnya)
+                    // Normal Balance: Debit (+)
                     else if (code.startsWith('5') && !acc.name.toLowerCase().includes('hpp')) {
-                        if(t.type === 'out' || t.debit > 0) {
-                            expenses += amount;
-                            addBreakdown(acc.name, amount, 'expense');
+                        const netAmount = debit - credit;
+                        if (netAmount !== 0) {
+                            expenses += netAmount;
+                            addBreakdown(acc.name, netAmount, 'expense');
                         }
                     }
                 }
