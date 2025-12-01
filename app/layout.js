@@ -23,15 +23,22 @@ export const metadata = {
   formatDetection: {
     telephone: false,
   },
+  other: {
+    'link': [
+      { rel: 'preconnect', href: 'https://firebasestorage.googleapis.com' },
+      { rel: 'preconnect', href: 'https://firestore.googleapis.com' },
+      { rel: 'dns-prefetch', href: 'https://firestore.googleapis.com' }
+    ]
+  }
 };
 
 // UPDATE BAGIAN INI (VIEWPORT PWA)
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  themeColor: '#FFFFFF', // Warna bar browser HP
+  maximumScale: 5, // Jangan dibatasi di 1
+  userScalable: true, // Izinkan user melakukan zoom
+  themeColor: '#FFFFFF',
 }
 
 export default function RootLayout({ children }) {

@@ -432,6 +432,7 @@ export default function ImportSalesPage() {
                     // Import biasanya dianggap PAID (Masuk ke Piutang Marketplace dulu)
                     payment_status: 'paid', 
                     payment_account_id: config.account_id,
+                    order_date: serverTimestamp(),
                     order_created_at: head['tanggal pesanan'] ? new Date(head['tanggal pesanan']) : serverTimestamp(),
                     marketplace_created_at: head['tanggal pesanan'] ? new Date(head['tanggal pesanan']) : null,
                     imported_at: serverTimestamp(),

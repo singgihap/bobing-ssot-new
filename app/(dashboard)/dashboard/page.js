@@ -1,128 +1,138 @@
-// app/(dashboard)/dashboard/page.js
 "use client";
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, orderBy, doc, getDoc, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit, documentId } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement, BarElement } from 'chart.js';
-import { Line, Doughnut } from 'react-chartjs-2';
 import PageHeader from '@/components/PageHeader'; 
 import Skeleton from '@/components/Skeleton'; 
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
 
-// --- MODERN UI IMPORTS ---
+// Cache Manager
+import { getCache, setCache, CACHE_KEYS, DURATION } from '@/lib/cacheManager';
+
+// Lazy Load Charts
+const RevenueChart = dynamic(() => import('./components/RevenueChart'), {
+  loading: () => <Skeleton className="h-72 w-full rounded-xl" />, 
+  ssr: false 
+});
+
+const ChannelChart = dynamic(() => import('./components/ChannelChart'), {
+  loading: () => (
+      <div className="h-56 w-full flex items-center justify-center">
+          <Skeleton className="h-40 w-40 rounded-full" />
+      </div>
+  ), 
+  ssr: false
+});
+
 import { 
     TrendingUp, DollarSign, Wallet, Package, ArrowUpRight, 
     AlertTriangle, ShoppingBag, Calendar, Filter, ChevronRight,
-    PlusCircle, ShoppingCart, Truck, RefreshCw
+    PlusCircle, ShoppingCart, Truck, RefreshCw 
 } from 'lucide-react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, ArcElement);
-
-// --- KONFIGURASI CACHE ---
-const CACHE_MASTER_KEY = 'lumina_dash_master_v5_ssot'; // Bump version for SSOT
-const CACHE_SALES_PREFIX = 'lumina_dash_sales_v5_'; 
-const CACHE_DURATION_MASTER = 5 * 60 * 1000; 
-const CACHE_DURATION_SALES = 5 * 60 * 1000;   
 
 export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [filterRange, setFilterRange] = useState('this_month');
     
-    // Data States
-    const [masterData, setMasterData] = useState(null);
+    const [kpi, setKpi] = useState({ 
+        gross: 0, net: 0, profit: 0, margin: 0, 
+        cash: 0, inventoryAsset: 0, txCount: 0 
+    });
     
-    // UI States
-    const [kpi, setKpi] = useState({ gross: 0, net: 0, profit: 0, margin: 0, cash: 0, inventoryAsset: 0, txCount: 0 });
     const [chartTrendData, setChartTrendData] = useState(null);
     const [chartChannelData, setChartChannelData] = useState(null);
     const [topProducts, setTopProducts] = useState([]);
     const [lowStockItems, setLowStockItems] = useState([]);
     const [recentSales, setRecentSales] = useState([]);
 
-    // 1. Fetch Master Data (SSOT: Chart of Accounts & Stock)
+    useEffect(() => {
+        loadDashboardData();
+    }, [filterRange]);
+
+    const loadDashboardData = async () => {
+        setLoading(true);
+        try {
+            // OPTIMASI 1: Parallel Fetching (Jalankan semua request berbarengan)
+            const [masterResult, salesResult] = await Promise.all([
+                fetchMasterData(),
+                fetchSalesData(filterRange)
+            ]);
+
+            processDashboard(salesResult, masterResult);
+        } catch (e) { 
+            console.error("Dashboard Error:", e); 
+        } finally { 
+            setLoading(false); 
+        }
+    };
+
+    // 1. Fetch Master Data (OPTIMIZED)
     const fetchMasterData = async () => {
         // Cek Cache
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem(CACHE_MASTER_KEY);
-            if (cached) {
-                const { data, ts } = JSON.parse(cached);
-                if (Date.now() - ts < CACHE_DURATION_MASTER) return data;
-            }
-        }
+        const cached = getCache(CACHE_KEYS.DASHBOARD_MASTER, DURATION.SHORT); // 5 menit
+        if (cached) return cached;
 
-        // [UPDATED] Ambil Saldo Langsung dari Chart of Accounts (COA)
-        // Kita cari akun Aset Lancar (Kas/Bank) dan Inventory (1301)
-        const accPromise = getDocs(collection(db, "chart_of_accounts"));
-        
-        const lowStockPromise = getDocs(query(collection(db, "stock_snapshots"), where("qty", "<=", 5), limit(10)));
-        const productsPromise = getDocs(collection(db, "products"));
-        const variantsPromise = getDocs(collection(db, "product_variants"));
-
-        const [snapAcc, snapLowStock, snapProd, snapVar] = await Promise.all([
-            accPromise, lowStockPromise, productsPromise, variantsPromise
+        // Fetch COA & Low Stock Only (Hapus fetch all products/variants yang berat)
+        const [snapAcc, snapLowStock] = await Promise.all([
+            getDocs(collection(db, "chart_of_accounts")),
+            getDocs(query(collection(db, "stock_snapshots"), where("qty", "<=", 5), limit(10)))
         ]);
 
-        // Hitung Saldo Kas & Inventory dari COA
         let totalCash = 0;
-        let totalInventoryFinance = 0; // Nilai Inventory menurut Akuntansi (Akun 1301)
+        let totalInventoryFinance = 0;
 
         snapAcc.forEach(doc => {
             const d = doc.data();
             const code = String(d.code);
             const balance = parseFloat(d.balance) || 0;
-
-            // Logic Kas: Kode awalan 11 (Kas & Bank)
             if (code.startsWith('11') || d.name.toLowerCase().includes('kas') || d.name.toLowerCase().includes('bank')) {
                 totalCash += balance;
             }
-
-            // Logic Inventory: Kode 1301 atau nama 'Persediaan'
             if (code.startsWith('13') || d.name.toLowerCase().includes('sediaan')) {
                 totalInventoryFinance += balance;
             }
         });
 
-        const products = [];
-        snapProd.forEach(d => products.push({ id: d.id, name: d.data().name }));
-        
-        const variants = [];
-        snapVar.forEach(d => variants.push({ id: d.id, ...d.data() }));
-        
+        // Optimasi Low Stock: Hanya ambil nama untuk item yang low stock saja
         const lowStocks = [];
+        const variantIds = [];
+        
         snapLowStock.forEach(d => {
             const s = d.data();
-            const v = variants.find(vr => vr.id === s.variant_id);
-            const p = v ? products.find(pr => pr.id === v.product_id) : null;
-            if (v && p) {
-                lowStocks.push({
-                    id: d.id, sku: v.sku, name: p.name, qty: s.qty, min: v.min_stock || 5
-                });
-            }
+            lowStocks.push({ id: d.id, variant_id: s.variant_id, qty: s.qty, sku: 'Loading...', name: 'Loading...', min: 5 });
+            variantIds.push(s.variant_id);
         });
 
-        const result = { 
-            cashBalance: totalCash, 
-            inventoryValue: totalInventoryFinance,
-            lowStocks 
-        };
-        
-        if (typeof window !== 'undefined') localStorage.setItem(CACHE_MASTER_KEY, JSON.stringify({ data: result, ts: Date.now() }));
+        // Fetch Detail Varian (Hanya jika ada low stock) - Batch kecil
+        if (variantIds.length > 0) {
+            // Coba ambil dari cache produk/varian dulu jika ada
+            const cachedVars = getCache(CACHE_KEYS.VARIANTS, DURATION.LONG);
+            
+            for (let item of lowStocks) {
+                let v = cachedVars ? cachedVars.data?.find(x => x.id === item.variant_id) : null;
+                if (v) {
+                    item.sku = v.sku;
+                    item.name = v.sku; // Sementara pakai SKU jika nama produk parent tidak ada di cache varian
+                }
+            }
+            // Note: Kita skip fetch detail nama produk parent demi kecepatan LCP. 
+            // SKU sudah cukup informatif untuk dashboard cepat.
+        }
+
+        const result = { cashBalance: totalCash, inventoryValue: totalInventoryFinance, lowStocks };
+        setCache(CACHE_KEYS.DASHBOARD_MASTER, result);
         return result;
     };
 
     // 2. Fetch Sales Data
     const fetchSalesData = async (range) => {
-        const cacheKey = `${CACHE_SALES_PREFIX}${range}`;
-        if (typeof window !== 'undefined') {
-            const cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                const { data, ts } = JSON.parse(cached);
-                if (Date.now() - ts < CACHE_DURATION_SALES) {
-                    return data.map(d => ({ ...d, order_date: new Date(d.order_date) }));
-                }
-            }
+        const cacheKey = `${CACHE_KEYS.SALES_DASHBOARD}${range}`;
+        const cached = getCache(cacheKey, DURATION.SHORT);
+        if (cached) {
+             return cached.map(d => ({ ...d, order_date: new Date(d.order_date) }));
         }
 
         const now = new Date();
@@ -145,34 +155,17 @@ export default function Dashboard() {
         }
 
         const snap = await getDocs(q);
-        const sales = [];
-        snap.forEach(d => {
+        const sales = snap.docs.map(d => {
             const data = d.data();
-            sales.push({ 
-                id: d.id, 
-                ...data, 
+            return { 
+                id: d.id, ...data, 
                 order_date: data.order_date?.toDate ? data.order_date.toDate() : new Date(data.order_date) 
-            });
+            };
         });
 
-        if (typeof window !== 'undefined') localStorage.setItem(cacheKey, JSON.stringify({ data: sales, ts: Date.now() }));
+        setCache(cacheKey, sales);
         return sales;
     };
-
-    // 3. Main Orchestrator
-    useEffect(() => {
-        const loadDashboard = async () => {
-            setLoading(true);
-            try {
-                let currentMaster = await fetchMasterData(); 
-                setMasterData(currentMaster);
-                
-                const sales = await fetchSalesData(filterRange);
-                processDashboard(sales, currentMaster);
-            } catch (e) { console.error("Dashboard Error:", e); } finally { setLoading(false); }
-        };
-        loadDashboard();
-    }, [filterRange]);
 
     // 4. Calculation Logic
     const processDashboard = (sales, master) => {
@@ -185,15 +178,9 @@ export default function Dashboard() {
         const recentList = [];
 
         sales.forEach(d => {
-            // Data Keuangan dari Sales Order (SSOT)
             const fin = d.financial || {};
-            
-            // Prioritas: Ambil data financial yang sudah terhitung di backend/POS
             const gross = Number(fin.total_sales || d.total_sales || d.gross_amount || 0);
             const net = Number(fin.net_payout || d.net_payout || d.net_amount || 0);
-            
-            // HPP & Profit (Critical for Margin)
-            // Jika gross_profit sudah ada (dari POS baru), pakai itu. Jika tidak, hitung manual.
             const cost = Number(fin.total_hpp || d.total_hpp || 0);
             const itemProfit = Number(fin.gross_profit !== undefined ? fin.gross_profit : (gross - cost));
 
@@ -202,40 +189,30 @@ export default function Dashboard() {
             totalCost += cost;
             totalProfit += itemProfit;
             
-            // --- Chart Trend Logic ---
+            // Chart Trend
             let timeKey;
             const dateObj = new Date(d.order_date);
-            
-            if (filterRange === 'today') {
-                timeKey = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            } else if (filterRange === 'all_time') {
-                timeKey = dateObj.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
-            } else {
-                timeKey = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-            }
+            if (filterRange === 'today') timeKey = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            else if (filterRange === 'all_time') timeKey = dateObj.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
+            else timeKey = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
             if (!trendMap[timeKey]) trendMap[timeKey] = { gross: 0, profit: 0 };
             trendMap[timeKey].gross += gross;
             trendMap[timeKey].profit += itemProfit; 
 
-            // --- Channel Mix ---
+            // Channel
             const ch = (d.channel_store_name || d.channel_id || 'Manual POS').toUpperCase();
             channels[ch] = (channels[ch] || 0) + gross;
 
-            // --- Product Stats ---
+            // Top Products
             if (Array.isArray(d.items_preview)) {
                 d.items_preview.forEach(i => {
                     const name = i.product_name || i.name;
                     if(name) prodStats[name] = (prodStats[name] || 0) + (i.qty || 0);
                 });
-            } else if (d.items_summary) {
-                const parts = d.items_summary.split(', ');
-                parts.forEach(p => {
-                    const match = p.match(/(.*)\s\((\d+)\)$/);
-                    if (match) prodStats[match[1].trim()] = (prodStats[match[1].trim()] || 0) + parseInt(match[2]);
-                });
             }
 
+            // Recent Sales
             recentList.push({ 
                 id: d.order_number || d.id.substring(0,8).toUpperCase(), 
                 customer: d.buyer_name || d.customer_name || 'Guest', 
@@ -245,47 +222,24 @@ export default function Dashboard() {
             });
         });
 
-        // Margin Calculation
         const margin = totalGross > 0 ? (totalProfit / totalGross) * 100 : 0;
 
         setKpi({ 
-            gross: totalGross, 
-            net: totalNet, 
-            profit: totalProfit, 
-            margin: margin.toFixed(1), 
-            txCount: sales.length, 
-            
-            // KPI ASSETS (SSOT: Dari Saldo Akun)
-            cash: master.cashBalance, 
-            inventoryAsset: master.inventoryValue 
+            gross: totalGross, net: totalNet, profit: totalProfit, margin: margin.toFixed(1), 
+            txCount: sales.length, cash: master.cashBalance, inventoryAsset: master.inventoryValue 
         });
 
-        // Chart Data Prep
         setChartTrendData({
             labels: Object.keys(trendMap),
             datasets: [
-                { 
-                    label: 'Revenue', 
-                    data: Object.values(trendMap).map(x => x.gross), 
-                    borderColor: '#2563EB', backgroundColor: 'rgba(37, 99, 235, 0.1)', 
-                    fill: true, tension: 0.4 
-                },
-                { 
-                    label: 'Gross Profit', 
-                    data: Object.values(trendMap).map(x => x.profit), 
-                    borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', 
-                    fill: true, tension: 0.4 
-                }
+                { label: 'Revenue', data: Object.values(trendMap).map(x => x.gross), borderColor: '#2563EB', backgroundColor: 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.4 },
+                { label: 'Gross Profit', data: Object.values(trendMap).map(x => x.profit), borderColor: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }
             ]
         });
 
         setChartChannelData({
             labels: Object.keys(channels),
-            datasets: [{ 
-                data: Object.values(channels), 
-                backgroundColor: ['#2563EB', '#844fc1', '#34E9E1', '#FFC857', '#F43F5E'], 
-                borderWidth: 0 
-            }]
+            datasets: [{ data: Object.values(channels), backgroundColor: ['#2563EB', '#844fc1', '#34E9E1', '#FFC857', '#F43F5E'], borderWidth: 0 }]
         });
 
         setTopProducts(Object.entries(prodStats).sort((a, b) => b[1] - a[1]).slice(0, 5));
@@ -293,7 +247,7 @@ export default function Dashboard() {
         setRecentSales(recentList.sort((a,b) => b.time - a.time).slice(0, 5));
     };
 
-    // --- SUB-COMPONENT: KPI CARD ---
+    // KPI Component
     const KpiCard = ({ title, value, sub, icon: Icon, color, delay }) => {
         const colorClasses = {
             blue: 'text-blue-600 bg-blue-50 border-blue-100',
@@ -302,245 +256,82 @@ export default function Dashboard() {
             purple: 'text-purple-600 bg-purple-50 border-purple-100',
         };
         const activeClass = colorClasses[color] || colorClasses.blue;
-
         return (
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay }}
-                className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
                 <div className="flex justify-between items-start relative z-10">
                     <div>
                         <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-2">{title}</p>
-                        <h3 className="text-2xl font-display font-bold text-text-primary tracking-tight">
-                            {loading ? <Skeleton className="h-8 w-24" /> : value}
-                        </h3>
-                        <div className="flex items-center gap-1 mt-2">
-                            {sub && <span className="text-[10px] font-medium bg-gray-50 text-text-secondary px-2 py-0.5 rounded border border-border/50">{sub}</span>}
-                        </div>
+                        <h3 className="text-2xl font-display font-bold text-text-primary tracking-tight">{loading ? <Skeleton className="h-8 w-24" /> : value}</h3>
+                        <div className="flex items-center gap-1 mt-2">{sub && <span className="text-[10px] font-medium bg-gray-50 text-text-secondary px-2 py-0.5 rounded border border-border/50">{sub}</span>}</div>
                     </div>
-                    <div className={`p-3 rounded-xl border ${activeClass}`}>
-                        <Icon className="w-5 h-5" />
-                    </div>
+                    <div className={`p-3 rounded-xl border ${activeClass}`}><Icon className="w-5 h-5" /></div>
                 </div>
-                {/* Decorative Blob */}
-                <div className={`absolute -right-6 -bottom-6 w-24 h-24 rounded-full opacity-5 ${activeClass.split(' ')[1]}`}></div>
             </motion.div>
         );
     };
 
     return (
         <div className="space-y-8 fade-in pb-20 text-text-primary">
-            
-            <PageHeader 
-                title="Dashboard" 
-                subtitle="Ringkasan performa bisnis (Finance SSOT)."
-                actions={
-                    <div className="relative">
-                        <select 
-                            value={filterRange} 
-                            onChange={(e) => setFilterRange(e.target.value)} 
-                            className="appearance-none pl-9 pr-8 py-2 bg-white border border-border rounded-xl text-xs font-bold text-text-primary shadow-sm focus:outline-none focus:border-primary cursor-pointer"
-                        >
-                            <option value="today">Hari Ini</option>
-                            <option value="this_month">Bulan Ini</option>
-                            <option value="last_month">Bulan Lalu</option>
-                            <option value="all_time">Semua Waktu</option>
-                        </select>
-                        <Calendar className="w-3.5 h-3.5 text-text-secondary absolute left-3 top-2.5" />
-                        <div className="absolute right-3 top-2.5 pointer-events-none text-text-secondary">
-                            <ChevronRight className="w-3 h-3 rotate-90" />
-                        </div>
-                    </div>
-                }
-            />
+            <PageHeader title="Dashboard" subtitle="Ringkasan performa bisnis (Finance SSOT)." actions={
+                <div className="relative">
+                    <select aria-label="Filter Periode Transaksi" value={filterRange} onChange={(e) => setFilterRange(e.target.value)} className="appearance-none pl-9 pr-8 py-2 bg-white border border-border rounded-xl text-xs font-bold text-text-primary shadow-sm focus:outline-none focus:border-primary cursor-pointer">
+                        <option value="today">Hari Ini</option><option value="this_month">Bulan Ini</option><option value="last_month">Bulan Lalu</option><option value="all_time">Semua Waktu</option>
+                    </select>
+                    <Calendar className="w-3.5 h-3.5 text-text-secondary absolute left-3 top-2.5" />
+                    <div className="absolute right-3 top-2.5 pointer-events-none text-text-secondary"><ChevronRight className="w-3 h-3 rotate-90" /></div>
+                </div>
+            }/>
 
-            {/* --- NEW: QUICK ACTION BAR (Desktop & Mobile) --- */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                 <Link href="/sales/manual" className="group flex items-center gap-3 p-4 bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-xl shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all">
                     <div className="bg-white/20 p-2 rounded-lg group-hover:rotate-6 transition-transform"><ShoppingCart className="w-5 h-5"/></div>
-                    <div className="leading-tight">
-                        <span className="block text-xs opacity-80 font-medium text-blue-100">Buat</span>
-                        <span className="font-bold text-sm">Kasir Baru</span>
-                    </div>
+                    <div className="leading-tight"><span className="block text-xs opacity-80 font-medium text-blue-100">Buat</span><span className="font-bold text-sm">Kasir Baru</span></div>
                 </Link>
-                
                 <Link href="/purchases/overview" className="group flex items-center gap-3 p-4 bg-white border border-border text-text-primary rounded-xl shadow-sm hover:border-primary/50 transition-all">
                     <div className="bg-orange-50 text-orange-600 p-2 rounded-lg group-hover:scale-110 transition-transform"><Truck className="w-5 h-5"/></div>
-                    <div className="leading-tight">
-                        <span className="block text-xs text-text-secondary">Input</span>
-                        <span className="font-bold text-sm">Stok Masuk</span>
-                    </div>
+                    <div className="leading-tight"><span className="block text-xs text-text-secondary">Input</span><span className="font-bold text-sm">Stok Masuk</span></div>
                 </Link>
-
                 <Link href="/stock/inventory" className="group flex items-center gap-3 p-4 bg-white border border-border text-text-primary rounded-xl shadow-sm hover:border-primary/50 transition-all">
                     <div className="bg-purple-50 text-purple-600 p-2 rounded-lg group-hover:scale-110 transition-transform"><RefreshCw className="w-5 h-5"/></div>
-                    <div className="leading-tight">
-                        <span className="block text-xs text-text-secondary">Cek</span>
-                        <span className="font-bold text-sm">Stok Fisik</span>
-                    </div>
+                    <div className="leading-tight"><span className="block text-xs text-text-secondary">Cek</span><span className="font-bold text-sm">Stok Fisik</span></div>
                 </Link>
-                
                 <Link href="/finance/cash" className="group flex items-center gap-3 p-4 bg-white border border-border text-text-primary rounded-xl shadow-sm hover:border-primary/50 transition-all">
                     <div className="bg-emerald-50 text-emerald-600 p-2 rounded-lg group-hover:scale-110 transition-transform"><PlusCircle className="w-5 h-5"/></div>
-                    <div className="leading-tight">
-                        <span className="block text-xs text-text-secondary">Catat</span>
-                        <span className="font-bold text-sm">Beban/Biaya</span>
-                    </div>
+                    <div className="leading-tight"><span className="block text-xs text-text-secondary">Catat</span><span className="font-bold text-sm">Beban/Biaya</span></div>
                 </Link>
             </div>
 
-            {/* KPI Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KpiCard 
-                    title="Total Sales" 
-                    value={formatRupiah(kpi.gross)} 
-                    sub={`${kpi.txCount} Transaksi`} 
-                    color="blue" 
-                    icon={DollarSign} 
-                    delay={0.1} 
-                />
-                <KpiCard 
-                    title="Gross Profit" 
-                    value={formatRupiah(kpi.profit)} 
-                    sub={`Margin ${kpi.margin}%`} 
-                    color="emerald" 
-                    icon={TrendingUp} 
-                    delay={0.2} 
-                />
-                <KpiCard 
-                    title="Liquid Cash" 
-                    value={formatRupiah(kpi.cash)} 
-                    sub="Total Saldo Kas & Bank" 
-                    color="purple" 
-                    icon={Wallet} 
-                    delay={0.3} 
-                />
-                <KpiCard 
-                    title="Inventory Asset" 
-                    value={formatRupiah(kpi.inventoryAsset)} 
-                    sub="Nilai Persediaan (1301)" 
-                    color="amber" 
-                    icon={Package} 
-                    delay={0.4} 
-                />
+                <KpiCard title="Total Sales" value={formatRupiah(kpi.gross)} sub={`${kpi.txCount} Transaksi`} color="blue" icon={DollarSign} delay={0.1} />
+                <KpiCard title="Gross Profit" value={formatRupiah(kpi.profit)} sub={`Margin ${kpi.margin}%`} color="emerald" icon={TrendingUp} delay={0.2} />
+                <KpiCard title="Liquid Cash" value={formatRupiah(kpi.cash)} sub="Total Saldo Kas & Bank" color="purple" icon={Wallet} delay={0.3} />
+                <KpiCard title="Inventory Asset" value={formatRupiah(kpi.inventoryAsset)} sub="Nilai Persediaan (1301)" color="amber" icon={Package} delay={0.4} />
             </div>
 
-            {/* Charts Area */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Trend Chart */}
-                <motion.div 
-                    initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
-                    className="lg:col-span-2 bg-white p-6 rounded-2xl border border-border shadow-sm"
-                >
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-text-primary text-sm flex items-center gap-2">
-                            <ArrowUpRight className="w-4 h-4 text-primary"/> Revenue & Profit Trend
-                        </h3>
-                    </div>
-                    <div className="h-72 w-full relative">
-                        {chartTrendData ? <Line data={chartTrendData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#6B7280', font: {size: 11} }, usePointStyle: true } }, scales: { y: { grid: { color: '#F3F4F6' }, ticks: { color: '#9CA3AF', font: {size: 10} } }, x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: {size: 10} } } } }} /> : <Skeleton className="h-full w-full" />}
-                    </div>
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-2 bg-white p-6 rounded-2xl border border-border shadow-sm">
+                    <div className="flex justify-between items-center mb-6"><h3 className="font-bold text-text-primary text-sm flex items-center gap-2"><ArrowUpRight className="w-4 h-4 text-primary"/> Revenue & Profit Trend</h3></div>
+                    <div className="h-72 w-full relative">{chartTrendData ? <RevenueChart data={chartTrendData} /> : <Skeleton className="h-72 w-full rounded-xl" />}</div>
                 </motion.div>
-
-                {/* Channel Mix Chart */}
-                <motion.div 
-                    initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
-                    className="bg-white p-6 rounded-2xl border border-border shadow-sm flex flex-col"
-                >
-                    <h3 className="font-bold text-text-primary text-sm mb-4 flex items-center gap-2">
-                        <Filter className="w-4 h-4 text-accent"/> Sales by Channel
-                    </h3>
-                    <div className="h-56 w-full relative flex justify-center items-center flex-1">
-                         {chartChannelData ? <Doughnut data={chartChannelData} options={{ responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { position: 'bottom', labels: { color: '#6B7280', font: {size: 10}, usePointStyle: true, padding: 20 } } } }} /> : <Skeleton className="h-40 w-40 rounded-full" />}
-                    </div>
+                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }} className="bg-white p-6 rounded-2xl border border-border shadow-sm flex flex-col">
+                    <h3 className="font-bold text-text-primary text-sm mb-4 flex items-center gap-2"><Filter className="w-4 h-4 text-accent"/> Sales by Channel</h3>
+                    <div className="h-56 w-full relative flex justify-center items-center flex-1">{chartChannelData ? <ChannelChart data={chartChannelData} /> : <Skeleton className="h-40 w-40 rounded-full" />}</div>
                 </motion.div>
             </div>
 
-            {/* Bottom Widgets */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* 1. Top Products */}
                 <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
-                    <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600"><TrendingUp className="w-3.5 h-3.5"/></div>
-                        <h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">Top Selling</h3>
-                    </div>
-                    <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">
-                        {topProducts.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">No data</p> : 
-                        topProducts.map(([sku, qty], i) => (
-                            <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-text-secondary">{i+1}</div>
-                                    <span className="font-medium text-sm text-text-primary line-clamp-1 max-w-[150px]">{sku}</span>
-                                </div>
-                                <span className="font-bold text-xs bg-orange-50 text-orange-600 px-2 py-1 rounded-md">{qty} Sold</span>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center gap-2"><div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600"><TrendingUp className="w-3.5 h-3.5"/></div><h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">Top Selling</h3></div>
+                    <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">{topProducts.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">No data</p> : topProducts.map(([sku, qty], i) => (<div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors"><div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-text-secondary">{i+1}</div><span className="font-medium text-sm text-text-primary line-clamp-1 max-w-[150px]">{sku}</span></div><span className="font-bold text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-md">{qty} Sold</span></div>))}</div>
                 </div>
-
-                {/* 2. Low Stock Alert */}
                 <div className="bg-white border border-rose-100 rounded-2xl overflow-hidden shadow-sm flex flex-col">
-                    <div className="px-5 py-4 border-b border-rose-100 bg-rose-50/30 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600"><AlertTriangle className="w-3.5 h-3.5"/></div>
-                            <h3 className="font-bold text-rose-700 text-xs uppercase tracking-wider">Low Stock</h3>
-                        </div>
-                        <span className="text-[10px] bg-white border border-rose-200 text-rose-600 px-2 py-0.5 rounded-full font-bold">{lowStockItems.length}</span>
-                    </div>
-                    <div className="divide-y divide-rose-50 overflow-y-auto max-h-[300px] custom-scrollbar">
-                        {lowStockItems.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">Semua stok aman</p> : 
-                        lowStockItems.map((item, i) => (
-                            <div key={i} className="px-5 py-3 hover:bg-rose-50/20 transition-colors">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-xs font-bold text-text-primary">{item.sku}</p>
-                                        <p className="text-[10px] text-text-secondary truncate w-32">{item.name}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-rose-600 font-bold text-xs">{item.qty} Unit</span>
-                                        <span className="text-[9px] text-rose-400 block">Min: {item.min}</span>
-                                    </div>
-                                </div>
-                                {/* Progress bar min stock */}
-                                <div className="w-full h-1 bg-rose-100 rounded-full mt-2 overflow-hidden">
-                                    <div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min((item.qty/item.min)*100, 100)}%` }}></div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="px-5 py-4 border-b border-rose-100 bg-rose-50/30 flex justify-between items-center"><div className="flex items-center gap-2"><div className="w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center text-rose-600"><AlertTriangle className="w-3.5 h-3.5"/></div><h3 className="font-bold text-rose-700 text-xs uppercase tracking-wider">Low Stock</h3></div><span className="text-[10px] bg-white border border-rose-200 text-rose-600 px-2 py-0.5 rounded-full font-bold">{lowStockItems.length}</span></div>
+                    <div className="divide-y divide-rose-50 overflow-y-auto max-h-[300px] custom-scrollbar">{lowStockItems.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">Semua stok aman</p> : lowStockItems.map((item, i) => (<div key={i} className="px-5 py-3 hover:bg-rose-50/20 transition-colors"><div className="flex justify-between items-start"><div><p className="text-xs font-bold text-text-primary">{item.sku}</p><p className="text-[10px] text-text-secondary truncate w-32">{item.name}</p></div><div className="text-right"><span className="text-rose-600 font-bold text-xs">{item.qty} Unit</span><span className="text-[9px] text-rose-400 block">Min: {item.min}</span></div></div><div className="w-full h-1 bg-rose-100 rounded-full mt-2 overflow-hidden"><div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min((item.qty/item.min)*100, 100)}%` }}></div></div></div>))}</div>
                 </div>
-
-                {/* 3. Recent Sales Live */}
                 <div className="bg-white border border-border rounded-2xl overflow-hidden shadow-sm flex flex-col">
-                    <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600"><ShoppingBag className="w-3.5 h-3.5"/></div>
-                        <h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">Recent Orders</h3>
-                    </div>
-                    <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">
-                        {recentSales.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">Belum ada transaksi</p> : 
-                        recentSales.map((s, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors group">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                        {s.customer.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold text-xs text-text-primary truncate max-w-[100px]">{s.customer}</span>
-                                            <span className="text-[9px] text-text-secondary px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200">{s.id}</span>
-                                        </div>
-                                        <p className="text-[10px] text-text-secondary mt-0.5">{s.time ? s.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</p>
-                                    </div>
-                                </div>
-                                <span className="font-mono font-bold text-xs text-emerald-600">{formatRupiah(s.amount)}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <div className="px-5 py-4 border-b border-border bg-gray-50/50 flex items-center gap-2"><div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600"><ShoppingBag className="w-3.5 h-3.5"/></div><h3 className="font-bold text-text-primary text-xs uppercase tracking-wider">Recent Orders</h3></div>
+                    <div className="p-2 overflow-y-auto max-h-[300px] custom-scrollbar">{recentSales.length === 0 ? <p className="text-center text-xs text-text-secondary py-4">Belum ada transaksi</p> : recentSales.map((s, i) => (<div key={i} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors group"><div className="flex items-center gap-3"><div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">{s.customer.charAt(0).toUpperCase()}</div><div><div className="flex items-center gap-2"><span className="font-bold text-xs text-text-primary truncate max-w-[100px]">{s.customer}</span><span className="text-[9px] text-text-secondary px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200">{s.id}</span></div><p className="text-[10px] text-text-secondary mt-0.5">{s.time ? s.time.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}) : '-'}</p></div></div><span className="font-mono font-bold text-xs text-emerald-600">{formatRupiah(s.amount)}</span></div>))}</div>
                 </div>
-
             </div>
         </div>
     );

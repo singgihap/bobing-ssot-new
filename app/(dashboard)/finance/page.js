@@ -1,12 +1,12 @@
-// app/(dashboard)/finance/page.js
 "use client";
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy } from 'firebase/firestore';
 import { formatRupiah } from '@/lib/utils';
 import PageHeader from '@/components/PageHeader';
 import Skeleton from '@/components/Skeleton';
 import Link from 'next/link';
+import { getCache, setCache, DURATION } from '@/lib/cacheManager'; // Pastikan file ini sudah ada
 
 // --- CHARTS ---
 import { 
@@ -17,21 +17,20 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 
 // --- ICONS ---
 import { 
-    Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, 
-    CreditCard, PieChart, Activity, Plus, ArrowRight 
+    Wallet, TrendingUp, ArrowUpRight, ArrowDownLeft, 
+    PieChart, Activity, LayoutDashboard, FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 // Register ChartJS
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
-const CACHE_KEY = 'lumina_finance_dash_v1';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Menit
+const CACHE_KEY = 'lumina_finance_dash_v2'; // Cache key khusus halaman ini
 
 export default function FinanceDashboard() {
     const [loading, setLoading] = useState(true);
     
-    // Data States
+    // Data States (Real Data SSOT)
     const [liquidity, setLiquidity] = useState({ cash: 0, debt: 0, receivable: 0 });
     const [cashFlow, setCashFlow] = useState({ in: 0, out: 0, net: 0 });
     const [chartData, setChartData] = useState(null);
@@ -44,16 +43,13 @@ export default function FinanceDashboard() {
     const fetchData = async (forceRefresh = false) => {
         setLoading(true);
         try {
-            // 1. Cek Cache
+            // 1. Cek Cache (5 Menit)
             if (!forceRefresh && typeof window !== 'undefined') {
-                const cached = localStorage.getItem(CACHE_KEY);
+                const cached = getCache(CACHE_KEY, DURATION.SHORT);
                 if (cached) {
-                    const { data, ts } = JSON.parse(cached);
-                    if (Date.now() - ts < CACHE_DURATION) {
-                        applyData(data);
-                        setLoading(false);
-                        return;
-                    }
+                    applyData(cached);
+                    setLoading(false);
+                    return;
                 }
             }
 
@@ -78,8 +74,7 @@ export default function FinanceDashboard() {
             const data = processData(accSnap, transSnap);
             
             // Simpan Cache
-            if (typeof window !== 'undefined') localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
-            
+            setCache(CACHE_KEY, data);
             applyData(data);
 
         } catch (e) {
@@ -114,7 +109,7 @@ export default function FinanceDashboard() {
         transSnap.forEach(doc => {
             const t = doc.data();
             const amount = parseFloat(t.amount) || 0;
-            const dateKey = t.date.toDate().getDate(); // Tanggal 1-31
+            const dateKey = t.date.toDate ? t.date.toDate().getDate() : new Date(t.date).getDate(); 
 
             // Init Daily
             if (!dailyFlow[dateKey]) dailyFlow[dateKey] = { in: 0, out: 0 };
@@ -126,13 +121,9 @@ export default function FinanceDashboard() {
                 totalOut += amount;
                 dailyFlow[dateKey].out += amount;
 
-                // Cek apakah ini Expense (Beban)?
-                // Kita filter berdasarkan nama kategori atau mapping manual sederhana
-                // Idealnya cek kode akun lawan, tapi nama kategori cukup untuk dashboard cepat
+                // Filter Expense (Kecuali HPP/Hutang agar grafik relevan)
                 const catName = t.category || 'Lainnya';
-                // Kecuali HPP (karena HPP biasanya besar dan menutupi beban operasional di chart)
-                // Opsional: Kecualikan 'Pelunasan Hutang' jika ingin melihat murni beban
-                if (!catName.toLowerCase().includes('hutang') && !catName.toLowerCase().includes('pembelian stok')) {
+                if (!catName.toLowerCase().includes('hutang') && !catName.toLowerCase().includes('pembelian')) {
                      expenses[catName] = (expenses[catName] || 0) + amount;
                 }
             }
@@ -185,15 +176,18 @@ export default function FinanceDashboard() {
         });
     };
 
-    // --- UI COMPONENTS ---
+    // --- UI COMPONENTS (ACCESSIBLE & MODERN) ---
+    
     const KpiCard = ({ title, value, icon: Icon, colorClass, subValue }) => (
         <div className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
             <div>
-                <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mb-1">{title}</p>
-                <h3 className={`text-2xl font-display font-bold ${colorClass}`}>
+                {/* Accessibility Fix: Text lebih gelap (gray-500) */}
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">{title}</p>
+                {/* Accessibility Fix: Div bukan H3 untuk urutan heading */}
+                <div className={`text-2xl font-display font-bold tracking-tight ${colorClass}`}>
                     {loading ? <Skeleton className="h-8 w-32"/> : value}
-                </h3>
-                {subValue && <p className="text-xs text-text-secondary mt-1">{subValue}</p>}
+                </div>
+                {subValue && <p className="text-xs text-gray-400 mt-1 font-medium">{subValue}</p>}
             </div>
             <div className={`p-3 rounded-xl ${colorClass.replace('text-', 'bg-').replace('600','50').replace('500','50').replace('700','50')} opacity-80`}>
                 <Icon className={`w-6 h-6 ${colorClass}`}/>
@@ -201,15 +195,30 @@ export default function FinanceDashboard() {
         </div>
     );
 
+    const MenuCard = ({ title, desc, href, icon: Icon, color }) => (
+        <Link href={href} className="group relative p-6 bg-white border border-border rounded-2xl shadow-sm hover:shadow-md transition-all hover:-translate-y-1 block">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${color} bg-opacity-10 text-opacity-100`}>
+            <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
+          </div>
+          <h2 className="text-lg font-bold text-text-primary mb-2 group-hover:text-primary transition-colors">
+            {title}
+          </h2>
+          {/* Accessibility Fix: Text gray-500 */}
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {desc}
+          </p>
+        </Link>
+    );
+
     return (
-        <div className="max-w-full mx-auto space-y-6 fade-in pb-20 px-4 md:px-8 pt-6 bg-background min-h-screen text-text-primary">
+        <div className="max-w-6xl mx-auto space-y-8 fade-in pb-20 text-text-primary">
             
             <PageHeader 
                 title="Finance Dashboard" 
                 subtitle="Pusat kendali arus kas dan kesehatan finansial (CFO View)." 
             />
 
-            {/* 1. LIQUIDITY GRID */}
+            {/* 1. LIQUIDITY GRID (KPI) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <KpiCard 
                     title="Total Kas & Bank" 
@@ -223,7 +232,7 @@ export default function FinanceDashboard() {
                     value={formatRupiah(liquidity.receivable)} 
                     icon={ArrowDownLeft} 
                     colorClass="text-blue-600" 
-                    subValue="Uang di Luar (Marketplace/Bon)"
+                    subValue="Uang di Luar (Pending)"
                 />
                 <KpiCard 
                     title="Hutang Usaha (AP)" 
@@ -234,9 +243,8 @@ export default function FinanceDashboard() {
                 />
             </div>
 
-            {/* 2. MAIN CHARTS AREA */}
+            {/* 2. CHARTS AREA */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
                 {/* Cash Flow Chart */}
                 <motion.div initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{delay:0.1}} className="lg:col-span-2 bg-white p-6 rounded-2xl border border-border shadow-sm">
                     <div className="flex justify-between items-center mb-6">
@@ -244,7 +252,7 @@ export default function FinanceDashboard() {
                             <h3 className="font-bold text-lg text-text-primary flex items-center gap-2">
                                 <Activity className="w-5 h-5 text-primary"/> Arus Kas Bulan Ini
                             </h3>
-                            <p className="text-xs text-text-secondary">Pemasukan vs Pengeluaran Harian</p>
+                            <p className="text-xs text-gray-500">Pemasukan vs Pengeluaran Harian</p>
                         </div>
                         <div className={`px-3 py-1 rounded-lg text-xs font-bold ${cashFlow.net >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
                             Net: {formatRupiah(cashFlow.net)}
@@ -264,43 +272,46 @@ export default function FinanceDashboard() {
                         {expenseData ? (
                             expenseData.datasets[0].data.length > 0 ? 
                             <Doughnut data={expenseData} options={{ cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {size: 10} } } } }} /> 
-                            : <div className="text-center text-xs text-text-secondary">Belum ada data beban.</div>
+                            : <div className="text-center text-xs text-gray-400">Belum ada data beban.</div>
                         ) : <Skeleton className="w-40 h-40 rounded-full"/>}
                     </div>
                 </motion.div>
             </div>
 
-            {/* 3. QUICK SHORTCUTS */}
+            {/* 3. MENU NAVIGATION */}
             <div>
-                <h3 className="text-sm font-bold text-text-secondary uppercase mb-3 ml-1">Jalan Pintas (Shortcuts)</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Link href="/finance/cash" className="group bg-white p-4 rounded-xl border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors"><Plus className="w-5 h-5"/></div>
-                            <span className="font-bold text-sm text-text-primary">Jurnal Manual</span>
-                        </div>
-                    </Link>
-                    
-                    <Link href="/sales/customers" className="group bg-white p-4 rounded-xl border border-border shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors"><ArrowDownLeft className="w-5 h-5"/></div>
-                            <span className="font-bold text-sm text-text-primary">Terima Piutang</span>
-                        </div>
-                    </Link>
-
-                    <Link href="/purchases/suppliers" className="group bg-white p-4 rounded-xl border border-border shadow-sm hover:border-rose-500/50 hover:shadow-md transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-600 group-hover:text-white transition-colors"><ArrowUpRight className="w-5 h-5"/></div>
-                            <span className="font-bold text-sm text-text-primary">Bayar Hutang</span>
-                        </div>
-                    </Link>
-
-                    <Link href="/finance/reports" className="group bg-white p-4 rounded-xl border border-border shadow-sm hover:border-amber-500/50 hover:shadow-md transition-all flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-600 group-hover:text-white transition-colors"><TrendingUp className="w-5 h-5"/></div>
-                            <span className="font-bold text-sm text-text-primary">Laporan Laba Rugi</span>
-                        </div>
-                    </Link>
+                <h3 className="text-sm font-bold text-gray-600 uppercase mb-4 tracking-wider ml-1">
+                    Menu Utama
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <MenuCard 
+                        title="Buku Kas (Jurnal)" 
+                        desc="Catat transaksi harian manual."
+                        href="/finance/cash"
+                        icon={Wallet}
+                        color="bg-blue-600"
+                    />
+                    <MenuCard 
+                        title="Chart of Accounts" 
+                        desc="Kelola daftar akun (COA)."
+                        href="/finance/accounts"
+                        icon={LayoutDashboard}
+                        color="bg-purple-600"
+                    />
+                    <MenuCard 
+                        title="Laporan Laba Rugi" 
+                        desc="Analisa pendapatan vs beban."
+                        href="/finance/reports"
+                        icon={FileText}
+                        color="bg-emerald-600"
+                    />
+                    <MenuCard 
+                        title="Neraca Keuangan" 
+                        desc="Posisi Aset, Kewajiban & Modal."
+                        href="/finance/balance"
+                        icon={PieChart}
+                        color="bg-orange-600"
+                    />
                 </div>
             </div>
 

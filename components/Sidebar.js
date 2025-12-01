@@ -49,7 +49,7 @@ export default function Sidebar() {
 
    const NavCategory = ({ title }) => (
       !isSidebarCollapsed && (
-         <div className="px-6 mt-6 mb-2 text-[10px] font-bold text-text-secondary/50 uppercase tracking-widest font-display">
+         <div className="px-6 mt-6 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest font-display">
             {title}
          </div>
       )

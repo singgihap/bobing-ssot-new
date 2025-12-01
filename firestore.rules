@@ -1,46 +1,91 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Fungsi Helper
+
+    // --- HELPER FUNCTIONS ---
+    
+    // Cek apakah user sudah login
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    // 1. Master Data (Produk, Varian, Brand, Kategori)
-    // Publik boleh baca (untuk keperluan POS/Katalog), tapi hanya Admin yg boleh tulis
-    match /products/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    match /product_variants/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    match /brands/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    match /categories/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    match /warehouses/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    
-    // 2. Transaksi & Keuangan (Sangat Sensitif - PROTECTED)
-    // Hanya user login yang boleh akses
-    match /sales_orders/{docId} { allow read, write: if isAuthenticated(); }
-    match /sales_orders/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
-    
-    match /purchase_orders/{docId} { allow read, write: if isAuthenticated(); }
-    match /purchase_orders/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
-    
-    match /cash_transactions/{docId} { allow read, write: if isAuthenticated(); }
-    match /cash_accounts/{docId} { allow read, write: if isAuthenticated(); }
-    
-    // 3. Inventory & Stats
-    match /stock_movements/{docId} { allow read, write: if isAuthenticated(); }
-    match /stock_snapshots/{docId} { allow read, write: if isAuthenticated(); }
-    
-    // Dokumen Agregasi (PENTING UNTUK COST OPTIMIZATION)
-    // Client hanya boleh BACA. Penulisan hanya boleh dilakukan oleh Cloud Function (Server).
-    match /stats_inventory/{docId} { 
-      allow read: if isAuthenticated(); 
-      allow write: if false; 
+
+    // Cek apakah user memiliki email domain tertentu (Opsional: Extra Security)
+    // function isCompanyEmail() {
+    //   return request.auth.token.email.matches('.*@bobingcorp[.]com');
+    // }
+
+    // Validasi data tidak boleh kosong
+    function isNotEmpty(field) {
+      return request.resource.data[field] != null && request.resource.data[field].size() > 0;
+    }
+
+    // --- RULES PER COLLECTION ---
+
+    // 1. DATA MASTER (Produk, Gudang, Supplier, Customer, Akun COA)
+    // - Read: Authenticated
+    // - Write: Authenticated (Bisa diperketat ke Admin Only jika ada role)
+    match /products/{docId} { allow read, write: if isAuthenticated(); }
+    match /product_variants/{docId} { allow read, write: if isAuthenticated(); }
+    match /categories/{docId} { allow read, write: if isAuthenticated(); }
+    match /brands/{docId} { allow read, write: if isAuthenticated(); }
+    match /collections/{docId} { allow read, write: if isAuthenticated(); }
+    match /warehouses/{docId} { allow read, write: if isAuthenticated(); }
+    match /suppliers/{docId} { allow read, write: if isAuthenticated(); }
+    match /customers/{docId} { allow read, write: if isAuthenticated(); }
+    match /chart_of_accounts/{docId} { allow read, write: if isAuthenticated(); }
+
+    // 2. TRANSAKSI (Sales, Purchase, Stock Move)
+    // - Create: Validasi dasar (misal: harus ada tanggal)
+    // - Update/Delete: Diperbolehkan (untuk fitur Void/Edit)
+    match /sales_orders/{docId} {
+      allow read, delete: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      // Sub-collection Items
+      match /items/{itemId} { allow read, write: if isAuthenticated(); }
+    }
+
+    match /purchase_orders/{docId} {
+      allow read, delete: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      match /items/{itemId} { allow read, write: if isAuthenticated(); }
+    }
+
+    match /stock_movements/{docId} {
+      allow read: if isAuthenticated();
+      // Stock movement sebaiknya immutable (tidak bisa diedit/hapus), hanya create
+      // Tapi untuk fitur Void yang menghapus history, kita izinkan delete sementara
+      allow create, delete: if isAuthenticated(); 
+    }
+
+    match /stock_snapshots/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 3. FINANCE & JURNAL (Sangat Sensitif)
+    // - Cash Transactions (Jurnal Umum) harus ketat
+    match /cash_transactions/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() 
+        && request.resource.data.amount is number;
+        // && request.resource.data.amount > 0; // Opsional: cegah 0 atau negatif
+      
+      // Mengizinkan update/delete untuk fitur Edit/Delete jurnal manual
+      allow update, delete: if isAuthenticated();
+    }
+
+    // 4. SYSTEM (Settings & Notif)
+    match /settings/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated(); // Hanya admin yang boleh ubah setting
     }
     
-    // 4. Lain-lain
-    match /settings/{docId} { allow read: if true; allow write: if isAuthenticated(); }
-    match /customers/{docId} { allow read, write: if isAuthenticated(); }
-    match /suppliers/{docId} { allow read, write: if isAuthenticated(); }
-    match /supplier_sessions/{docId} { allow read, write: if isAuthenticated(); }
-    match /supplier_sessions/{docId}/items/{itemId} { allow read, write: if isAuthenticated(); }
+    match /notifications/{docId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // Default Deny All (Safety Net)
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
